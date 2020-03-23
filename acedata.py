@@ -109,7 +109,7 @@ def acedata(acedir, cols, ybeg, yend):
 
     return data, nulls
 
-def aceaddextra(data, nulls, xcols=None, window=3, center=False):
+def aceaddextra(data, nulls, xcols, window=5, center=False):
  
     if 'SW_type' in xcols:
         data['SW_type']=4
@@ -136,14 +136,31 @@ def aceaddextra(data, nulls, xcols=None, window=3, center=False):
         if 'sigmac' in xcols : data['sigmac'] = 2 * bdotv.div(bplusv)
         if 'sigmar' in xcols : data['sigmar'] = vminsb.div(bplusv)
     
-    for end in ['min','max','mean','std']:
+    for end in ['min','max','mean','std','var']:
         func = getattr(pd.core.window.Rolling, end)
         for c in xcols:
             if c.endswith(end):
                 var = c[:-len(end)-1]
                 varfunc = func(data[var].rolling(window, center=center))
                 data[c] = varfunc
-    
+                
+    for end in ['delta']:
+        fmax = pd.core.window.Rolling.max
+        fmin = pd.core.window.Rolling.min
+        for c in xcols:
+            if c.endswith(end):
+                var = c[:-len(end)-1]
+                vmax = fmax(data[var].rolling(window, center=center))
+                vmin = fmin(data[var].rolling(window, center=center))
+                data[c] = vmax - vmin
+            
+    for end in ['acor']:
+        func = lambda x: pd.Series(x).autocorr()
+        for c in xcols:
+            if c.endswith(end):
+                var = c[:-len(end)-1]
+                data[c] = data[var].rolling(window, center=center).apply(func, raw=False)
+                
     data = data.dropna(axis=0)
     
     #Appending new nulls using the mutable argument reference
@@ -166,14 +183,14 @@ if __name__ == "__main__":
     
     cols = ['O7to6','FetoO','proton_temp','C6to5','Bmag']
     acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
-    ybeg = 2000
+    ybeg = 2010
     yend = 2011
     
     data, nulls = acedata(acedir, cols, ybeg, yend)
     
     print(data.columns)
     
-    xcols = ['sigmac','sigmar','SW_type','Bgsm_z_min','Bgsm_z_max']
+    xcols = ['sigmac','sigmar','SW_type','Bgsm_z_min','Bgsm_z_max','Bgsm_z_delta','Bgsm_z_acor']
     data = aceaddextra(data, nulls, xcols=xcols, window=7, center=False)
     
     data = addlogs(data, ['C6to5','O7to6','FetoO','proton_density','sigmar'])

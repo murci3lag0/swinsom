@@ -249,6 +249,41 @@ def omniaddshift(raw, nulls, ftime, ftdelta):
     data = data.dropna(axis=0)
     return data
 
+def omniaddextra(data, nulls, xcols, window=5, center=False):
+    for end in ['min','max','mean','std','var']:
+        func = getattr(pd.core.window.Rolling, end)
+        for c in xcols:
+            if c.endswith(end):
+                var = c[:-len(end)-1]
+                varfunc = func(data[var].rolling(window, center=center))
+                data[c] = varfunc
+
+    for end in ['delta']:
+        fmax = pd.core.window.Rolling.max
+        fmin = pd.core.window.Rolling.min
+        for c in xcols:
+            if c.endswith(end):
+                var = c[:-len(end)-1]
+                vmax = fmax(data[var].rolling(window, center=center))
+                vmin = fmin(data[var].rolling(window, center=center))
+                data[c] = vmax - vmin
+            
+    for end in ['acor']:
+        func = lambda x: pd.Series(x).autocorr()
+        for c in xcols:
+            if c.endswith(end):
+                var = c[:-len(end)-1]
+                print('Calculating rolling autocorrelation for '+var+'...')
+                data[c] = data[var].rolling(window, center=center).apply(func, raw=False)
+                
+    data = data.dropna(axis=0)
+
+    #Appending new nulls using the mutable argument reference
+    for i in xcols:
+        nulls.loc[i] = -9999.9
+    
+    return data
+
 if __name__ == "__main__":
     omnidir = "/home/amaya/Workdir/MachineLearning/Data/OMNI"
     cols = ['av_|B|',
@@ -277,4 +312,6 @@ if __name__ == "__main__":
     nulls = omnigetnulls(data)
     data = omniorigin(data, nulls)
     data = omniderived(data, nulls)
-    data = omniaddshift(data, nulls, 3, 2)
+    
+    xcols = ['Bz_GSE_delta','Bz_GSE_acor']
+    data = omniaddextra(data, nulls, xcols)
