@@ -8,38 +8,181 @@ Created on Wed Nov 22 18:34:21 2017
 
 import pandas as pd
 import numpy as np
+import h5py
 
-def acedata(acedir, ybeg, yend, cols):
+allacecols  = [
+            'proton_density',
+            'proton_temp',
+            'He4toprotons',
+            'proton_speed',
+            'x_dot_RTN',
+            'y_dot_RTN',
+            'z_dot_RTN',
+            'x_dot_GSE',
+            'y_dot_GSE',
+            'z_dot_GSE',
+            'x_dot_GSM',
+            'y_dot_GSM',
+            'z_dot_GSM',
+            'nHe2',
+            'vHe2',
+            'vC5',
+            'vO6',
+            'vFe10',
+            'vthHe2',
+            'vthC5',
+            'vthO6',
+            'vthFe10',
+            'C6to5',
+            'O7to6',
+            'avqC',
+            'avqO',
+            'avqFe',
+            'FetoO',
+            'Br',
+            'Bt',
+            'Bn',
+            'Bgse_x',
+            'Bgse_y',
+            'Bgse_z',
+            'Bgsm_x',
+            'Bgsm_y',
+            'Bgsm_z',
+            'Bmag',
+            'Lambda',
+            'Delta',
+            'dBrms',
+            'sigma_B']
+
+def acereaddata(acedir, ybeg, yend, cols):
     
-    for elem in ['year','day','hr','min','sec']:
+    for elem in ['year','day','hr']:
         if elem not in cols: cols.append(elem)
         
     raw = pd.DataFrame()
         
     for i in range(ybeg, yend+1):
-        fname = acedir+'/ACE_SWICS_Data_'+str(i)+'.txt'
+        fname = acedir+'/multi_data_1hr_year'+str(i)+'.h5'
         print("Reading: ", fname)
-        new=pd.read_csv(fname,
-                        header=41,
-                        delim_whitespace=True,
-                        index_col=False,
-                        comment='B',
-                        usecols=cols)
-        new.drop(0, inplace=True)
-        
+        new=h5py.File(fname, 'r')
+        new=np.array(new['/VG_MULTI_data_1hr/MULTI_data_1hr']).byteswap().newbyteorder()
+        new=pd.DataFrame(new)
+
         new['Datetime'] = pd.to_datetime(new['year'].apply('{:0>4}'.format)+' '
                + new['day'].apply('{:0>3}'.format)+' '
-               + new['hr'].apply('{:0>2}'.format)+' '
-               + new['min'].apply('{:0>2}'.format)+' '
-               + new['sec'].apply(np.round).apply('{:0>2}'.format)+' ',
-               format='%Y %j %H %M %S', errors='ignore')
-        new = new.set_index('Datetime')
-        new.drop(['year','day','hr','min','sec'], axis=1, inplace=True)
-        
+               + new['hr'].apply('{:0>2}'.format),
+               format='%Y %j %H', errors='ignore')
+        new = new.set_index('Datetime')        
         raw = pd.concat([raw, new])
     
-    return raw
+    cols.remove('year')
+    cols.remove('day')
+    cols.remove('hr')
+    
+    return raw[cols]
+
+def acedata(acedir, cols, ybeg, yend):
+    
+    cols_needed = ['proton_speed','proton_density','O7to6','x_dot_GSM','y_dot_GSM','z_dot_GSM','Bgsm_x','Bgsm_y','Bgsm_z']
+    for elem in cols_needed:
+        if elem not in cols: cols.append(elem)
+
+    data = acereaddata(acedir, ybeg, yend, cols)
+
+    nulls = pd.DataFrame([])
+    nulls['Null values'] = pd.Series()
+        
+    for i in cols:
+        if i.endswith('_qual') or i=='SW_type':
+            nulls.loc[i] = [-1]
+        else:
+            nulls.loc[i] = [-9999.9]
+
+    #Delete nulls
+    for c in cols:
+        data = data[data[c]!=nulls.loc[c][0]]
+        
+    #Keep only good quality data
+    for e in data.columns:
+        if e.startswith('qf_'):
+            data = data[data[e]==0]
+
+    return data, nulls
+
+def aceaddextra(data, nulls, xcols=None, window=3, center=False):
+ 
+    if 'SW_type' in xcols:
+        data['SW_type']=4
+        data.loc[data.O7to6<0.145,'SW_type'] = 1
+        data.loc[data.O7to6>6.008*np.exp(-0.00578*data.proton_speed),'SW_type'] = 2
+    
+    if (('sigmac' in xcols) or ('sigmar' in xcols)):
+        v = data[['x_dot_GSM','y_dot_GSM','z_dot_GSM']]
+        b = 21*8* data[['Bgsm_x','Bgsm_y','Bgsm_z']].div(np.sqrt(data['proton_density']), axis=0)
+        
+        dv = v - v.rolling(window, center=center).mean()
+        db = b - b.rolling(window, center=center).mean()
+        
+        vnorm = np.sqrt(np.square(dv).sum(axis=1))
+        bnorm = np.sqrt(np.square(db).sum(axis=1))
+        
+        v2 = vnorm*vnorm
+        b2 = bnorm*bnorm
+        bplusv = pd.DataFrame(b2 + v2)
+        vminsb = pd.DataFrame(v2 - b2)
+        
+        bdotv = pd.DataFrame((db.values*dv.values).sum(axis=1), index = b.index)
+     
+        if 'sigmac' in xcols : data['sigmac'] = 2 * bdotv.div(bplusv)
+        if 'sigmar' in xcols : data['sigmar'] = vminsb.div(bplusv)
+    
+    for end in ['min','max','mean','std']:
+        func = getattr(pd.core.window.Rolling, end)
+        for c in xcols:
+            if c.endswith(end):
+                var = c[:-len(end)-1]
+                varfunc = func(data[var].rolling(window, center=center))
+                data[c] = varfunc
+    
+    data = data.dropna(axis=0)
+    
+    #Appending new nulls using the mutable argument reference
+    for i in xcols:
+        if i == 'SW_type':
+            nulls.loc[i] = -1
+        else:
+            nulls.loc[i] = -9999.9
+    
+    return data
+
+def addlogs(data, cols):
+    for c in cols:
+        data['log_'+c] = np.log((data[c] - data[c].min()) + 1.0)
+    return data
 
 if __name__ == "__main__":
-    cols = ['O7to6','SW_type','FetoO']
-    data = acedata('/home/amaya/Workdir/MachineLearning/Data/ACE', 2005, 2010, cols)
+    
+    import matplotlib.pyplot as plt
+    
+    cols = ['O7to6','FetoO','proton_temp','C6to5','Bmag']
+    acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
+    ybeg = 2000
+    yend = 2011
+    
+    data, nulls = acedata(acedir, cols, ybeg, yend)
+    
+    print(data.columns)
+    
+    xcols = ['sigmac','sigmar','SW_type','Bgsm_z_min','Bgsm_z_max']
+    data = aceaddextra(data, nulls, xcols=xcols, window=7, center=False)
+    
+    data = addlogs(data, ['C6to5','O7to6','FetoO','proton_density','sigmar'])
+    
+    tdata = (data - data.min(axis=0))/(data.max(axis=0) - data.min(axis=0))
+    
+    pcols = ['C6to5','log_C6to5','O7to6','log_O7to6','FetoO','log_FetoO','proton_speed','proton_temp','proton_density','log_proton_density','Bmag','Bgsm_x','Bgsm_y','Bgsm_z','sigmac','sigmar','log_sigmar']
+    tdata = np.array([tdata[c].values for c in pcols]).T
+    plt.violinplot(tdata, showextrema=False)
+    plt.boxplot(tdata, notch=True, showfliers=False, showmeans=True)
+    plt.xticks(range(1,len(pcols)+1), labels=pcols)
+
