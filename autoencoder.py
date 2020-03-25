@@ -47,7 +47,7 @@ class autoencoder(nn.Module):
         for epoch in range(num_epochs):
             running_loss = 0
             for i, data in enumerate(dataloader):
-                img, _ = data
+                img = data
                 img = img.view(img.size(0), -1)
                 
                 output = self(img)

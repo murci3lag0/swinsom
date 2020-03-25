@@ -16,9 +16,11 @@ def selfomap(data, nrow, ncol, niter,
           neighborhood_function='gaussian', 
           sigma = 2.0, 
           learning_rate=2.0, 
-          random_seed=10,
+          random_seed=123,
           pcainit=True,
-          verbose=True):
+          verbose=True,
+          seed=123,
+          dynamic=False):
     
     som = MiniSom(x = nrow,
                   y = ncol,
@@ -27,6 +29,8 @@ def selfomap(data, nrow, ncol, niter,
                   sigma = sigma, 
                   learning_rate=learning_rate, 
                   random_seed=random_seed)
+    
+    MiniSom._max = 0
     
     if (pcainit):
         som.pca_weights_init(data)
@@ -55,7 +59,18 @@ def selfomap(data, nrow, ncol, niter,
         for idx, x in enumerate(data):
             winidx[som.winner(x)].append(idx)
         return winidx
+    
+    def _dynupdate(self, x, win, t, max_iteration):
+        D = ((x - self._weights)**2).sum(axis=-1)
+        self._max = max(D.max(), self._max)
+        d = np.sqrt(D/self._max)
+        sig = self._sigma * d[win]
+        eta = self._learning_rate * d
+        g = self.neighborhood(win, sig+1e-7)*eta
+        # w_new = eta * neighborhood_function * (x-w)
+        self._weights += np.einsum('ij, ijk->ijk', g, x-self._weights)
      
+    #MiniSom.update = _dynupdate
     som.neighborhood = _hexaneigfunc
     som.win_map_index = _win_map_index
 
@@ -91,7 +106,7 @@ def som_hits(som, data, m, n, log=False):
 
     scaler = MinMaxScaler()
     hits = scaler.fit_transform(hits)
-    hits = np.clip(hits, a_min=0.1, a_max=0.999)
+    hits = np.clip(hits, a_min=0.01, a_max=0.999)
     return hits
 
 def som_colorize(som, data, m, n, somcols, cols, log=False):
@@ -114,7 +129,8 @@ def som_colorize(som, data, m, n, somcols, cols, log=False):
     hits = np.clip(hits, a_min=0.1, a_max=0.999)
     return hits, color
 
-def som_colortest(som_m, som_n, test='primary'):
+def som_colortest(som_m, som_n, test='primary', seed=123):
+    np.random.seed(seed)
     print("Performing test: "+test)
     if test=='rainbow':
         test_data = [[148, 0, 211],
@@ -154,3 +170,25 @@ def som_adddata(som, data, mapdata):
         data_added.append(mapdata[x,y])
     data_added = np.array(data_added)
     return data_added
+
+def som_addinfo(som, df, data, mapdata, mapname):
+    assert(som.get_weights().shape[0]==mapdata.shape[0])
+    assert(som.get_weights().shape[1]==mapdata.shape[1])
+    
+    data_added = som_adddata(som, data, mapdata)
+    df[mapname]=data_added
+    return df
+
+if __name__ == "__main__":
+    from matplotlib_hex_map import matplotlib_hex_map as map_plot
+    m = 7
+    n = 9
+    model, data = som_colortest(m, n)
+    d = som_distances(model)
+    hits = som_hits(model, data, m, n, log=False)
+    wmi = model.win_map_index(data)
+
+    color = model.get_weights()[:,:,:3]
+    color = (color - color.min()) / (color.max() - color.min())
+    
+    map_plot(d, color, m, n, size=hits, scale=6)

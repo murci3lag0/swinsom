@@ -112,8 +112,16 @@ def acedata(acedir, cols, ybeg, yend):
 def aceaddextra(data, nulls, xcols, window=5, center=False):
  
     if 'SW_type' in xcols:
+        '''
+            see Zhao, L., Zurbuchen, T. H., & Fisk, L. A. (2009).
+            Global distribution of the solar wind during solar cycle 23: ACE 
+            observations. Geophysical research letters, 36(14).
+            1: Coronal hole
+            2: ICME
+            4: Non-coronal hole
+        '''
         data['SW_type']=4
-        data.loc[data.O7to6<0.145,'SW_type'] = 1
+        data.loc[data.O7to6<0.145,'SW_type'] = 1 
         data.loc[data.O7to6>6.008*np.exp(-0.00578*data.proton_speed),'SW_type'] = 2
     
     if (('sigmac' in xcols) or ('sigmar' in xcols)):
