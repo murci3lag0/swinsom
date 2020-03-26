@@ -12,38 +12,45 @@ from collections import defaultdict
 from minisom import MiniSom
 from sklearn.preprocessing import MinMaxScaler
 
-def selfomap(data, nrow, ncol, niter,
-          neighborhood_function='gaussian', 
-          sigma = 2.0, 
-          learning_rate=2.0, 
-          random_seed=123,
-          pcainit=True,
-          verbose=True,
-          seed=123,
-          dynamic=False):
-    
-    som = MiniSom(x = nrow,
-                  y = ncol,
-                  input_len = data.shape[1],
-                  neighborhood_function=neighborhood_function, 
-                  sigma = sigma, 
-                  learning_rate=learning_rate, 
-                  random_seed=random_seed)
-    
-    MiniSom._max = 0
-    
-    if (pcainit):
-        som.pca_weights_init(data)
-    else:
-        som.random_weights_init(data)
-    if (neighborhood_function!='gaussian'):
-        raise ValueError('Distance function can only be gaussian') 
-    
-    def fully_random_weights_init(data):
-        return
+class altersom(MiniSom):
+    def __init__(self, dynamic=False, *args, **kwargs):
+        super(altersom, self).__init__(*args, **kwargs)
+        self._max = 0
+        self._x = len(self._neigx)
+        self._y = len(self._neigy)
+        self._dynamic = dynamic
         
-    def _hexaneigfunc(c, sigma):
-        xx, yy = np.meshgrid(som._neigx, som._neigy)
+        if self._dynamic:
+            print('Using Dynamic SOM...')
+            self.update = self._dynupdate
+        else:
+            print('Using classing Kohonen SOM...')
+            
+        if (self.neighborhood!=self._gaussian):
+            raise ValueError('Distance function can only be gaussian')
+            
+        self.neighborhood = self._hexaneigfunc
+    
+    def fully_random_weights_init(self, data):
+        dmin = data.min(axis=0)
+        dmax = data.max(axis=0)
+        for i in self._neigx:
+            for j in self._neigy:
+                self._weights[i,j,:] = np.random.uniform(low=dmin, high=dmax)
+    
+    def initweights(self, init, data):
+        if (init=='pca'):
+            print('SOM initialization using PCA...')
+            self.pca_weights_init(data)
+        if (init=='rand_points'):
+            print('SOM initialization using random data points...')
+            self.random_weights_init(data)
+        else:
+            print('SOM initialization using random values in the feature space...')
+            self.fully_random_weights_init(data)    
+            
+    def _hexaneigfunc(self, c, sigma):
+        xx, yy = np.meshgrid(self._neigx, self._neigy)
         xx = xx.astype(float)
         yy = yy.astype(float)
         xx[::2] -= 0.5
@@ -51,14 +58,6 @@ def selfomap(data, nrow, ncol, niter,
         ax = np.exp(-np.power(xx-c[0], 2)/d)
         ay = np.exp(-np.power(yy-c[1], 2)/d)
         return (ax*ay).T
-    
-    def _win_map_index(data):
-        """Returns a dictionary wm where wm[(i,j)] is the index of
-        all the patterns that have been mapped in the position i,j."""
-        winidx = defaultdict(list)
-        for idx, x in enumerate(data):
-            winidx[som.winner(x)].append(idx)
-        return winidx
     
     def _dynupdate(self, x, win, t, max_iteration):
         D = ((x - self._weights)**2).sum(axis=-1)
@@ -69,10 +68,35 @@ def selfomap(data, nrow, ncol, niter,
         g = self.neighborhood(win, sig+1e-7)*eta
         # w_new = eta * neighborhood_function * (x-w)
         self._weights += np.einsum('ij, ijk->ijk', g, x-self._weights)
-     
-    #MiniSom.update = _dynupdate
-    som.neighborhood = _hexaneigfunc
-    som.win_map_index = _win_map_index
+    
+    def win_map_index(self, data):
+        """Returns a dictionary wm where wm[(i,j)] is the index of
+        all the patterns that have been mapped in the position i,j."""
+        winidx = defaultdict(list)
+        for idx, x in enumerate(data):
+            winidx[self.winner(x)].append(idx)
+        return winidx
+        
+def selfomap(data, nrow, ncol, niter,
+          neighborhood_function='gaussian', 
+          sigma = 2.0, 
+          learning_rate=2.0, 
+          random_seed=123,
+          init=None,
+          verbose=True,
+          seed=123,
+          dynamic=False):
+    
+    som = altersom(dynamic=dynamic,
+                   x = nrow,
+                   y = ncol,
+                   input_len = data.shape[1],
+                   neighborhood_function=neighborhood_function, 
+                   sigma = sigma, 
+                   learning_rate=learning_rate, 
+                   random_seed=random_seed) 
+    
+    som.initweights(init, data)
 
     som.train_random(data=data, num_iteration=niter, verbose=True)
     return som
@@ -96,7 +120,6 @@ def som_distances(som):
     return um
 
 def som_hits(som, data, m, n, log=False):
-    print("Data shape: ", data.shape)
     hits = np.zeros((m, n))
     hitmap = som.win_map(data)
     for pos, val in hitmap.items():
@@ -160,7 +183,7 @@ def som_colortest(som_m, som_n, test='primary', seed=123):
     
     scaler = MinMaxScaler()
     som_data = scaler.fit_transform(test_data)
-    som_model = selfomap(som_data, som_m, som_n, 5000)
+    som_model = selfomap(som_data, som_m, som_n, 5000, init='rand_points')
     return som_model, som_data
 
 def som_adddata(som, data, mapdata):

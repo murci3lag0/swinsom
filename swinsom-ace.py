@@ -154,7 +154,8 @@ else:
     -------------
 '''
 
-som = selfomap(x, m, n, 10000, sigma=2.0, learning_rate=2.0)
+som = selfomap(x, m, n, 20000, sigma=4.0, learning_rate=0.2, init='random', dynamic=True)
+# som = selfomap(x, m, n, 20000, sigma=5.0, learning_rate=2.0, init='random', dynamic=False)
 
 ## processing of the SOM
 # dist : matrix of distances between map nodes
@@ -172,14 +173,33 @@ wmix = som.win_map_index(x)
 
 plt.close('all')
 
-color = som.get_weights()[:,:,:2]
-color = (color - color.min()) / (color.max() - color.min())
+color = som.get_weights()[:,:,:2].sum(axis=2)
+cmin = color.min() #np.min(x, axis=0)
+cmax = color.max() #np.max(x, axis=0)
+color = (color - cmin) / (cmax - cmin)
 
-map_plot(dist, color, m, n, size=hits, scale=6)
+map_plot(dist, color, m, n, size=np.ones_like(hits), scale=6)
+plt.plot([1,1.5], [0.75,1.5], 'k-')
+plt.plot([1,2], [0.75,0.75], 'k-')
+plt.plot([1,1.5], [0.75,0], 'k-')
+plt.plot([1,0.5], [0.75,0], 'k-')
+plt.plot([1,0], [0.75,0.75], 'k-')
+plt.plot([1,0.5], [0.75,1.5], 'k-')
 
 plt.figure()
 add_data = np.arange(m*n).reshape((m,n))
 add_name = 'node'
 finaldata = som_addinfo(som, data, x, add_data, add_name)
-plt.scatter(x[:,0],x[:,1],c=finaldata['node'].values, label='data', cmap='prism', s=10, edgecolors='none', alpha=0.5)
-plt.scatter(som.get_weights()[:,:,0].flatten(), som.get_weights()[:,:,1].flatten(), c='k', s=50, marker='X', label='nodes')
+#plt.scatter(x[:,0],x[:,1],c=finaldata['node'].values, label='data', cmap='prism', s=10, edgecolors='none', alpha=0.5)
+#plt.scatter(x[:,1],x[:,2],c=x[:,0], label='data', cmap='jet', s=10, edgecolors='none', alpha=0.5)
+plt.hexbin(x[:,0], x[:,1], bins=None, gridsize=30, cmap='hot_r')
+#plt.scatter(som.get_weights()[:,:,1].flatten(), som.get_weights()[:,:,2].flatten(), c=color.reshape((m*n,3)), s=50, marker='o', label='nodes')
+
+W = som.get_weights()
+plt.scatter(W[:,:,0].flatten(), W[:,:,1].flatten(), c=color.reshape((m*n)), cmap='jet', s=50, marker='o', label='nodes')
+plt.plot([W[1,1,0], W[2,2,0]], [W[1,1,1], W[2,2,1]], 'k-')
+plt.plot([W[1,1,0], W[2,1,0]], [W[1,1,1], W[2,1,1]], 'k-')
+plt.plot([W[1,1,0], W[2,0,0]], [W[1,1,1], W[2,0,1]], 'k-')
+plt.plot([W[1,1,0], W[1,0,0]], [W[1,1,1], W[1,0,1]], 'k-')
+plt.plot([W[1,1,0], W[0,1,0]], [W[1,1,1], W[0,1,1]], 'k-')
+plt.plot([W[1,1,0], W[1,2,0]], [W[1,1,1], W[1,2,1]], 'k-')
