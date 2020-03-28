@@ -36,7 +36,7 @@ def add_matplotlib_hexagon(fig, ax, xc, yc, width, color=None, cmap=None, cmin=0
    
     for i in range(6):
         line = lines.Line2D([x0[i],x1[i]], [y0[i],y1[i]],
-                            lw=scale*width[i]*width[i]*width[i], color='black', axes=ax, alpha=width[i])
+                            lw=5*width[i]**scale, color='black', axes=ax, alpha=width[i])
         ax.add_line(line)
     
     assert(size<=1.0 and size>=0)
@@ -64,7 +64,10 @@ def matplotlib_hex_map(d, color, som_m, som_n, size=None, r=0.5, scale=1.0, cmap
     xx, yy = som_hexmesh(range(som_m), range(som_n), r=0.5)
     matplotlib.rcParams.update({'font.size': 20})
     fig, ax = plt.subplots()
-    d = (d - d.min())/(d.max()-d.min()) 
+    dmin = d.min()
+    dmax = d.max()
+    d[d==0] = dmin
+    d = (d - dmin)/(dmax-dmin)
     if cmap is None:
         cmap = plt.cm.get_cmap('jet')
     else:

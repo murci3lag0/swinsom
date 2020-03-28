@@ -37,6 +37,18 @@ class altersom(MiniSom):
         for i in self._neigx:
             for j in self._neigy:
                 self._weights[i,j,:] = np.random.uniform(low=dmin, high=dmax)
+                
+    def equidistant_2d_init(self, data):
+        dmin = data.min(axis=0)
+        dmax = data.max(axis=0)
+        d = dmax - dmin
+        d[0] /= self._x
+        d[1] /= self._y
+        for i in self._neigx:
+            for j in self._neigy:
+                self._weights[i,j,0] = dmin[0] + d[0]*i + 0.5*d[0]
+                self._weights[i,j,1] = dmin[1] + d[1]*j + 0.5*d[1]
+        self._weights[:,::2,0] -= 0.5*d[0]
     
     def initweights(self, init, data):
         if (init=='pca'):
@@ -45,6 +57,8 @@ class altersom(MiniSom):
         if (init=='rand_points'):
             print('SOM initialization using random data points...')
             self.random_weights_init(data)
+        if (init=='2d'):
+            self.equidistant_2d_init(data)
         else:
             print('SOM initialization using random values in the feature space...')
             self.fully_random_weights_init(data)    
@@ -119,7 +133,7 @@ def som_distances(som):
         
     return um
 
-def som_hits(som, data, m, n, log=False):
+def som_hits(som, data, m, n, scale=True, log=False):
     hits = np.zeros((m, n))
     hitmap = som.win_map(data)
     for pos, val in hitmap.items():
@@ -127,8 +141,8 @@ def som_hits(som, data, m, n, log=False):
 
     if log is True: hits = np.log(hits+1)
 
-    scaler = MinMaxScaler()
-    hits = scaler.fit_transform(hits)
+    if scale:
+        hits = (hits - hits.min()) / (hits.max() - hits.min())
     hits = np.clip(hits, a_min=0.01, a_max=0.999)
     return hits
 
