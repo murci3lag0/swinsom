@@ -64,7 +64,7 @@ def matplotlib_hex_map(d, color, som_m, som_n, size=None, r=0.5, scale=1.0, cmap
     xx, yy = som_hexmesh(range(som_m), range(som_n), r=0.5)
     matplotlib.rcParams.update({'font.size': 20})
     fig, ax = plt.subplots()
-    dmin = d.min()
+    dmin = d[d.nonzero()].min()
     dmax = d.max()
     d[d==0] = dmin
     d = (d - dmin)/(dmax-dmin)

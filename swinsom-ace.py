@@ -28,9 +28,9 @@ import optuna
 # ybeg    : year of start of the analysis
 # yend    : year of ending of the analysis
 acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
-ybeg  = 2009
-yend  = 2011
-optim = True
+ybeg  = 2011
+yend  = 2013
+optim = False
 
 ## Code options ---------------------------------------------------------------
 # acode   : use autoencoding to generate the training data
@@ -59,7 +59,7 @@ params = {'Roberts' :
                'dynamic' : True,
                'sigma' : 4.0,
                'learning_rate' : 0.1,
-               'init_method' : '2d',
+               'init_method' : 'random',
                'bottle_neck' : 2,
               },
          }
@@ -148,9 +148,9 @@ data = aceaddextra(data, nulls, xcols=xcols, window=7, center=False)
 data = addlogs(data, logcols)
 
 '''
-    ---------------
-    Autoencode data
-    ---------------
+    ----------------
+    Data compression
+    ----------------
 '''
 
 raw = data[feat[case]].values
@@ -167,6 +167,8 @@ else:
     if pca:
         pcomp = PCA(n_components=bneck, whiten=True)
         x = pcomp.fit_transform(raw)
+    else:
+        x = raw
 
 '''
     -------------
@@ -181,7 +183,7 @@ if optim:
         n = trial.suggest_int('n', 5, 10)
         lr = trial.suggest_uniform('lr', 0.1, 5.0)
         sg = trial.suggest_uniform('sg', 0.1, 10.0)
-        som = selfomap(x, m, n, 100, sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
+        som = selfomap(x, m, n, 10, sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
         return som.quantization_error(x)
     
     study = optuna.create_study()
@@ -194,15 +196,23 @@ if optim:
     n  = study.best_params['n']
 
 ## Run the model
-maxiter = 1
+
+## -- this are temporal for testing --
+maxiter=30000
+sg=8.0
+lr=0.5
+dynamic=True
+## -- end of temporal --
+
 som = selfomap(x, m, n, maxiter, sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
 
 ## processing of the SOM
 # dist : matrix of distances between map nodes
 # hits : total hits for each one of the map nodes
 # wmix : indices of the elements of x that hit each one of the map nodes
+# W    : SOM weights
 dist = som_distances(som)
-hits = som_hits(som, x, m, n, log=False)
+hits = som_hits(som, x, m, n, log=True)
 wmix = som.win_map_index(x)
 W    = som.get_weights() 
 
@@ -212,45 +222,60 @@ W    = som.get_weights()
     ----------------
 '''
 
+## Switch on/off plots
+plot_datacoverage = False  # Plots data coverage
+plot_hitmap = True         # Plots the SOM hit map
+plot_neighbors = True      # Plots lines connecting neighbors in the maps and feature space
+plot_featurespace = True   # Plots the feature space
+
+## Select the neighbour to visualize
+if plot_neighbors:
+    px = 3
+    py = 5
+
 plt.close('all')
 
-color = W.sum(axis=2)
-cmin = color.min() #np.min(x, axis=0)
-cmax = color.max() #np.max(x, axis=0)
-color = (color - cmin) / (cmax - cmin)
+if plot_datacoverage:
+    plt.figure()
+    data[cols[0]].groupby(data.index.year).count().plot(kind="bar")
 
-size=hits # np.ones_like(hits)
+if plot_hitmap:
+    color = W.sum(axis=2)
+    cmin = color.min() #np.min(x, axis=0)
+    cmax = color.max() #np.max(x, axis=0)
+    color = (color - cmin) / (cmax - cmin)
+    
+    size=hits # np.ones_like(hits)
+    
+    map_plot(dist, color, m, n, size=size, scale=4, cmap='autumn')
+    
+    if plot_neighbors:
+        f = lambda p, q: p-0.5 if (q%2 == 0) else p
+        
+        i = f(px, py)
+        j = py
+        plt.plot([i,i+0.5], [j*0.75,j*0.75+0.75], 'k-')
+        plt.plot([i,i+1  ], [j*0.75,j*0.75     ], 'k-')
+        plt.plot([i,i+0.5], [j*0.75,j*0.75-0.75], 'k-')
+        plt.plot([i,i-0.5], [j*0.75,j*0.75-0.75], 'k-')
+        plt.plot([i,i-1  ], [j*0.75,j*0.75     ], 'k-')
+        plt.plot([i,i-0.5], [j*0.75,j*0.75+0.75], 'k-')
 
-map_plot(dist, color, m, n, size=size, scale=4, cmap='autumn')
-f = lambda p, q: p-0.5 if (q%2 == 0) else p
-px = 3
-py = 5
-
-i = f(px, py)
-j = py
-plt.plot([i,i+0.5], [j*0.75,j*0.75+0.75], 'k-')
-plt.plot([i,i+1  ], [j*0.75,j*0.75     ], 'k-')
-plt.plot([i,i+0.5], [j*0.75,j*0.75-0.75], 'k-')
-plt.plot([i,i-0.5], [j*0.75,j*0.75-0.75], 'k-')
-plt.plot([i,i-1  ], [j*0.75,j*0.75     ], 'k-')
-plt.plot([i,i-0.5], [j*0.75,j*0.75+0.75], 'k-')
-
-plt.figure()
-add_data = np.arange(m*n).reshape((m,n))
-add_name = 'node'
-finaldata = som_addinfo(som, data, x, add_data, add_name)
-#plt.scatter(x[:,0],x[:,1],c=finaldata['node'].values, label='data', cmap='prism', s=10, edgecolors='none', alpha=0.5)
-#plt.scatter(x[:,1],x[:,2],c=x[:,0], label='data', cmap='jet', s=10, edgecolors='none', alpha=0.5)
-plt.hexbin(x[:,0], x[:,1], bins=None, gridsize=30, cmap='BuGn')
-#plt.scatter(W[:,:,1].flatten(), W[:,:,2].flatten(), c=color.reshape((m*n,3)), s=50, marker='o', label='nodes')
-
-plt.scatter(W[:,:,0].flatten(), W[:,:,1].flatten(), c=color.reshape((m*n)), cmap='autumn', s=50, marker='o', label='nodes')
-f = lambda p, q: p-1 if (q%2 == 0) else p
-i = f(px, py)
-j = py
-plt.plot([W[px,py,0], W[i +1,j+1,0]], [W[px,py,1], W[i +1,j+1,1]], 'k-')
-plt.plot([W[px,py,0], W[px+1,j+0,0]], [W[px,py,1], W[px+1,j+0,1]], 'k-')
-plt.plot([W[px,py,0], W[i +1,j-1,0]], [W[px,py,1], W[i +1,j-1,1]], 'k-')
-plt.plot([W[px,py,0], W[i +0,j-1,0]], [W[px,py,1], W[i +0,j-1,1]], 'k-')
-plt.plot([W[px,py,0], W[px-1,j+0,0]], [W[px,py,1], W[px-1,j+0,1]], 'k-')
-plt.plot([W[px,py,0], W[i +0,j+1,0]], [W[px,py,1], W[i +0,j+1,1]], 'k-')
+if plot_featurespace:
+    plt.figure()
+    add_data = np.arange(m*n).reshape((m,n))
+    add_name = 'node'
+    finaldata = som_addinfo(som, data, x, add_data, add_name)
+    plt.hexbin(x[:,0], x[:,1], bins=None, gridsize=30, cmap='BuGn')    
+    plt.scatter(W[:,:,0].flatten(), W[:,:,1].flatten(), c=color.reshape((m*n)), cmap='autumn', s=50, marker='o', label='nodes')
+    
+    if plot_neighbors:
+        f = lambda p, q: p-1 if (q%2 == 0) else p
+        i = f(px, py)
+        j = py
+        plt.plot([W[px,py,0], W[i +1,j+1,0]], [W[px,py,1], W[i +1,j+1,1]], 'k-')
+        plt.plot([W[px,py,0], W[px+1,j+0,0]], [W[px,py,1], W[px+1,j+0,1]], 'k-')
+        plt.plot([W[px,py,0], W[i +1,j-1,0]], [W[px,py,1], W[i +1,j-1,1]], 'k-')
+        plt.plot([W[px,py,0], W[i +0,j-1,0]], [W[px,py,1], W[i +0,j-1,1]], 'k-')
+        plt.plot([W[px,py,0], W[px-1,j+0,0]], [W[px,py,1], W[px-1,j+0,1]], 'k-')
+        plt.plot([W[px,py,0], W[i +0,j+1,0]], [W[px,py,1], W[i +0,j+1,1]], 'k-')
