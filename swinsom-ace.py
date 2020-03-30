@@ -74,6 +74,7 @@ params = {'Roberts' :
 cols = allacecols
 xcols = ['sigmac',
          'sigmar',
+         'Ma',
          'SW_type',
          'proton_speed_delta',
          'proton_density_delta',
@@ -105,6 +106,7 @@ feat = {'Roberts' : ['log_proton_speed',
        'Amaya' : ['proton_speed',
                   'proton_temp',
                   'proton_density',
+                  'Ma',
                   'He4toprotons',
                   'O7to6',
                   'FetoO',
@@ -144,7 +146,8 @@ if acode:
 
 ## Loading the data
 data, nulls = acedata(acedir, cols, ybeg, yend)
-data = aceaddextra(data, nulls, xcols=xcols, window=7, center=False)
+data = aceaddextra(data, nulls, xcols=xcols, window=6, center=False)
+stop
 data = addlogs(data, logcols)
 
 '''

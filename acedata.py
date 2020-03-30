@@ -83,7 +83,7 @@ def acereaddata(acedir, ybeg, yend, cols):
 
 def acedata(acedir, cols, ybeg, yend):
     
-    cols_needed = ['proton_speed','proton_density','O7to6','x_dot_GSM','y_dot_GSM','z_dot_GSM','Bgsm_x','Bgsm_y','Bgsm_z']
+    cols_needed = ['proton_speed','proton_density','O7to6','x_dot_GSM','y_dot_GSM','z_dot_GSM','Bgsm_x','Bgsm_y','Bgsm_z','Bmag']
     for elem in cols_needed:
         if elem not in cols: cols.append(elem)
 
@@ -123,26 +123,37 @@ def aceaddextra(data, nulls, xcols, window=5, center=False):
         data['SW_type']=4
         data.loc[data.O7to6<0.145,'SW_type'] = 1 
         data.loc[data.O7to6>6.008*np.exp(-0.00578*data.proton_speed),'SW_type'] = 2
-    
+
+    if 'Ma' in xcols:
+        Va = 21.82915036515064 * data['Bmag'] / np.sqrt(data['proton_density'])
+        data['Ma'] = data['proton_speed']/Va
+        
     if (('sigmac' in xcols) or ('sigmar' in xcols)):
-        v = data[['x_dot_GSM','y_dot_GSM','z_dot_GSM']]
-        b = 21*8* data[['Bgsm_x','Bgsm_y','Bgsm_z']].div(np.sqrt(data['proton_density']), axis=0)
+        V = data[['x_dot_GSM','y_dot_GSM','z_dot_GSM']]
+        B = 21.82915036515064 * data[['Bgsm_x','Bgsm_y','Bgsm_z']].div(np.sqrt(data['proton_density']), axis=0)
+      
+        v  = V - V.rolling(window, center=center).mean()
+        b  = B - B.rolling(window, center=center).mean()
+
+        zp = v + b.values
+        zn = v - b.values
+
+        v2  = (v * v).sum(axis=1)
+        b2  = (b * b).sum(axis=1)
+        zp2 = (zp * zp).sum(axis=1)
+        zn2 = (zn * zn).sum(axis=1)
         
-        dv = v - v.rolling(window, center=center).mean()
-        db = b - b.rolling(window, center=center).mean()
+        bdotv = (b * v.values).sum(axis=1).rolling(window, center=center).mean()
+        bnorm = (b2 + v2.values).rolling(window, center=center).mean()
+
+        zdotz = (zp * zn.values).sum(axis=1).rolling(window, center=center).mean()
+        znorm = (zp2 + zn2.values).rolling(window, center=center).mean()
+
+        sigc = 2 * bdotv / bnorm
+        sigr = 2 * zdotz / znorm
         
-        vnorm = np.sqrt(np.square(dv).sum(axis=1))
-        bnorm = np.sqrt(np.square(db).sum(axis=1))
-        
-        v2 = vnorm*vnorm
-        b2 = bnorm*bnorm
-        bplusv = pd.DataFrame(b2 + v2)
-        vminsb = pd.DataFrame(v2 - b2)
-        
-        bdotv = pd.DataFrame((db.values*dv.values).sum(axis=1), index = b.index)
-     
-        if 'sigmac' in xcols : data['sigmac'] = 2 * bdotv.div(bplusv)
-        if 'sigmar' in xcols : data['sigmar'] = vminsb.div(bplusv)
+        if 'sigmac' in xcols : data['sigmac'] = sigc
+        if 'sigmar' in xcols : data['sigmar'] = sigr
     
     for end in ['min','max','mean','std','var']:
         func = getattr(pd.core.window.Rolling, end)
