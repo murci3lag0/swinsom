@@ -28,8 +28,8 @@ import optuna
 # ybeg    : year of start of the analysis
 # yend    : year of ending of the analysis
 acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
-ybeg  = 2011
-yend  = 2013
+ybeg  = 2009
+yend  = 2011
 optim = False
 
 ## Code options ---------------------------------------------------------------
@@ -279,3 +279,14 @@ if plot_featurespace:
         plt.plot([W[px,py,0], W[i +0,j-1,0]], [W[px,py,1], W[i +0,j-1,1]], 'k-')
         plt.plot([W[px,py,0], W[px-1,j+0,0]], [W[px,py,1], W[px-1,j+0,1]], 'k-')
         plt.plot([W[px,py,0], W[i +0,j+1,0]], [W[px,py,1], W[i +0,j+1,1]], 'k-')
+
+'''
+    ------------------------
+    Generate the paper plots
+    ------------------------
+'''
+
+import paper_figures as pfig
+
+fig_path = '/home/amaya/Workdir/Papers/2020-April-Frontiers-SOM/figures'
+pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
