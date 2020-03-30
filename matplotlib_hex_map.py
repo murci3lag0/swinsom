@@ -100,17 +100,22 @@ def matplotlib_hex_map(d, color, som_m, som_n, size=None, r=0.5, scale=1.0, cmap
 def hex_map_test(x, y, color=[[0.7]], cmin=0, cmax=1, size=1.0, r=0.5, axecolor='w'):
     fig, ax = plt.subplots()
     ax.set_facecolor(axecolor)
+    d = np.array([0.1,0.3,0.5,0.7,0.9,1.0])
+    dmin = d[d.nonzero()].min()
+    dmax = d.max()
+    d[d==0] = dmin
+    d = (d - dmin)/(dmax-dmin)
     cmap = plt.cm.get_cmap()
     for i in range(len(x)):
         fig, ax = add_matplotlib_hexagon(fig, ax, y[i], x[i],
-                                         [0.1,0.2,0.3,0.4,0.5,1.0],
+                                         d,
                                          color=color[i],
                                          cmap=cmap,
                                          cmin=cmin,
                                          cmax=cmax,
                                          size=size[i],
                                          r=r,
-                                         scale=10)
+                                         scale=2)
     norm = matplotlib.colors.Normalize(vmin=np.array(color).min(),vmax=np.array(color).max())
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])

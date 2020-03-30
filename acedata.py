@@ -78,7 +78,7 @@ def acereaddata(acedir, ybeg, yend, cols):
     cols.remove('year')
     cols.remove('day')
     cols.remove('hr')
-    
+    print('Total entires read:', len(raw))
     return raw[cols]
 
 def acedata(acedir, cols, ybeg, yend):

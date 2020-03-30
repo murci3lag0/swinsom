@@ -228,4 +228,4 @@ if __name__ == "__main__":
     color = model.get_weights()[:,:,:3]
     color = (color - color.min()) / (color.max() - color.min())
     
-    map_plot(d, color, m, n, size=hits, scale=6)
+    map_plot(d, color, m, n, size=hits, scale=3)

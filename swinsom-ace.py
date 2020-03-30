@@ -28,7 +28,7 @@ import optuna
 # ybeg    : year of start of the analysis
 # yend    : year of ending of the analysis
 acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
-ybeg  = 2009
+ybeg  = 1998
 yend  = 2011
 optim = False
 
@@ -146,8 +146,9 @@ if acode:
 
 ## Loading the data
 data, nulls = acedata(acedir, cols, ybeg, yend)
+print('Data set size after reading files:', len(data))
 data = aceaddextra(data, nulls, xcols=xcols, window=6, center=False)
-stop
+print('Data set size after adding extras:', len(data))
 data = addlogs(data, logcols)
 
 '''
@@ -250,7 +251,7 @@ if plot_hitmap:
     
     size=hits # np.ones_like(hits)
     
-    map_plot(dist, color, m, n, size=size, scale=4, cmap='autumn')
+    map_plot(dist, color, m, n, size=size, scale=5, cmap='autumn')
     
     if plot_neighbors:
         f = lambda p, q: p-0.5 if (q%2 == 0) else p
@@ -291,5 +292,5 @@ if plot_featurespace:
 
 import paper_figures as pfig
 
-fig_path = '/home/amaya/Workdir/Papers/2020-April-Frontiers-SOM/figures'
+fig_path = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures'
 pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
