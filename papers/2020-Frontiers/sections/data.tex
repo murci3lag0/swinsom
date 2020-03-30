@@ -1,9 +1,10 @@
 \paragraph{Data Set Used}
-The solar wind data used in this work was obtained by the Advanced Composition Explorer (ACE) spacecraft, during a period of 14 years, between 1998 and 2011. The data can be downloaded from the \href{ftp://mussel.srl.caltech.edu/pub/ace/level2/multi}{FTP servers of The ACE Science Center (ASC)}. The files in this repository correspond to a compilation of hourly average data from three instruments: MAG (Magnetometer), SWEPAM (Solar Wind Electron, Proton, and Alpha Monitor) and EPAM (Electron, Proton, and Alpha Monitor).
+The solar wind data used in this work was obtained by the Advanced Composition Explorer (ACE) spacecraft, during a period of 14 years, between 1998 and 2011. The data can be downloaded from the \href{ftp://mussel.srl.caltech.edu/pub/ace/level2/multi}{FTP servers of The ACE Science Center (ASC)}. The files in this repository correspond to a compilation of hourly average data from three instruments: MAG (Magnetometer), SWEPAM (Solar Wind Electron, Proton, and Alpha Monitor) and EPAM (Electron, Proton, and Alpha Monitor). A detailed description of the entries in this data set can be found in the \href{http://www.srl.caltech.edu/cgi-bin/dib/rundibviewmultil2/ACE/ASC/DATA/level2/multi}{ASC website} listed in section \ref{sec:repos}.
 
-A total of 140256 data points are available. However, routine maintenance operations and instrument degradation produce gaps in the data. Null values can appear in individual instrument measurements, and ASC has included quality flags into the data set. We eliminate low quality entries in the data and any entry where at least one null value has been recorded. Fig.\ref{fig:datacoverage} shows the final number of entries retained per year. Our final data set contains a total of 72448 points.
+A total of 122712 data points are available. However, routine maintenance operations, low statistics, instrument saturation and instrument degradation produce gaps and errors in the data. The SWICS data includes a flag assessing the quality of the calculated plasma moments. We retain only \'Good quality\' entries. Fig.\ref{fig:datacoverage} shows the final number of items retained per year. Our final data set contains a total of 72454 points.
 
 \paragraph{Data Processing and Derived Features}
+72449 entries
 
 \paragraph{Feature Selection using PCA}
 
