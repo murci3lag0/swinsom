@@ -83,7 +83,8 @@ def acereaddata(acedir, ybeg, yend, cols):
 
 def acedata(acedir, cols, ybeg, yend):
     
-    cols_needed = ['proton_speed','proton_density','O7to6','x_dot_GSM','y_dot_GSM','z_dot_GSM','Bgsm_x','Bgsm_y','Bgsm_z','Bmag']
+    # cols_needed = ['proton_speed','proton_density','proton_temp','O7to6','x_dot_GSM','y_dot_GSM','z_dot_GSM','Bgsm_x','Bgsm_y','Bgsm_z','Bmag']
+    cols_needed = ['proton_speed']
     for elem in cols_needed:
         if elem not in cols: cols.append(elem)
 
@@ -93,7 +94,7 @@ def acedata(acedir, cols, ybeg, yend):
     nulls['Null values'] = pd.Series()
         
     for i in cols:
-        if i.endswith('_qual') or i=='SW_type':
+        if i.endswith('_qual') or i.endswith('SW_type'):
             nulls.loc[i] = [-1]
         else:
             nulls.loc[i] = [-9999.9]
@@ -111,7 +112,7 @@ def acedata(acedir, cols, ybeg, yend):
 
 def aceaddextra(data, nulls, xcols, window=5, center=False):
  
-    if 'SW_type' in xcols:
+    if 'Zhao_SW_type' in xcols:
         '''
             see Zhao, L., Zurbuchen, T. H., & Fisk, L. A. (2009).
             Global distribution of the solar wind during solar cycle 23: ACE 
@@ -120,15 +121,74 @@ def aceaddextra(data, nulls, xcols, window=5, center=False):
             2: ICME
             4: Non-coronal hole
         '''
-        data['SW_type']=4
-        data.loc[data.O7to6<0.145,'SW_type'] = 1 
-        data.loc[data.O7to6>6.008*np.exp(-0.00578*data.proton_speed),'SW_type'] = 2
+        assert 'O7to6' in data.columns, 'Bmag needed in the data columns to calculate: Zhao_SW_type'
+        assert 'proton_speed' in data.columns, 'proton_density needed in the data columns to calculate: Zhao_SW_type'
+        data['Zhao_SW_type']=4
+        data.loc[data.O7to6<0.145,'Zhao_SW_type'] = 1 
+        data.loc[data.O7to6>6.008*np.exp(-0.00578*data.proton_speed),'Zhao_SW_type'] = 2
 
+    k_b = 8.617333262145e-5
+    
     if 'Ma' in xcols:
+        assert 'Bmag' in data.columns, 'Bmag needed in the data columns to calculate: Ma'
+        assert 'proton_density' in data.columns, 'proton_density needed in the data columns to calculate: Ma'
         Va = 21.82915036515064 * data['Bmag'] / np.sqrt(data['proton_density'])
         data['Ma'] = data['proton_speed']/Va
         
+    if 'Va' in xcols:
+        assert 'Bmag' in data.columns, 'Bmag needed in the data columns to calculate: Ma'
+        assert 'proton_density' in data.columns, 'proton_density needed in the data columns to calculate: Ma'
+        Va = 21.82915036515064 * data['Bmag'] / np.sqrt(data['proton_density'])
+        data['Va'] = Va
+        
+    if 'Sp' in xcols:
+        assert 'proton_temp' in data.columns, 'proton_temp needed in the data columns to calculate: Sp'
+        assert 'proton_density' in data.columns, 'proton_density needed in the data columns to calculate: Sp'
+        Sp=data['proton_temp']*k_b/data['proton_density']**(2./3.)
+        data['Sp'] = Sp
+
+    if 'Texp' in xcols:
+        assert 'proton_speed' in data.columns, 'proton_speed needed in the data columns to calculate: Texp'
+        Texp=np.power(data['proton_speed']/258.0, 3.113)
+        data['Texp'] = Texp
+        
+    if 'Tratio' in xcols:
+        assert 'Texp' in data.columns, 'Texp needed in the extra data columns to calculate: Tratio'
+        Tratio=data['Texp']/(data['proton_temp']*k_b)
+        data['Tratio'] = Tratio
+    
+    if 'Xu_SW_type' in xcols:
+        '''
+            see Xu, F., & Borovsky, J. E. (2015). A new four-plasma categorization scheme
+            for the solar wind. Journal of Geophysical Research: Space Physics, 120(1), 70–100. 
+            https://doi.org/10.1002/2014JA020412
+            0: Unknown
+            1: Coronal hole
+            2: Ejecta
+            3: Sector reversal
+        '''
+        assert 'Va' in data.columns, 'Va needed in the extra columns to calculate: Xu_Zhao_SW_type'
+        assert 'Sp' in data.columns, 'Sp needed in the extra columns to calculate: Xu_Zhao_SW_type'
+        assert 'Tratio' in data.columns, 'Tratio needed in the extra columns to calculate: Xu_Zhao_SW_type'
+        
+        ejecta= 0.277*np.log10(data['Sp'])+0.055*np.log10(data['Tratio'])+1.83 < np.log10(data['Va'])
+        chole =-0.525*np.log10(data['Tratio'])-0.676*np.log10(data['Va'])+1.74 < np.log10(data['Sp'])
+        srev  =-0.125*np.log10(data['Tratio'])-0.658*np.log10(data['Va'])+1.04 > np.log10(data['Sp'])
+    
+        data.loc[ejecta, 'Xu_SW_type'] = 2
+        data.loc[~ejecta&chole, 'Xu_SW_type'] = 1
+        data.loc[~ejecta&srev, 'Xu_SW_type'] = 3
+        data.loc[~ejecta&~chole&~srev, 'Xu_SW_type'] = 0
+            
     if (('sigmac' in xcols) or ('sigmar' in xcols)):
+        assert 'x_dot_GSM' in data.columns, 'x_dot_GSM needed in the data columns to calculate: sigmac and sigmar'
+        assert 'y_dot_GSM' in data.columns, 'y_dot_GSM needed in the data columns to calculate: sigmac and sigmar'
+        assert 'z_dot_GSM' in data.columns, 'z_dot_GSM needed in the data columns to calculate: sigmac and sigmar'
+        assert 'Bgsm_x' in data.columns, 'Bgsm_x needed in the data columns to calculate: sigmac and sigmar'
+        assert 'Bgsm_y' in data.columns, 'Bgsm_y needed in the data columns to calculate: sigmac and sigmar'
+        assert 'Bgsm_z' in data.columns, 'Bgsm_z needed in the data columns to calculate: sigmac and sigmar'
+        assert 'proton_density' in data.columns, 'proton_density needed in the data columns to calculate: sigmac and sigmar'
+        
         V = data[['x_dot_GSM','y_dot_GSM','z_dot_GSM']]
         B = 21.82915036515064 * data[['Bgsm_x','Bgsm_y','Bgsm_z']].div(np.sqrt(data['proton_density']), axis=0)
       
@@ -184,7 +244,7 @@ def aceaddextra(data, nulls, xcols, window=5, center=False):
     
     #Appending new nulls using the mutable argument reference
     for i in xcols:
-        if i == 'SW_type':
+        if i.endswith('SW_type'):
             nulls.loc[i] = -1
         else:
             nulls.loc[i] = -9999.9
@@ -200,7 +260,7 @@ if __name__ == "__main__":
     
     import matplotlib.pyplot as plt
     
-    cols = ['O7to6','FetoO','proton_temp','C6to5','Bmag']
+    cols = ['O7to6','FetoO','proton_temp','proton_density','C6to5','Bmag','x_dot_GSM','y_dot_GSM','z_dot_GSM','Bgsm_x','Bgsm_y','Bgsm_z']
     acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
     ybeg = 2010
     yend = 2011
@@ -209,14 +269,14 @@ if __name__ == "__main__":
     
     print(data.columns)
     
-    xcols = ['sigmac','sigmar','SW_type','Bgsm_z_min','Bgsm_z_max','Bgsm_z_delta','Bgsm_z_acor']
+    xcols = ['sigmac','sigmar','Zhao_SW_type','Bgsm_z_min','Bgsm_z_max','Bgsm_z_delta','Bgsm_z_acor','Sp','Va','Texp','Tratio','Xu_SW_type']
     data = aceaddextra(data, nulls, xcols=xcols, window=7, center=False)
     
     data = addlogs(data, ['C6to5','O7to6','FetoO','proton_density','sigmar'])
     
     tdata = (data - data.min(axis=0))/(data.max(axis=0) - data.min(axis=0))
     
-    pcols = ['C6to5','log_C6to5','O7to6','log_O7to6','FetoO','log_FetoO','proton_speed','proton_temp','proton_density','log_proton_density','Bmag','Bgsm_x','Bgsm_y','Bgsm_z','sigmac','sigmar','log_sigmar']
+    pcols = ['C6to5','log_C6to5','O7to6','log_O7to6','FetoO','log_FetoO','proton_speed','proton_temp','proton_density','log_proton_density','Bmag','Bgsm_x','Bgsm_y','Bgsm_z','Tratio','sigmac','sigmar','log_sigmar']
     tdata = np.array([tdata[c].values for c in pcols]).T
     plt.violinplot(tdata, showextrema=False)
     plt.boxplot(tdata, notch=True, showfliers=False, showmeans=True)
