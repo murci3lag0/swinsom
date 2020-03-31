@@ -35,7 +35,7 @@ optim = False
 ## Code options ---------------------------------------------------------------
 # acode   : use autoencoding to generate the training data
 # case    : selection of features from the available options in the dict
-case = 'Roberts'
+case = 'Amaya'
 params = {'Roberts' :
               {'autoencode' : False,
                'pca' : True,
@@ -46,11 +46,11 @@ params = {'Roberts' :
                'sigma' : 4.0,
                'learning_rate' : 0.1,
                'init_method' : '2d',
-               'bottle_neck' : 2,
+               'bottle_neck' : 3,
               },
           'Amaya' :
               {'autoencode' : True,
-               'pca' : False,
+               'pca' : True,
                'm' : 7,
                'n' : 9,
                'maxiter' : 50000,
@@ -59,8 +59,8 @@ params = {'Roberts' :
                'dynamic' : True,
                'sigma' : 4.0,
                'learning_rate' : 0.1,
-               'init_method' : 'random',
-               'bottle_neck' : 2,
+               'init_method' : '2d',
+               'bottle_neck' : 3,
               },
          }
 
@@ -75,17 +75,22 @@ cols = allacecols
 xcols = ['sigmac',
          'sigmar',
          'Ma',
-         'SW_type',
-         'proton_speed_delta',
-         'proton_density_delta',
-         'Bgsm_x_delta',
-         'Bgsm_y_delta',
-         'Bgsm_z_delta',
+         'Zhao_SW_type',
+         'proton_speed_range',
+         'proton_density_range',
+         'Bgsm_x_range',
+         'Bgsm_y_range',
+         'Bgsm_z_range',
          'Bmag_acor',
-         'Bmag_delta',
+         'Bmag_range',
          'Bmag_mean',
          'Bmag_std',
-         'proton_density_delta']
+         'proton_density_range',
+         'Sp',
+         'Va',
+         'Texp',
+         'Tratio',
+         'Xu_SW_type']
 logcols = ['proton_speed',
            'proton_density',
            'sigmac',
@@ -93,7 +98,11 @@ logcols = ['proton_speed',
            'O7to6',
            'FetoO',
            'avqFe',
-           'Bmag']
+           'Bmag',
+           'Sp',
+           'Va',
+           'Texp',
+           'Tratio']
 
 feat = {'Roberts' : ['log_proton_speed',
                      'log_proton_density',
@@ -113,15 +122,19 @@ feat = {'Roberts' : ['log_proton_speed',
                   'C6to5',
                   'sigmac',
                   'sigmar',
-                  'proton_speed_delta',
-                  'proton_density_delta',
-                  'Bgsm_x_delta',
-                  'Bgsm_y_delta',
-                  'Bgsm_z_delta',
-                  'Bmag_delta',
+                  'proton_speed_range',
+                  'proton_density_range',
+                  'Bgsm_x_range',
+                  'Bgsm_y_range',
+                  'Bgsm_z_range',
+                  'Bmag_range',
                   'Bmag_acor',
                   'Bmag_mean',
-                  'Bmag_std'],
+                  'Bmag_std',
+                  'log_Sp',
+                  'log_Va',
+                  'log_Texp',
+                  'log_Tratio'],
        }
 
 
@@ -147,7 +160,7 @@ if acode:
 ## Loading the data
 data, nulls = acedata(acedir, cols, ybeg, yend)
 print('Data set size after reading files:', len(data))
-data = aceaddextra(data, nulls, xcols=xcols, window=6, center=False)
+data = aceaddextra(data, nulls, xcols=xcols, window='6H', center=False)
 print('Data set size after adding extras:', len(data))
 data = addlogs(data, logcols)
 
@@ -167,6 +180,9 @@ if acode:
     ae = autoencoder(nodes)
     L = ae.fit(torch.Tensor(raw), batch_size, num_epochs)
     x = ae.encode(torch.Tensor(raw)).detach().numpy()
+    if pca:
+        pcomp = PCA(n_components=bneck, whiten=True)
+        xpca = pcomp.fit_transform(raw)
 else:
     if pca:
         pcomp = PCA(n_components=bneck, whiten=True)
@@ -208,7 +224,7 @@ lr=0.5
 dynamic=True
 ## -- end of temporal --
 
-som = selfomap(x, m, n, maxiter, sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
+# som = selfomap(x, m, n, maxiter, sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
 
 ## processing of the SOM
 # dist : matrix of distances between map nodes
@@ -293,4 +309,5 @@ if plot_featurespace:
 import paper_figures as pfig
 
 fig_path = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures'
-pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
+# pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
+pfig.fig_dimreduc(data, xpca, x, cmap='brg', fname=fig_path+'/dimreduc.png')

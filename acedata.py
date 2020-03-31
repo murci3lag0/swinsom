@@ -162,7 +162,7 @@ def aceaddextra(data, nulls, xcols, window=5, center=False):
             see Xu, F., & Borovsky, J. E. (2015). A new four-plasma categorization scheme
             for the solar wind. Journal of Geophysical Research: Space Physics, 120(1), 70–100. 
             https://doi.org/10.1002/2014JA020412
-            0: Unknown
+            0: Streamer belt
             1: Coronal hole
             2: Ejecta
             3: Sector reversal
@@ -223,7 +223,7 @@ def aceaddextra(data, nulls, xcols, window=5, center=False):
                 varfunc = func(data[var].rolling(window, center=center))
                 data[c] = varfunc
                 
-    for end in ['delta']:
+    for end in ['range']:
         fmax = pd.core.window.Rolling.max
         fmin = pd.core.window.Rolling.min
         for c in xcols:
@@ -269,14 +269,14 @@ if __name__ == "__main__":
     
     print(data.columns)
     
-    xcols = ['sigmac','sigmar','Zhao_SW_type','Bgsm_z_min','Bgsm_z_max','Bgsm_z_delta','Bgsm_z_acor','Sp','Va','Texp','Tratio','Xu_SW_type']
+    xcols = ['sigmac','sigmar','Zhao_SW_type','Bgsm_z_min','Bgsm_z_max','Bgsm_z_range','Bgsm_z_acor','Sp','Va','Texp','Tratio','Xu_SW_type']
     data = aceaddextra(data, nulls, xcols=xcols, window=7, center=False)
     
-    data = addlogs(data, ['C6to5','O7to6','FetoO','proton_density','sigmar'])
+    data = addlogs(data, ['C6to5','O7to6','FetoO','proton_density','sigmar','Tratio'])
     
     tdata = (data - data.min(axis=0))/(data.max(axis=0) - data.min(axis=0))
     
-    pcols = ['C6to5','log_C6to5','O7to6','log_O7to6','FetoO','log_FetoO','proton_speed','proton_temp','proton_density','log_proton_density','Bmag','Bgsm_x','Bgsm_y','Bgsm_z','Tratio','sigmac','sigmar','log_sigmar']
+    pcols = ['C6to5','log_C6to5','O7to6','log_O7to6','FetoO','log_FetoO','proton_speed','proton_temp','proton_density','log_proton_density','Bmag','Bgsm_x','Bgsm_y','Bgsm_z','log_Tratio','sigmac','sigmar','log_sigmar']
     tdata = np.array([tdata[c].values for c in pcols]).T
     plt.violinplot(tdata, showextrema=False)
     plt.boxplot(tdata, notch=True, showfliers=False, showmeans=True)

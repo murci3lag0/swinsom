@@ -16,7 +16,7 @@
 %\documentclass[utf8]{frontiersFPHY} % for Physics and Applied Mathematics and Statistics articles
 
 %\setcitestyle{square} % for Physics and Applied Mathematics and Statistics articles
-\usepackage{url,hyperref,lineno,microtype,subcaption}
+\usepackage{url,hyperref,lineno,microtype,subcaption,booktabs,amssymb,amsmath}
 \usepackage[onehalfspacing]{setspace}
 
 \linenumbers
@@ -67,7 +67,7 @@ $^{2}$Jet Propulsion Laboratory, Interstellar and Heliospheric Physics Division,
 This is the \href{https://github.com/murci3lag0}{link to my personal GitHub page}.
 
 \tiny
- \keyFont{ \section{Keywords:} solar wind, ACE, Self-Organizing Map, clustering, autoencoder, PCA, SOM, unsupervised} %All article types: you may provide up to 8 keywords; at least 5 are mandatory.
+ \keyFont{ \section{Keywords:} solar wind, ACE, Self-Organizing Maps, clustering, autoencoder, PCA, unsupervised, machine learning} %All article types: you may provide up to 8 keywords; at least 5 are mandatory.
 \end{abstract}
 
 \section{Introduction}
@@ -135,6 +135,29 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 %%% Make sure to upload the bib file along with the tex file and PDF
 %%% Please see the test.bib file for some examples of references
 
+\section*{Tables}
+
+\begin{table}\centering
+	\begin{tabular}{@{}llll@{}}
+		\toprule
+		\# & Solar wind type name & Condition & Reference \\
+		\midrule
+		1 & Coronal hole wind & $O^{7+}/O^{6+} \leq 0.145$ & \citep{Zhao2009} \\
+		2 & ICMEs & $O^{7+}/O^{6+}\leq 6.008e^{(-0.00578V_{sw})}$ & \\
+		4 & Non-coronal hole wind & $0.145 < O^{7+}/O^{6+} < 6.008e^{(-0.00578V_{sw})} $ & \\
+		\midrule
+		0 & Streamer belt origin & Not type 1, 2, or 3 & \citep{Xu2015} \\
+		1 & Coronal hole origin & Not type 2, and & \\
+		  &  & $\log_{10}(S_p) > -0.525 \log_{10}(T_{\text{exp}}/T_p) - 0.676\log_{10}(V_A) + 1.74$ & \\
+		2 & Ejecta & $\log_{10}(V_A) > 0.055\log_{10}(T_{\text{exp}}/T_p) + 0.277 \log_{10}(S_p) + 1.83$ & \\
+		3 & Sector reversal origin & Not type 2, and & \\
+		  & & $\log_{10}(S_p) < -0.125 \log_{10}(T_{\text{exp}}/T_p) - 0.658\log_{10}(V_A) + 1.04$ &  \\
+		\bottomrule
+	\end{tabular}
+	\caption{The four solar wind types, as defined by \citep{Zhao2009} (top) and \citep{Xu2015} (bottom).}
+	\label{tab:swtypes}
+\end{table}
+
 \section*{Figure captions}
 
 %%% Please be aware that for original research articles we only permit a combined number of 15 figures and tables, one figure with multiple subfigures will count as only one figure.
@@ -153,6 +176,13 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 		\includegraphics[width=10cm]{datacoverage}% This is a *.eps file
 	\end{center}
 	\caption{ Data coverage.}\label{fig:datacoverage}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=16cm]{dimreduc}% This is a *.eps file
+	\end{center}
+	\caption{ Dimension reduction. Zhao vs Xu, PCA vs AE}\label{fig:dimreduc}
 \end{figure}
 
 \end{document}

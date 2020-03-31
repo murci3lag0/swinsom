@@ -1,13 +1,34 @@
 \paragraph{Data Set Used}
 The solar wind data used in this work was obtained by the Advanced Composition Explorer (ACE) spacecraft, during a period of 14 years, between 1998 and 2011. The data can be downloaded from the \href{ftp://mussel.srl.caltech.edu/pub/ace/level2/multi}{FTP servers of The ACE Science Center (ASC)}. The files in this repository correspond to a compilation of hourly average data from three instruments: MAG (Magnetometer), SWEPAM (Solar Wind Electron, Proton, and Alpha Monitor) and EPAM (Electron, Proton, and Alpha Monitor). A detailed description of the entries in this data set can be found in the \href{http://www.srl.caltech.edu/cgi-bin/dib/rundibviewmultil2/ACE/ASC/DATA/level2/multi}{ASC website} listed in section \ref{sec:repos}.
 
-A total of 122712 data points are available. However, routine maintenance operations, low statistics, instrument saturation and instrument degradation produce gaps and errors in the data. The SWICS data includes a flag assessing the quality of the calculated plasma moments. We retain only \'Good quality\' entries. Fig.\ref{fig:datacoverage} shows the final number of items retained per year. Our final data set contains a total of 72454 points.
+A total of 122712 data points are available. However, routine maintenance operations, low statistics, instrument saturation and instrument degradation produce gaps and errors in the data. The SWICS data includes a flag assessing the quality of the calculated plasma moments. We retain only \'Good quality\' entries. Fig.\ref{fig:datacoverage} shows the final number of items retained per year. Our pre-processed data set contains a total of 72454 points.
 
-\paragraph{Data Processing and Derived Features}
-72449 entries
+\paragraph{Additional Derived Features}
+We created additional features for each entry, based on expert and previous knowledge of the physical properties of the solar wind. These new features are derived from the existing properties in the data set or computed from statistical analysis of their temporal evolution.
 
-\paragraph{Feature Selection using PCA}
+Multiple techniques have been proposed in the literature to identify ejecta, ICMEs, and solar wind origins in the ACE data. \citep{Zhao2009} suggest that during solar cycle 23 three classes of solar wind can be identified using the solar wind speed, $V_{sw}$, and the oxygen ion charge state ratio, $O^{7+}/O^{6+}$. The classification boundaries based on these three parameters are presented in Table \ref{tab:swtypes}. This solar wind classification will be known in this manuscript as the Zhao classification.
 
-\paragraph{Feature Selection using Autoencoders}
+\citep{Xu2015} suggested an alternative four class classification based on the proton-specific entropy, $S_p = T_p/n_p^{2/3}$, the Alfv\'en speed, $V_A = B / (\mu_0 m_p n_p)^{1/2}$, and the velocity-dependent expected proton temperature, $T_\text{exp} = (V_{sw}/258)^{3.113}$. The classification conditions based on these three parameters are also presented in Table \ref{tab:swtypes}. This solar wind classification will be known in this manuscript as the Xu classification. For each entry in the data set we have included the values of $S_p$, $V_A$, $T_\text{exp}$, and the solar wind type given by the two classification methods. Additional auxiliary variables, like the Alfv\'en Mach number ($M_A$) and the temperature ratio ($T_\text{exp}/T_p$), have also been included in the data set.
+
+In addition to these instantaneous quantities, we included, for each property in every entry, statistics calculated over a window of time of six hours, including values of the maximum, minimum, mean, standard deviation, variance, auto-correlation, and range. These quantities can be used to take into account temporal variations of the solar wind over the last few hours.
+
+Two additional terms, which have been successfully used in the study of solar wind turbulence \citep{SEE ROBERTS REFS}, are included here to account for additional time correlations: the normalized cross-helicity, $\sigma_c$ eq. \eqref{eq:sigmac}, and the normalized residual energy, $\sigma_r$ eq. \eqref{eq:sigmar}, where $\boldsymbol{b} = \left(\boldsymbol{B}- \boldsymbol{\left<B\right>}\right)/(\mu_0m_pn_p)^{1/2}$ is the fluctuating magnetic field in Alfv\'en units, $\boldsymbol{v} = \boldsymbol{V_{sw}}- \boldsymbol{\left<V_{sw}\right>}$ is the fluctuating solar wind velocity, and $\boldsymbol{z^\pm} = \boldsymbol{v} \pm \boldsymbol{b}$, are the Els\"asser variables \citep{Elssaser1950, Magyar2019}, and $\left<.\right>$ denotes the averaging of quantities over the time window.
+
+\begin{align}
+\sigma_c & = 2 \left< \boldsymbol{b}\cdot\boldsymbol{v}\right>/\left<\boldsymbol{b}^2 + \boldsymbol{v}^2\right> \label{eq:sigmac} \\
+\sigma_r & = 2 \left< \boldsymbol{z^+}\cdot\boldsymbol{z^-}\right>/\left<\boldsymbol{z^-}^2 + \boldsymbol{z^+}^2\right> \label{eq:sigmar}
+\end{align}
+
+Due to gaps in the data, some of the above quantities can not be calculated. We eliminate from the data set all entries for which the derived features presented in this section could not be calculated. This leaves a total of 69672 entries in the data set used in the present work.
+
+To account for the differences in units and scale, each feature column $\boldsymbol{F}$ in the data set is normalized to values between 0 and 1, using: $\boldsymbol{f}=\left(\boldsymbol{F}-\min{\boldsymbol{F}}\right) /\left(\max{\boldsymbol{F}}-\min{\boldsymbol{F}}\right)$.
+
+\paragraph{Dimensional reduction using PCA}
+Principal Component Analysis (PCA) is a mathematical tool used in data analysis to simplify and extract the most relevant features in the data set. This technique is used to transform data in order to create entries composed of linearly uncorrelated `principal components'. The projection of the data onto the principal component space ensures a maximal variance on the first component, followed by the second, then the third, and on \citep{Shlens2014}. Principal components with small variance do not allow to differentiate the points in the data. It is then a general practice in data reduction to keep only the first $L$ components that explain $l$\% of the total variance of the data. This allows for a selection of information that will effectively differentiate data points, and for a reduction on the amount of data to process during analysis.
+
+Fig. \ref{fig:dimreduc}-a,b is a scatter plot of all the data points, colored by the Xu classification, projected on the first three PCA components. The features used to create this figure are presented in section \ref{sec:WHICH ONE?}. Panels c and d contain the same data colored by the Zhao classification. These projections show that some of the empirical solar wind classes are almost linearly separable. However, class 2, ICMEs/Ejecta, is restricted to a small domain in this coordinate system. Panels e and f are 2D histograms of the point distribution in the three main PCA planes. They show that there are multiple clusters of high density points that can be potentially isolated using unsupervised classification techniques. The point distribution shows similar variance in each one of the three PCA components, and present a sharp drop in density at its borders.
+
+\paragraph{Dimensional reduction using Autoencoders}
+PCA has a limitation on the 
 
 \paragraph{Existing Data Catalogs}
