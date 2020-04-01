@@ -1,6 +1,40 @@
 \paragraph{Clustering Techniques}
-(k-means, dbscan, GMM)
+The goal of unsupervised machine learning is to group data points in a limited number of clusters in the N-dimensional space $\Omega\in\Bbb R^N$, where N is the number of features (components) in the data set. Multiple techniques can be used to perform multi-dimensional clustering. We present in Fig. \ref{fig:clustering} three clustering techniques used to classify our 3D reduced data. The panels in the first column shows the data projected in the first and second dimensions of the autoencoded latent space, while the second column shows the data in the first and third dimensions. Panels in columns 3 and 4 contain the same type of projection in the PCA reduced space. Each row corresponds to a different clustering method where the number of classes has been imposed to four. The top four panels (a, b, g, h) were obtained using the $k$-means method \citep{[REF??]}, the classification in the middle panels (c, d, i, j) was obtained using the Spectral Clustering (SC) method \citep{[REF??]}, and the bottom two panels (e, f, k, l) feature a classification based on the Gaussian Mixture Model (GMM) \citep{[REF??]}.
+
+The $k$-means technique has been used in a recent publication for the determination of solar wind states \citep{Roberts2020}. To our knowledge the SC and GMM methods have never been used in the literature to classify the solar wind, but \citep{Dupuis2020} has used the GMM to characterize magnetic reconnection regions in simulations using their velocity distribution information.
+
+[REVIEW THIS PARAGRAHP??]
+In this data set the most glaring issue is that different techniques lead to different clusters of points. Some similarities can be observed between the $k$-means technique and the SC method, but the GMM leads to clusters that do not seem to correlate with the previous two. The differences do not stop between clustering techniques: for a single method, e.g. $k$-means, slight modifications of the clustering parameters, for example using a different seed for the random number generator, can lead to very different results. Moreover, the cloud of points is convex and evenly distributed in all three components. This raises pme additional issue, observed more clearly in columns 3 and 4 of Fig.\ref{fig:clustering}: when classical clustering methods are applied to homogeneously dense data, it divides the feature space in Vorono\"i regions with linear hyper-planes as boundaries. Modern clustering techniques based on point density, e.g. DBSCAN \citep{[REF newDBSCAN paper??]}, do not suffer from this issue, but lead to a single class in homogeneous clouds.
+
+There is no guarantee that a single classification method, with a particular set of parameters will converge to a physically meaningful classification of the data, if the points in this data do not have some level of separability, or show clear zones of high density. This is also true for other classification methods based on `supervised learning'. The same issues will be observed if the training data uses target classes derived from dense data clouds using simple hyper-plane boundaries, as done for the Zhao and Xu classes (Table \ref{tab:swtypes}).
 
 \paragraph{Self-Organizing Maps}
+Following the definitions and notations by \citep{[REF 23 in ROUGIER??]}, a class can be defined as $C_i\overset{\text{def}}{=} \{x\in\Omega | \Phi(x)=\boldsymbol{w}_i\}$, where $\Phi$ is a function from $\Omega$ to a finite subset of $k$ points $\{\boldsymbol{w}_i\in\Bbb R^N\}_{i=1..k}$. A cluster $C_i$ is then a partition of $\Omega$, and $\{\boldsymbol{w}_i\}$ are the code words (also known as nodes, weights or centroids) associated. The mapping from the data space to the code word set, $\Phi: \Omega\rightarrow\mathcal{W}$, is obtained by finding the closest neighbor, eq.\eqref{eq:winner}. The code word $\boldsymbol{w_x}$ is called the `winning element'. The class $C_i$ corresponds to a Vorono\"i region of $\Omega$ with center in $\boldsymbol{w}_i$.
+
+\begin{equation}
+\Phi: x \rightarrow  \underset{\arg\min}{i\in\mathcal{N}}\left( \left\lVert x - \boldsymbol{w}_i \right\rVert \right) \label{eq:winner}
+\end{equation}
+
+A Self-Organizing Map (SOM) is a collection of structured nodes arranged in a lattice, and assigned to a fixed position $\boldsymbol{p}_i$ in $\Bbb R^q$, where $q$ is the dimension of the lattice (generally $q=2$). The map nodes are characterized by their associated code words. The SOM learns by adjusting the code words $\boldsymbol{p}_i$ as input data $x$ is presented. The code word $s \in \mathcal{N}$ is associated to the winning element $\boldsymbol{w_x}$. At every iteration of the method, all code words of the SOM are shifted towards $x$ following the rule:
+
+\begin{equation}
+\Delta \boldsymbol{w}_i = \epsilon(t)h_\sigma(t,i,s)(x-\boldsymbol{w}_i)
+\end{equation}
+
+with $h_\sigma(t,i,j)$ defined as the lattice neighbor function:
+
+\begin{equation}
+h_\sigma(t,i,j) = e^{-\frac{\left\lVert \boldsymbol{p}_i - \boldsymbol{p}_j \right\rVert^2}{2\sigma(t)^2}}
+\end{equation}
+
+where $\epsilon(t)$ is the time dependent learning rate, eq.\eqref{eq:epsilon}, and $\sigma(t)$ is the time dependent lattice neighbor width, eq.\eqref{eq:sigma}. The training of the SOM is an iterative process where each data point in the data set is presented to the algorithm multiple times $t={0, 1,..,t_f}$. In these equations the subscript $0$ refers to initial values at $t=0$ and the subscript $f$ to values at $t=t_f$.
+
+\begin{align}
+\sigma(t) & = \sigma_0 \left(\frac{\sigma_f}{\sigma_0}\right)^{t/t_f} \label{eq:sigma} \\
+\epsilon(t) & = \epsilon_0 \left(\frac{\epsilon_f}{\epsilon_0}\right)^{t/t_f} \label{eq:epsilon}
+\end{align}
+
+This procedure places the code words in the data space $\Omega$ in such a way that neighboring nodes in the lattice are also neighbors in the data space. The lattice can be presented as a $q$-dimensional image, called map, where nodes sharing similar properties are organized in close proximity.
 
 \paragraph{Dynamic Self-Organizing Maps}
+The time dependance of SOMs allows the code words to converge to 

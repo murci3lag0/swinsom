@@ -18,7 +18,6 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler
 from acedata import *
-from som import *
 from autoencoder import autoencoder
 from matplotlib_hex_map import matplotlib_hex_map as map_plot
 import optuna 
@@ -31,6 +30,8 @@ acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
 ybeg  = 1998
 yend  = 2011
 optim = False
+calculate_som = True
+clustering = True
 
 ## Code options ---------------------------------------------------------------
 # acode   : use autoencoding to generate the training data
@@ -45,7 +46,7 @@ params = {'Roberts' :
                'dynamic' : False,
                'sigma' : 4.0,
                'learning_rate' : 0.1,
-               'init_method' : '2d',
+               'init_method' : 'random',
                'bottle_neck' : 3,
               },
           'Amaya' :
@@ -57,9 +58,9 @@ params = {'Roberts' :
                'batch size' : 32,
                'nepochs' : 100,
                'dynamic' : True,
-               'sigma' : 4.0,
-               'learning_rate' : 0.1,
-               'init_method' : '2d',
+               'sigma' : 5.0,
+               'learning_rate' : 0.25,
+               'init_method' : 'random',
                'bottle_neck' : 3,
               },
          }
@@ -169,14 +170,13 @@ data = addlogs(data, logcols)
     Data compression
     ----------------
 '''
+scaler = MinMaxScaler()
 
 raw = data[feat[case]].values
-
-scaler = MinMaxScaler()
 raw = scaler.fit_transform(raw)
 
 if acode:
-    nodes = [raw.shape[1], 7, bneck]
+    nodes = [raw.shape[1], 13, 7, bneck]
     ae = autoencoder(nodes)
     L = ae.fit(torch.Tensor(raw), batch_size, num_epochs)
     x = ae.encode(torch.Tensor(raw)).detach().numpy()
@@ -191,6 +191,26 @@ else:
         x = raw
 
 '''
+    ---------------------------------------
+    Perform classical clustering techniques
+    ---------------------------------------
+'''
+
+if clustering:
+    from sklearn import cluster, mixture
+    kms = cluster.MiniBatchKMeans(n_clusters=4)
+    spc = cluster.SpectralClustering(n_clusters=4, eigen_solver='arpack', affinity="nearest_neighbors")
+    gmm = mixture.GaussianMixture(n_components=4, covariance_type='full')
+    
+    y_kms = kms.fit_predict(x)
+    y_spc = spc.fit_predict(x)
+    y_gmm = gmm.fit_predict(x)
+    if acode and pca:
+        y_kms_pca = kms.fit_predict(xpca)
+        y_spc_pca = spc.fit_predict(xpca)
+        y_gmm_pca = gmm.fit_predict(xpca)
+
+'''
     -------------
     Train the SOM
     -------------
@@ -198,13 +218,16 @@ else:
 
 ## Hyperparameter optimization using optuna
 if optim:
+    from som import *
     def objective(trial):
-        m = trial.suggest_int('m', 5, 10)
-        n = trial.suggest_int('n', 5, 10)
-        lr = trial.suggest_uniform('lr', 0.1, 5.0)
-        sg = trial.suggest_uniform('sg', 0.1, 10.0)
-        som = selfomap(x, m, n, 10, sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
-        return som.quantization_error(x)
+        m = trial.suggest_int('m', 5, 12)
+        n = trial.suggest_int('n', 5, 12)
+        lr = trial.suggest_uniform('lr', 0.05, 1.0)
+        sg = trial.suggest_uniform('sg', 1.0, 10.0)
+        som = selfomap(x, m, n, 1000, sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
+        dist = som_distances(som)
+        print(" Mean distance: ", dist.mean())
+        return som.quantization_error(x) + dist.mean()
     
     study = optuna.create_study()
     study.optimize(objective, n_trials=100)
@@ -215,90 +238,82 @@ if optim:
     m  = study.best_params['m']
     n  = study.best_params['n']
 
-## Run the model
+if calculate_som:
+    from som import *
 
-## -- this are temporal for testing --
-maxiter=30000
-sg=8.0
-lr=0.5
-dynamic=True
-## -- end of temporal --
+    ## Run the model   
+    som = selfomap(x, m, n, maxiter, sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
+    
+    ## processing of the SOM
+    # dist : matrix of distances between map nodes
+    # hits : total hits for each one of the map nodes
+    # wmix : indices of the elements of x that hit each one of the map nodes
+    # W    : SOM weights
+    dist = som_distances(som)
+    hits = som_hits(som, x, m, n, log=True)
+    wmix = som.win_map_index(x)
+    W    = som.get_weights() 
+    
+    print(" Mean distance: ", dist.mean())
+    
+    '''
+        ----------------
+        Plot the results
+        ----------------
+    '''
+    
+    ## Switch on/off plots
+    plot_hitmap = False         # Plots the SOM hit map
+    plot_neighbors = True      # Plots lines connecting neighbors in the maps and feature space
+    plot_featurespace = True   # Plots the feature space
+    
+    ## Select the neighbour to visualize
+    if plot_neighbors:
+        px = 3
+        py = 5
+    
+    # plt.close('all')
 
-# som = selfomap(x, m, n, maxiter, sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
-
-## processing of the SOM
-# dist : matrix of distances between map nodes
-# hits : total hits for each one of the map nodes
-# wmix : indices of the elements of x that hit each one of the map nodes
-# W    : SOM weights
-dist = som_distances(som)
-hits = som_hits(som, x, m, n, log=True)
-wmix = som.win_map_index(x)
-W    = som.get_weights() 
-
-'''
-    ----------------
-    Plot the results
-    ----------------
-'''
-
-## Switch on/off plots
-plot_datacoverage = False  # Plots data coverage
-plot_hitmap = True         # Plots the SOM hit map
-plot_neighbors = True      # Plots lines connecting neighbors in the maps and feature space
-plot_featurespace = True   # Plots the feature space
-
-## Select the neighbour to visualize
-if plot_neighbors:
-    px = 3
-    py = 5
-
-plt.close('all')
-
-if plot_datacoverage:
-    plt.figure()
-    data[cols[0]].groupby(data.index.year).count().plot(kind="bar")
-
-if plot_hitmap:
     color = W.sum(axis=2)
     cmin = color.min() #np.min(x, axis=0)
     cmax = color.max() #np.max(x, axis=0)
     color = (color - cmin) / (cmax - cmin)
-    
-    size=hits # np.ones_like(hits)
-    
-    map_plot(dist, color, m, n, size=size, scale=5, cmap='autumn')
-    
-    if plot_neighbors:
-        f = lambda p, q: p-0.5 if (q%2 == 0) else p
         
-        i = f(px, py)
-        j = py
-        plt.plot([i,i+0.5], [j*0.75,j*0.75+0.75], 'k-')
-        plt.plot([i,i+1  ], [j*0.75,j*0.75     ], 'k-')
-        plt.plot([i,i+0.5], [j*0.75,j*0.75-0.75], 'k-')
-        plt.plot([i,i-0.5], [j*0.75,j*0.75-0.75], 'k-')
-        plt.plot([i,i-1  ], [j*0.75,j*0.75     ], 'k-')
-        plt.plot([i,i-0.5], [j*0.75,j*0.75+0.75], 'k-')
-
-if plot_featurespace:
-    plt.figure()
-    add_data = np.arange(m*n).reshape((m,n))
-    add_name = 'node'
-    finaldata = som_addinfo(som, data, x, add_data, add_name)
-    plt.hexbin(x[:,0], x[:,1], bins=None, gridsize=30, cmap='BuGn')    
-    plt.scatter(W[:,:,0].flatten(), W[:,:,1].flatten(), c=color.reshape((m*n)), cmap='autumn', s=50, marker='o', label='nodes')
+    if plot_hitmap:            
+        size=hits # np.ones_like(hits)
+        
+        map_plot(dist, color, m, n, size=size, scale=5, cmap='autumn')
+        
+        if plot_neighbors:
+            f = lambda p, q: p-0.5 if (q%2 == 0) else p
+            
+            i = f(px, py)
+            j = py
+            plt.plot([i,i+0.5], [j*0.75,j*0.75+0.75], 'k-')
+            plt.plot([i,i+1  ], [j*0.75,j*0.75     ], 'k-')
+            plt.plot([i,i+0.5], [j*0.75,j*0.75-0.75], 'k-')
+            plt.plot([i,i-0.5], [j*0.75,j*0.75-0.75], 'k-')
+            plt.plot([i,i-1  ], [j*0.75,j*0.75     ], 'k-')
+            plt.plot([i,i-0.5], [j*0.75,j*0.75+0.75], 'k-')
     
-    if plot_neighbors:
-        f = lambda p, q: p-1 if (q%2 == 0) else p
-        i = f(px, py)
-        j = py
-        plt.plot([W[px,py,0], W[i +1,j+1,0]], [W[px,py,1], W[i +1,j+1,1]], 'k-')
-        plt.plot([W[px,py,0], W[px+1,j+0,0]], [W[px,py,1], W[px+1,j+0,1]], 'k-')
-        plt.plot([W[px,py,0], W[i +1,j-1,0]], [W[px,py,1], W[i +1,j-1,1]], 'k-')
-        plt.plot([W[px,py,0], W[i +0,j-1,0]], [W[px,py,1], W[i +0,j-1,1]], 'k-')
-        plt.plot([W[px,py,0], W[px-1,j+0,0]], [W[px,py,1], W[px-1,j+0,1]], 'k-')
-        plt.plot([W[px,py,0], W[i +0,j+1,0]], [W[px,py,1], W[i +0,j+1,1]], 'k-')
+    if plot_featurespace:
+        plt.figure()
+        add_data = np.arange(m*n).reshape((m,n))
+        add_name = 'node'
+        finaldata = som_addinfo(som, data, x, add_data, add_name)
+        plt.hexbin(x[:,0], x[:,1], bins=None, gridsize=30, cmap='BuGn')    
+        plt.scatter(W[:,:,0].flatten(), W[:,:,1].flatten(), c=color.reshape((m*n)), cmap='autumn', s=50, marker='o', label='nodes')
+        
+        if plot_neighbors:
+            f = lambda p, q: p-1 if (q%2 == 0) else p
+            i = f(px, py)
+            j = py
+            plt.plot([W[px,py,0], W[i +1,j+1,0]], [W[px,py,1], W[i +1,j+1,1]], 'k-')
+            plt.plot([W[px,py,0], W[px+1,j+0,0]], [W[px,py,1], W[px+1,j+0,1]], 'k-')
+            plt.plot([W[px,py,0], W[i +1,j-1,0]], [W[px,py,1], W[i +1,j-1,1]], 'k-')
+            plt.plot([W[px,py,0], W[i +0,j-1,0]], [W[px,py,1], W[i +0,j-1,1]], 'k-')
+            plt.plot([W[px,py,0], W[px-1,j+0,0]], [W[px,py,1], W[px-1,j+0,1]], 'k-')
+            plt.plot([W[px,py,0], W[i +0,j+1,0]], [W[px,py,1], W[i +0,j+1,1]], 'k-')
 
 '''
     ------------------------
@@ -310,4 +325,5 @@ import paper_figures as pfig
 
 fig_path = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures'
 # pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
-pfig.fig_dimreduc(data, xpca, x, cmap='brg', fname=fig_path+'/dimreduc.png')
+pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
+pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')

@@ -31,7 +31,7 @@ def fig_datacoverage(data, cols, fname=None, latex=False):
         
 def fig_dimreduc(data, x1, x2, cmap='Set1', fname=None, latex=False):
     cmap = plt.cm.get_cmap(cmap, 5)
-    fig, ax = plt.subplots(2,6,figsize=(16,6),sharex='row', sharey='row')
+    fig, ax = plt.subplots(2,6,figsize=(16,6),sharex='none', sharey='none')
     alpha = 0.6
     size = 0.1
     
@@ -64,5 +64,46 @@ def fig_dimreduc(data, x1, x2, cmap='Set1', fname=None, latex=False):
     fig.subplots_adjust(right=0.9)
     cbar_ax = fig.add_axes([0.92, 0.11, 0.02, 0.77])
     fig.colorbar(sct, cax=cbar_ax, ticks=range(5))
+    if fname is not None:
+        plt.savefig(fname, bbox_inches='tight', transparent=True)
+        
+def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, cmap='Set1', fname=None, latex=False):
+    cmap = plt.cm.get_cmap(cmap, 5)
+    fig, ax = plt.subplots(3,4,figsize=(16,9),sharex='col', sharey='col')
+    alpha = 0.6
+    size = 0.1
+    
+    ax[0][0].scatter(x1[:,0], x1[:,1], c=y1, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    ax[0][1].scatter(x1[:,2], x1[:,1], c=y1, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    ax[1][0].scatter(x1[:,0], x1[:,1], c=y2, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    ax[1][1].scatter(x1[:,2], x1[:,1], c=y2, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    ax[2][0].scatter(x1[:,0], x1[:,1], c=y3, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    ax[2][1].scatter(x1[:,2], x1[:,1], c=y3, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    
+    ax[0][2].scatter(x2[:,0], x2[:,1], c=y4, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    ax[0][3].scatter(x2[:,2], x2[:,1], c=y4, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    ax[1][2].scatter(x2[:,0], x2[:,1], c=y5, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    ax[1][3].scatter(x2[:,2], x2[:,1], c=y5, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    ax[2][2].scatter(x2[:,0], x2[:,1], c=y6, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    sct = ax[2][3].scatter(x2[:,2], x2[:,1], c=y6, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    
+    ax[0][0].text(0.05, 0.9, 'a)', fontsize=11, transform=ax[0][0].transAxes)
+    ax[0][1].text(0.05, 0.9, 'b)', fontsize=11, transform=ax[0][1].transAxes)
+    ax[1][0].text(0.05, 0.9, 'c)', fontsize=11, transform=ax[1][0].transAxes)
+    ax[1][1].text(0.05, 0.9, 'd)', fontsize=11, transform=ax[1][1].transAxes)
+    ax[2][0].text(0.05, 0.9, 'e)', fontsize=11, transform=ax[2][0].transAxes)
+    ax[2][1].text(0.05, 0.9, 'f)', fontsize=11, transform=ax[2][1].transAxes)
+    
+    ax[0][2].text(0.05, 0.9, 'g)', fontsize=11, transform=ax[0][2].transAxes)
+    ax[0][3].text(0.05, 0.9, 'h)', fontsize=11, transform=ax[0][3].transAxes)
+    ax[1][2].text(0.05, 0.9, 'i)', fontsize=11, transform=ax[1][2].transAxes)
+    ax[1][3].text(0.05, 0.9, 'j)', fontsize=11, transform=ax[1][3].transAxes)
+    ax[2][2].text(0.05, 0.9, 'k)', fontsize=11, transform=ax[2][2].transAxes)
+    ax[2][3].text(0.05, 0.9, 'l)', fontsize=11, transform=ax[2][3].transAxes)
+    
+    fig.subplots_adjust(right=0.9)
+    cbar_ax = fig.add_axes([0.92, 0.11, 0.02, 0.77])
+    fig.colorbar(sct, cax=cbar_ax, ticks=range(5))
+    
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
