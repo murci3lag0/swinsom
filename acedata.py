@@ -261,23 +261,68 @@ if __name__ == "__main__":
     
     import matplotlib.pyplot as plt
     
-    cols = ['O7to6','FetoO','proton_temp','proton_density','C6to5','Bmag','x_dot_GSM','y_dot_GSM','z_dot_GSM','Bgsm_x','Bgsm_y','Bgsm_z']
+    cols = allacecols
     acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
     ybeg = 2010
     yend = 2011
     
     data, nulls = acedata(acedir, cols, ybeg, yend)
     
-    print(data.columns)
-    
-    xcols = ['sigmac','sigmar','Zhao_SW_type','Bgsm_z_min','Bgsm_z_max','Bgsm_z_range','Bgsm_z_acor','Sp','Va','Texp','Tratio','Xu_SW_type','log_C6to5','log_O7to6','log_FetoO','log_proton_density','log_sigmar','log_Tratio']
+    xcols = ['log_proton_speed',
+             'Sp',
+             'Va',
+             'Tratio',
+             'Texp',
+             'log_Sp',
+             'log_Va',
+             'log_Tratio',
+             'log_Bmag',
+             'Ma',
+             'sigmac',
+             'sigmar',
+             'proton_speed_range',
+             'proton_density_range',
+             'proton_density_range',
+             'proton_temp_range',
+             'Bgsm_x_range',
+             'Bgsm_y_range',
+             'Bgsm_z_range',
+             'Bmag_range',
+             'Bmag_acor',
+             'Bmag_mean',
+             'Bmag_std']
     data = aceaddextra(data, nulls, xcols=xcols, window=7, center=False)
         
     tdata = (data - data.min(axis=0))/(data.max(axis=0) - data.min(axis=0))
     
-    pcols = ['C6to5','log_C6to5','O7to6','log_O7to6','FetoO','log_FetoO','proton_speed','proton_temp','proton_density','log_proton_density','Bmag','Bgsm_x','Bgsm_y','Bgsm_z','log_Tratio','sigmac','sigmar']
+    pcols = ['O7to6',
+             'log_proton_speed',
+             'log_Sp',
+             'log_Va',
+             'log_Tratio',
+             'log_Bmag',
+             'proton_temp',
+             'proton_density',
+             'Ma',
+             'He4toprotons',
+             'FetoO',
+             'C6to5',
+             'avqFe',
+             'sigmac',
+             'sigmar',
+             'proton_speed_range',
+             'proton_density_range',
+             'proton_temp_range',
+             'Bgsm_x_range',
+             'Bgsm_y_range',
+             'Bgsm_z_range',
+             'Bmag_range',
+             'Bmag_acor',
+             'Bmag_mean',
+             'Bmag_std']
     tdata = np.array([tdata[c].values for c in pcols]).T
     plt.violinplot(tdata, showextrema=False)
     plt.boxplot(tdata, notch=True, showfliers=False, showmeans=True)
-    plt.xticks(range(1,len(pcols)+1), labels=pcols)
+    # plt.xticks(range(1,len(pcols)+1), labels=pcols)
+    plt.xticks(range(1,len(pcols)+1))
 

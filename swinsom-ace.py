@@ -24,12 +24,17 @@ from matplotlib_hex_map import matplotlib_hex_map as map_plot
 # acedir  : directory containing the hdf5 ACE data
 # ybeg    : year of start of the analysis
 # yend    : year of ending of the analysis
+#acedir = '/home/amaya/Data/ACE'
+#outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
 acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
-ybeg  = 2009
+outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
+# ybeg  = 2002
+# yend  = 2004
+ybeg  = 1998
 yend  = 2011
-optim = True
-calculate_som = True
-clustering = True
+optim = False
+calculate_som = False
+clustering = False
 
 ## Code options ---------------------------------------------------------------
 # acode   : use autoencoding to generate the training data
@@ -37,7 +42,9 @@ clustering = True
 case = 'Amaya'
 dynamic = True
 params = {'Roberts' :
-              {'autoencode' : False,
+              {'ybeg' : 2002,
+               'yend' : 2004,
+               'autoencode' : False,
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -49,7 +56,9 @@ params = {'Roberts' :
                'init_method' : 'rand_points',
                'bottle_neck' : 8,},
           'XuBorovsky' :
-              {'autoencode' : False,
+              {'ybeg' : 2002,
+               'yend' : 2004,
+               'autoencode' : False,
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -73,8 +82,8 @@ params = {'Roberts' :
                'init_method' : 'rand_points',
                'bottle_neck' : 3,},
           'Amaya' :
-              {'autoencode' : True,
-               'pca' : True,
+              {'autoencode' : False,
+               'pca' : False,
                'm' : 12,
                'n' : 12,
                'maxiter' : 50000,
@@ -100,6 +109,7 @@ xcols = ['sigmac',
          'Zhao_SW_type',
          'proton_speed_range',
          'proton_density_range',
+         'proton_temp_range',
          'Bgsm_x_range',
          'Bgsm_y_range',
          'Bgsm_z_range',
@@ -124,43 +134,48 @@ xcols = ['sigmac',
          'log_Texp',
          'log_Tratio']
 
-feat = {'Roberts' : ['log_proton_speed',
-                     'log_proton_density',
-                     'sigmac',
-                     'sigmar',
-                     'log_O7to6',
-                     'log_FetoO',
-                     'log_avqFe',
-                     'log_Bmag'],
-        'XuBorovsky' : ['log_Sp',
-                        'log_Va',
-                        'log_Tratio'],
-        'ZhaZuFi' : ['O7to6',
-                     'log_proton_speed'],
-        'Amaya' : ['proton_speed',
-                  'proton_temp',
-                  'proton_density',
-                  'Ma',
-                  'He4toprotons',
-                  'O7to6',
-                  'FetoO',
-                  'C6to5',
-                  'avqFe',
-                  'sigmac',
-                  'sigmar',
-                  'proton_speed_range',
-                  'proton_density_range',
-                  'proton_temp_range',
-                  'Bgsm_x_range',
-                  'Bgsm_y_range',
-                  'Bgsm_z_range',
-                  'Bmag_range',
-                  'Bmag_acor',
-                  'Bmag_mean',
-                  'Bmag_std',
-                  'log_Sp',
-                  'log_Va',
-                  'log_Tratio'],
+feat = {'Roberts' :
+            ['log_O7to6',
+             'log_proton_speed',
+             'log_proton_density',
+             'sigmac',
+             'sigmar',
+             'log_FetoO',
+             'log_avqFe',
+             'log_Bmag'],
+        'XuBorovsky' :
+            ['log_Sp',
+             'log_Va',
+             'log_Tratio'],
+        'ZhaZuFi' : 
+            ['O7to6',
+             'log_proton_speed'],
+        'Amaya' : 
+            ['O7to6',
+             'log_proton_speed',
+             'log_Sp',
+             'log_Va',
+             'log_Tratio',
+             'log_Bmag',
+             'proton_temp',
+             'proton_density',
+             'Ma',
+             'He4toprotons',
+             'FetoO',
+             'C6to5',
+             'avqFe',
+             'sigmac',
+             'sigmar',
+             'proton_speed_range',
+             'proton_density_range',
+             'proton_temp_range',
+             'Bgsm_x_range',
+             'Bgsm_y_range',
+             'Bgsm_z_range',
+             'Bmag_range',
+             'Bmag_acor',
+             'Bmag_mean',
+             'Bmag_std'],
        }
 
 
@@ -170,7 +185,6 @@ pca     = params[case]['pca']
 mmax    = params[case]['m']
 nmax    = params[case]['n']
 maxiter = params[case]['maxiter']
-dynamic = params[case]['dynamic']
 sg      = params[case]['sigma']
 lr      = params[case]['learning_rate']
 init    = params[case]['init_method']
@@ -186,6 +200,8 @@ if acode:
 
 ## Loading the data
 data, nulls = acedata(acedir, cols, ybeg, yend)
+if case=='Roberts':
+    data['2002-11','2004-05']
 print('Data set size after reading files:', len(data))
 data = aceaddextra(data, nulls, xcols=xcols, window='6H', center=False)
 print('Data set size after adding extras:', len(data))
@@ -290,11 +306,12 @@ if calculate_som:
     '''
     
     ## Switch on/off plots
-    plot_hitmap = True         # Plots the SOM hit map
-    plot_neighbors = True      # Plots lines connecting neighbors in the maps and feature space
-    plot_featurespace = True   # Plots the feature space
-    plot_components = True     # Plot maps of the three components
-    plot_features = True       # plot maps of the corresponding features
+    plot_hitmap = False         # Plots the SOM hit map
+    plot_neighbors = False      # Plots lines connecting neighbors in the maps and feature space
+    plot_featurespace = False   # Plots the feature space
+    plot_components = False     # Plot maps of the three components
+    plot_features = False       # plot maps of the corresponding features
+    plot_datamean = False
     
     ## Select the neighbour to visualize
     if plot_neighbors:
@@ -418,8 +435,9 @@ if calculate_som:
 
 import paper_figures as pfig
 
-fig_path = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures'
+# fig_path = outdir+case
 # pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
 # pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
 # pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
-pfig.fig_maps(m, n, som, x, data, 2, 4, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
+# pfig.fig_maps(m, n, som, x, data, 2, 4, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
+pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')

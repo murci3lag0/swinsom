@@ -221,3 +221,12 @@ def fig_maps(m, n, som, x, data, px, py, hits, dist, W, wmix, pcomp, scaler, fea
     
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
+        
+def fig_datarange(data, fname=None):
+    fig, ax = plt.subplots(1, 1, figsize=cm2inch((16,7)))
+    set_figure()
+    plt.violinplot(data, showextrema=False)
+    plt.boxplot(data, notch=True, showfliers=False, showmeans=True)
+    plt.xticks(range(1,data.shape[1]+1))
+    if fname is not None:
+        plt.savefig(fname, bbox_inches='tight', transparent=True)
