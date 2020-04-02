@@ -37,6 +37,14 @@ where $\epsilon(t)$ is the time dependent learning rate, eq.\eqref{eq:epsilon}, 
 
 This procedure places the code words in the data space $\Omega$ in such a way that neighboring nodes in the lattice are also neighbors in the data space. The lattice can be presented as a $q$-dimensional image, called map, where nodes sharing similar properties are organized in close proximity.
 
+The main metric for the evaluation of the performance of the SOM is called the quantization error:
+
+\begin{equation}
+Q_E = \frac{1}{M} \sum_{i=1}^M \left\lVert x_i - w_{x_i} \right\rVert
+\end{equation}
+
+where $M$, is the total number of entries in the data set.
+
 \paragraph{Dynamic Self-Organizing Maps}
 The time dependence of the SOM training allows the code words $\boldsymbol{w}_i$ to reach steady coordinates by slowing down their movement over the iterations. Due to the minimization of the distance in eq.\eqref{eq:winner} code words tend to agglomerate around high density zones of the feature space. The Dynamic Self-Organizim Maps (DSOM), introduced by \citep{Rougier2011}, eliminate the time dependence and allows to cover larger zones of the space outside of the high density regions.
 

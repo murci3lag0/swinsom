@@ -16,7 +16,7 @@
 %\documentclass[utf8]{frontiersFPHY} % for Physics and Applied Mathematics and Statistics articles
 
 %\setcitestyle{square} % for Physics and Applied Mathematics and Statistics articles
-\usepackage{url,hyperref,lineno,microtype,subcaption,booktabs,amssymb,amsmath}
+\usepackage{url,hyperref,lineno,microtype,subcaption,booktabs,amssymb,amsmath,multirow}
 \usepackage[onehalfspacing]{setspace}
 
 \linenumbers
@@ -155,6 +155,26 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 		\bottomrule
 	\end{tabular}
 	\caption{The four solar wind types, as defined by \citep{Zhao2009} (top) and \citep{Xu2015} (bottom).}
+	\label{tab:swtypes}
+\end{table}
+
+\begin{table}\centering
+	\begin{tabular}{@{}lcccc@{}}
+		\toprule
+		Method & $m$ & $n$ & $\epsilon$ & $\sigma$ or $\eta$ \\
+		\midrule
+		\multirow{4}{*}{SOM} & v1 & v2 \\
+						  	  & v3 & v4 \\
+						  	  & v3 & v4 \\
+						  	  & v3 & v4 \\
+		\midrule
+		\multirow{4}{*}{DSOM} & v1 & v2 \\
+							   & v3 & v4 \\
+							   & v3 & v4 \\	
+							   & v3 & v4 \\
+		\bottomrule
+	\end{tabular}
+	\caption{Selected hyper-parameters.}
 	\label{tab:swtypes}
 \end{table}
 

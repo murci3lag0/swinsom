@@ -240,6 +240,12 @@ def aceaddextra(data, nulls, xcols, window=5, center=False):
                 var = c[:-len(end)-1]
                 data[c] = data[var].rolling(window, center=center).apply(func, raw=False)
                 
+    for beg in ['log']:
+        for c in xcols:
+            if c.startswith(beg):
+                var = c[len(beg)+1:]
+                data[c] = np.log(data[var])
+                
     data = data.dropna(axis=0)
     
     #Appending new nulls using the mutable argument reference
@@ -249,11 +255,6 @@ def aceaddextra(data, nulls, xcols, window=5, center=False):
         else:
             nulls.loc[i] = -9999.9
     
-    return data
-
-def addlogs(data, cols):
-    for c in cols:
-        data['log_'+c] = np.log((data[c] - data[c].min()) + 1.0)
     return data
 
 if __name__ == "__main__":
@@ -269,14 +270,12 @@ if __name__ == "__main__":
     
     print(data.columns)
     
-    xcols = ['sigmac','sigmar','Zhao_SW_type','Bgsm_z_min','Bgsm_z_max','Bgsm_z_range','Bgsm_z_acor','Sp','Va','Texp','Tratio','Xu_SW_type']
+    xcols = ['sigmac','sigmar','Zhao_SW_type','Bgsm_z_min','Bgsm_z_max','Bgsm_z_range','Bgsm_z_acor','Sp','Va','Texp','Tratio','Xu_SW_type','log_C6to5','log_O7to6','log_FetoO','log_proton_density','log_sigmar','log_Tratio']
     data = aceaddextra(data, nulls, xcols=xcols, window=7, center=False)
-    
-    data = addlogs(data, ['C6to5','O7to6','FetoO','proton_density','sigmar','Tratio'])
-    
+        
     tdata = (data - data.min(axis=0))/(data.max(axis=0) - data.min(axis=0))
     
-    pcols = ['C6to5','log_C6to5','O7to6','log_O7to6','FetoO','log_FetoO','proton_speed','proton_temp','proton_density','log_proton_density','Bmag','Bgsm_x','Bgsm_y','Bgsm_z','log_Tratio','sigmac','sigmar','log_sigmar']
+    pcols = ['C6to5','log_C6to5','O7to6','log_O7to6','FetoO','log_FetoO','proton_speed','proton_temp','proton_density','log_proton_density','Bmag','Bgsm_x','Bgsm_y','Bgsm_z','log_Tratio','sigmac','sigmar']
     tdata = np.array([tdata[c].values for c in pcols]).T
     plt.violinplot(tdata, showextrema=False)
     plt.boxplot(tdata, notch=True, showfliers=False, showmeans=True)

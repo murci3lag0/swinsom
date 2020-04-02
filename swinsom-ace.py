@@ -18,8 +18,7 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler
 from acedata import *
-from matplotlib_hex_map import matplotlib_hex_map as map_plot
-import optuna 
+from matplotlib_hex_map import matplotlib_hex_map as map_plot 
 
 ## Seting up the path and range -----------------------------------------------
 # acedir  : directory containing the hdf5 ACE data
@@ -38,7 +37,7 @@ clustering = True
 case = 'Amaya'
 params = {'Roberts' :
               {'autoencode' : False,
-               'pca' : True,
+               'pca' : False,
                'm' : 7,
                'n' : 9,
                'maxiter' : 50000,
@@ -69,7 +68,6 @@ params = {'Roberts' :
 # xcols   : extra columns to add by additional processing. This will add columns
 #         to cols, as some of the values required to calculate the extra
 #         columns need to be loaded.
-# logcols : columns that need to be processed in log scale
 # feat    : Feature dictionary of the selected innputs for the training
 cols = allacecols
 xcols = ['sigmac',
@@ -90,19 +88,17 @@ xcols = ['sigmac',
          'Va',
          'Texp',
          'Tratio',
-         'Xu_SW_type']
-logcols = ['proton_speed',
-           'proton_density',
-           'sigmac',
-           'sigmar',
-           'O7to6',
-           'FetoO',
-           'avqFe',
-           'Bmag',
-           'Sp',
-           'Va',
-           'Texp',
-           'Tratio']
+         'Xu_SW_type',
+         'log_proton_speed',
+         'log_proton_density',
+         'log_O7to6',
+         'log_FetoO',
+         'log_avqFe',
+         'log_Bmag',
+         'log_Sp',
+         'log_Va',
+         'log_Texp',
+         'log_Tratio']
 
 feat = {'Roberts' : ['log_proton_speed',
                      'log_proton_density',
@@ -112,7 +108,12 @@ feat = {'Roberts' : ['log_proton_speed',
                      'log_FetoO',
                      'log_avqFe',
                      'log_Bmag'],
-       'Amaya' : ['proton_speed',
+        'XuBorovsky' : ['log_Sp',
+                        'log_Va',
+                        'log_Tratio'],
+        'ZhaZuFi' : ['O7to6',
+                     'proton_speed'],
+        'Amaya' : ['proton_speed',
                   'proton_temp',
                   'proton_density',
                   'Ma',
@@ -164,7 +165,6 @@ data, nulls = acedata(acedir, cols, ybeg, yend)
 print('Data set size after reading files:', len(data))
 data = aceaddextra(data, nulls, xcols=xcols, window='6H', center=False)
 print('Data set size after adding extras:', len(data))
-data = addlogs(data, logcols)
 
 '''
     ----------------
@@ -221,18 +221,19 @@ if clustering:
 ## Hyperparameter optimization using optuna
 if optim:
     from som import *
+    import optuna
     def objective(trial):
         m = trial.suggest_int('m', 5, 12)
         n = trial.suggest_int('n', 5, 12)
-        lr = trial.suggest_uniform('lr', 0.05, 1.0)
-        sg = trial.suggest_uniform('sg', 1.0, 10.0)
+        lr = trial.suggest_uniform('lr', 0.01, 1.0)
+        sg = trial.suggest_uniform('sg', 1.0, 6.0)
         som = selfomap(x, m, n, 1000, sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
         dist = som_distances(som)
         print(" Mean distance: ", dist.mean())
-        return som.quantization_error(x) + dist.mean()
+        return som.quantization_error(x) + dist.mean() + 0.05*sg
     
     study = optuna.create_study()
-    study.optimize(objective, n_trials=100)
+    study.optimize(objective, n_trials=200)
     
     ## Launch the model sing the optial hyperparameters
     lr = study.best_params['lr']
@@ -274,7 +275,7 @@ if calculate_som:
     ## Select the neighbour to visualize
     if plot_neighbors:
         px = 3
-        py = 5
+        py = 3
     
     # plt.close('all')
 
@@ -286,7 +287,8 @@ if calculate_som:
     if plot_hitmap:            
         size=hits # np.ones_like(hits)
         
-        map_plot(dist, color, m, n, size=size, scale=8, cmap='inferno_r', lcolor='black')
+        fig, ax = plt.subplots(1,1)
+        map_plot(ax, dist, color, m, n, size=size, scale=8, cmap='inferno_r', lcolor='black')
         plt.title('Hit map')
         
         if plot_neighbors:
@@ -328,7 +330,8 @@ if calculate_som:
         cmin  = color.min()
         cmax  = color.max()
         color = (color - cmin) / (cmax - cmin)
-        map_plot(dist, color, m, n, size=size, scale=8, cmap='inferno_r')
+        fig, ax = plt.subplots(1,1)
+        map_plot(ax, dist, color, m, n, size=size, scale=8, cmap='inferno_r')
         plt.title('Components')
         
         for i in range(3):
@@ -336,7 +339,8 @@ if calculate_som:
             cmin  = color.min()
             cmax  = color.max()
             color = (color - cmin) / (cmax - cmin)
-            map_plot(dist, color, m, n, size=size, scale=8, cmap='inferno_r')
+            fig, ax = plt.subplots(1,1)
+            map_plot(ax, dist, color, m, n, size=size, scale=8, cmap='inferno_r')
             plt.title('Component '+str(i))
     
     def plt_features(ftr_name):
@@ -356,7 +360,7 @@ if calculate_som:
         color = (color - cmin) / (cmax - cmin)
     
         fig, ax = plt.subplots(1,1)
-        map_plot(ax, dist, color, m, n, size=size, scale=8, cmap=cmap)
+        map_plot(ax, dist, color, m, n, size=size, scale=8, cmap='inferno_r')
         plt.title(ftr_name)
              
     if plot_features:
