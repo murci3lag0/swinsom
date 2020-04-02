@@ -10,12 +10,14 @@ class autoencoder(nn.Module):
         self.encoder = nn.Sequential()        
         for i in range(1,len(nodes)-1):
             self.encoder.add_module("linear_"+str(i), nn.Linear(nodes[i-1], nodes[i]))
+            self.encoder.add_module("bnorm_"+str(i), nn.BatchNorm1d(nodes[i]))
             self.encoder.add_module("relu_"+str(i), nn.ReLU(True))
         self.encoder.add_module("linear", nn.Linear(nodes[-2], nodes[-1]))
 
         self.decoder = nn.Sequential()
         for i in reversed(range(2,len(nodes))):
             self.decoder.add_module("linear_"+str(i), nn.Linear(nodes[i], nodes[i-1]))
+            self.decoder.add_module("bnorm_"+str(i), nn.BatchNorm1d(nodes[i-1]))
             self.decoder.add_module("relu_"+str(i), nn.ReLU(True))
         self.decoder.add_module("linear", nn.Linear(nodes[1], nodes[0]))
         self.decoder.add_module("tanh", nn.Tanh())
@@ -36,34 +38,50 @@ class autoencoder(nn.Module):
         return x
 
     def fit(self, dataset, batch_size, num_epochs, learning_rate=0.001):
-        dataloader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
+        ntrain = int(0.5*len(dataset))
+        print("Training points: ", ntrain)
+        print("Testing  points: ", len(dataset)-ntrain)
+        train_set, test_set = torch.utils.data.random_split(dataset, [ntrain, len(dataset)-ntrain])
+        dataloader = DataLoader(dataset=train_set, batch_size=batch_size, shuffle=True)      
+        testloader = DataLoader(dataset=test_set, batch_size=batch_size, shuffle=False)
         print("Training the following autoencoder:")
         print(self)
         criterion = nn.MSELoss()
         optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate, weight_decay=1e-4)
             
         L = []
+        T = []
         print("Training ...")
         for epoch in range(num_epochs):
             running_loss = 0
-            for i, data in enumerate(dataloader):
-                img = data
-                img = img.view(img.size(0), -1)
+            for x in dataloader:
+                x = x.view(x.size(0), -1)
                 
-                output = self(img)
-                loss = criterion(output, img)
+                output = self(x)
+                loss = criterion(output, x)
                 
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
                 
                 running_loss += loss.item()
-            else:
                 loss = running_loss / len(dataloader)
-                L.append(loss)
-                print("Epoch = {} : Loss = {}".format(epoch, loss))
+
+            runing_test = 0
+            for x in testloader:
+                x = x.view(x.size(0), -1)
                 
-        return L
+                output = self(x)
+                test = criterion(output, x)
+                                    
+                runing_test += test.item()
+                test = runing_test / len(testloader)
+                
+            L.append(loss)
+            T.append(test)
+            print("Epoch = {} : Loss = {} : Test = {}".format(epoch, loss, test))
+                
+        return L, T
             
 if __name__ == "__main__":
     from torchvision.datasets import MNIST

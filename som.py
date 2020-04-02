@@ -80,10 +80,9 @@ class altersom(MiniSom):
         d = np.sqrt(D/self._max)
         sig = self._sigma * d[win]
         eta = self._learning_rate * d
-        if np.any(np.abs((x-self._weights).sum(axis=2).reshape(-1).min()) > self._min_dist):
-            g = self.neighborhood(win, sig+1e-7)*eta
-            # w_new = eta * neighborhood_function * (x-w)
-            self._weights += np.einsum('ij, ijk->ijk', g, x-self._weights)
+        g = self.neighborhood(win, sig+1e-10)*eta
+        # w_new = eta * neighborhood_function * (x-w)
+        self._weights += np.einsum('ij, ijk->ijk', g, x-self._weights)
     
     def win_map_index(self, data):
         """Returns a dictionary wm where wm[(i,j)] is the index of

@@ -8,6 +8,9 @@ Created on Mon Mar 30 08:04:29 2020
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+from matplotlib_hex_map import matplotlib_hex_map as map_plot
+import numpy as np
+from som import *
 
 def set_figure(size, latex=False):
     plt.rcParams.update({'font.size': 11})
@@ -39,14 +42,14 @@ def fig_dimreduc(data, x1, x2, cmap='Set1', fname=None, latex=False):
     ax[0][1].scatter(x1[:,2], x1[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     ax[0][2].scatter(x1[:,0], x1[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     ax[0][3].scatter(x1[:,2], x1[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[0][4].hist2d (x1[:,0], x1[:,1], bins=50, cmap='magma_r', norm=mcolors.PowerNorm(0.75))
-    ax[0][5].hist2d (x1[:,2], x1[:,1], bins=50, cmap='magma_r', norm=mcolors.PowerNorm(0.75))
+    ax[0][4].hist2d (x1[:,0], x1[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.75))
+    ax[0][5].hist2d (x1[:,2], x1[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.75))
     ax[1][0].scatter(x2[:,0], x2[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     ax[1][1].scatter(x2[:,2], x2[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     ax[1][2].scatter(x2[:,0], x2[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     sct = ax[1][3].scatter(x2[:,2], x2[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[1][4].hist2d (x2[:,0], x2[:,1], bins=50, cmap='magma_r', norm=mcolors.PowerNorm(0.75))
-    ax[1][5].hist2d (x2[:,2], x2[:,1], bins=50, cmap='magma_r', norm=mcolors.PowerNorm(0.75))
+    ax[1][4].hist2d (x2[:,0], x2[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.75))
+    ax[1][5].hist2d (x2[:,2], x2[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.75))
 
     ax[0][0].text(0.05, 0.9, 'a)', fontsize=11, transform=ax[0][0].transAxes)
     ax[0][1].text(0.05, 0.9, 'b)', fontsize=11, transform=ax[0][1].transAxes)
@@ -107,3 +110,52 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, cmap='Set1', fname=None
     
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
+        
+def fig_maps(m, n, som, x, data, px, py, hits, dist, W, pcomp, scaler):
+    fig, ax = plt.subplots(2,2)
+    
+    #-- Histogram plot in [0,0]
+    color = W.sum(axis=2)
+    cmin = color.min() #np.min(x, axis=0)
+    cmax = color.max() #np.max(x, axis=0)
+    color = (color - cmin) / (cmax - cmin)
+
+    # add_data = np.arange(m*n).reshape((m,n))
+    # add_name = 'node'
+    # hbin = ax[0][0].hexbin(x[:,0], x[:,1], bins='log', gridsize=30, cmap='BuGn')  
+    # ax[0][0].scatter(W[:,:,0].flatten(), W[:,:,1].flatten(), c=color.reshape((m*n)), cmap='inferno_r', s=30, marker='o', label='nodes')
+    
+    # f = lambda p, q: p-1 if (q%2 == 0) else p
+    # i = f(px, py)
+    # j = py
+    # ax[0][0].plot([W[px,py,0], W[i +1,j+1,0]], [W[px,py,1], W[i +1,j+1,1]], 'k-', lw=2)
+    # ax[0][0].plot([W[px,py,0], W[px+1,j+0,0]], [W[px,py,1], W[px+1,j+0,1]], 'k-', lw=2)
+    # ax[0][0].plot([W[px,py,0], W[i +1,j-1,0]], [W[px,py,1], W[i +1,j-1,1]], 'k-', lw=2)
+    # ax[0][0].plot([W[px,py,0], W[i +0,j-1,0]], [W[px,py,1], W[i +0,j-1,1]], 'k-', lw=2)
+    # ax[0][0].plot([W[px,py,0], W[px-1,j+0,0]], [W[px,py,1], W[px-1,j+0,1]], 'k-', lw=2)
+    # ax[0][0].plot([W[px,py,0], W[i +0,j+1,0]], [W[px,py,1], W[i +0,j+1,1]], 'k-', lw=2)
+    
+    #-- hit map in [0,1]
+    size=hits # np.ones_like(hits)
+    
+    map_plot(ax[0][1], dist, color, m, n, size=size, scale=8, cmap='inferno_r', lcolor='black')
+    ax[0][1].set_aspect('equal')
+    ax[0][1].set_xlim(xmin=-1, xmax=m-0.5)
+    ax[0][1].set_ylim(ymin=-0.5, ymax=n*0.75-0.25)
+    plt.autoscale()
+    
+    # if plot_neighbors:
+    #     f = lambda p, q: p-0.5 if (q%2 == 0) else p
+        
+    #     i = f(px, py)
+    #     j = py
+    #     plt.plot([i,i+0.5], [j*0.75,j*0.75+0.75], 'k-')
+    #     plt.plot([i,i+1  ], [j*0.75,j*0.75     ], 'k-')
+    #     plt.plot([i,i+0.5], [j*0.75,j*0.75-0.75], 'k-')
+    #     plt.plot([i,i-0.5], [j*0.75,j*0.75-0.75], 'k-')
+    #     plt.plot([i,i-1  ], [j*0.75,j*0.75     ], 'k-')
+    #     plt.plot([i,i-0.5], [j*0.75,j*0.75+0.75], 'k-')  
+        
+    # plt.tight_layout()
+
+    

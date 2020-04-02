@@ -18,7 +18,6 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler
 from acedata import *
-from autoencoder import autoencoder
 from matplotlib_hex_map import matplotlib_hex_map as map_plot
 import optuna 
 
@@ -56,7 +55,7 @@ params = {'Roberts' :
                'n' : 9,
                'maxiter' : 50000,
                'batch size' : 32,
-               'nepochs' : 100,
+               'nepochs' : 30,
                'dynamic' : True,
                'sigma' : 5.0,
                'learning_rate' : 0.25,
@@ -121,6 +120,7 @@ feat = {'Roberts' : ['log_proton_speed',
                   'O7to6',
                   'FetoO',
                   'C6to5',
+                  'avqFe',
                   'sigmac',
                   'sigmar',
                   'proton_speed_range',
@@ -150,6 +150,7 @@ sg      = params[case]['sigma']
 lr      = params[case]['learning_rate']
 init    = params[case]['init_method']
 bneck   = params[case]['bottle_neck']
+nfeat   = len(feat[case])
 
 if not dynamic:
     sg = min(sg, int(max(m,n)/2))
@@ -176,9 +177,10 @@ raw = data[feat[case]].values
 raw = scaler.fit_transform(raw)
 
 if acode:
+    from autoencoder import autoencoder
     nodes = [raw.shape[1], 13, 7, bneck]
     ae = autoencoder(nodes)
-    L = ae.fit(torch.Tensor(raw), batch_size, num_epochs)
+    L, T = ae.fit(torch.Tensor(raw), batch_size, num_epochs)
     x = ae.encode(torch.Tensor(raw)).detach().numpy()
     if pca:
         pcomp = PCA(n_components=bneck, whiten=True)
@@ -263,9 +265,11 @@ if calculate_som:
     '''
     
     ## Switch on/off plots
-    plot_hitmap = False         # Plots the SOM hit map
+    plot_hitmap = True         # Plots the SOM hit map
     plot_neighbors = True      # Plots lines connecting neighbors in the maps and feature space
     plot_featurespace = True   # Plots the feature space
+    plot_components = True     # Plot maps of the three components
+    plot_features = True       # plot maps of the corresponding features
     
     ## Select the neighbour to visualize
     if plot_neighbors:
@@ -282,7 +286,8 @@ if calculate_som:
     if plot_hitmap:            
         size=hits # np.ones_like(hits)
         
-        map_plot(dist, color, m, n, size=size, scale=5, cmap='autumn')
+        map_plot(dist, color, m, n, size=size, scale=8, cmap='inferno_r', lcolor='black')
+        plt.title('Hit map')
         
         if plot_neighbors:
             f = lambda p, q: p-0.5 if (q%2 == 0) else p
@@ -301,8 +306,10 @@ if calculate_som:
         add_data = np.arange(m*n).reshape((m,n))
         add_name = 'node'
         finaldata = som_addinfo(som, data, x, add_data, add_name)
-        plt.hexbin(x[:,0], x[:,1], bins=None, gridsize=30, cmap='BuGn')    
-        plt.scatter(W[:,:,0].flatten(), W[:,:,1].flatten(), c=color.reshape((m*n)), cmap='autumn', s=50, marker='o', label='nodes')
+        hbin = plt.hexbin(x[:,0], x[:,1], bins='log', gridsize=30, cmap='BuGn')  
+        plt.colorbar(hbin)
+        plt.scatter(W[:,:,0].flatten(), W[:,:,1].flatten(), c=color.reshape((m*n)), cmap='inferno_r', s=50, marker='o', label='nodes')
+        plt.title('Code words')
         
         if plot_neighbors:
             f = lambda p, q: p-1 if (q%2 == 0) else p
@@ -314,6 +321,47 @@ if calculate_som:
             plt.plot([W[px,py,0], W[i +0,j-1,0]], [W[px,py,1], W[i +0,j-1,1]], 'k-')
             plt.plot([W[px,py,0], W[px-1,j+0,0]], [W[px,py,1], W[px-1,j+0,1]], 'k-')
             plt.plot([W[px,py,0], W[i +0,j+1,0]], [W[px,py,1], W[i +0,j+1,1]], 'k-')
+            
+    if plot_components:
+        size  = np.ones_like(hits)
+        color = W
+        cmin  = color.min()
+        cmax  = color.max()
+        color = (color - cmin) / (cmax - cmin)
+        map_plot(dist, color, m, n, size=size, scale=8, cmap='inferno_r')
+        plt.title('Components')
+        
+        for i in range(3):
+            color = W[:,:,i]
+            cmin  = color.min()
+            cmax  = color.max()
+            color = (color - cmin) / (cmax - cmin)
+            map_plot(dist, color, m, n, size=size, scale=8, cmap='inferno_r')
+            plt.title('Component '+str(i))
+    
+    def plt_features(ftr_name):
+        ftr = feat[case].index(ftr_name)
+        size=np.ones_like(hits)
+        WW = W.reshape(m*n, bneck)
+        if pca and not acode:
+            WW = pcomp.inverse_transform(WW)
+        if acode:
+            WW = ae.decode(torch.Tensor(WW)).detach().numpy()
+        WW = scaler.inverse_transform(WW)
+        WW = WW.reshape(m, n, nfeat)
+        
+        color = WW[:,:,ftr]
+        cmin = color.min()
+        cmax = color.max()
+        color = (color - cmin) / (cmax - cmin)
+    
+        map_plot(dist, color, m, n, size=size, scale=8, cmap='inferno_r')
+        plt.title(ftr_name)
+        
+    if plot_features:
+        plt_features('proton_speed')
+        plt_features('O7to6')
+        
 
 '''
     ------------------------
@@ -325,5 +373,6 @@ import paper_figures as pfig
 
 fig_path = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures'
 # pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
-pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
-pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
+# pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
+# pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
+pfig.fig_maps(m, n, som, x, data, px, py, hits, dist, W, pcomp, scaler)

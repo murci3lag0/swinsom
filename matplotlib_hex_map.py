@@ -11,7 +11,7 @@ import matplotlib.lines as lines
 import matplotlib.patches as patches
 import numpy as np
 
-def add_matplotlib_hexagon(fig, ax, xc, yc, width, color=None, cmap=None, cmin=0, cmax=1, size=1.0, r=1.0, scale=1.0):
+def add_matplotlib_hexagon(ax, xc, yc, width, color=None, alpha=1.0, lcolor='black', cmap=None, cmin=0, cmax=1, size=1.0, r=1.0, scale=1.0):
 
     assert(len(width)==6)
 
@@ -36,7 +36,7 @@ def add_matplotlib_hexagon(fig, ax, xc, yc, width, color=None, cmap=None, cmin=0
    
     for i in range(6):
         line = lines.Line2D([x0[i],x1[i]], [y0[i],y1[i]],
-                            lw=5*width[i]**scale, color='black', axes=ax, alpha=width[i])
+                            lw=5*width[i]**scale, color=lcolor, axes=ax, alpha=width[i])
         ax.add_line(line)
     
     assert(size<=1.0 and size>=0)
@@ -47,10 +47,11 @@ def add_matplotlib_hexagon(fig, ax, xc, yc, width, color=None, cmap=None, cmin=0
         ls=None,
         lw=0.0,
         closed=True,
-        color=fcolor)
+        color=fcolor,
+        alpha=alpha)
     ax.add_patch(polygon) 
         
-    return fig, ax
+    return ax
 
 
 def som_hexmesh(x, y, r=0.5):
@@ -60,46 +61,57 @@ def som_hexmesh(x, y, r=0.5):
     xx[::2] -= r
     return xx, yy
 
-def matplotlib_hex_map(d, color, som_m, som_n, size=None, r=0.5, scale=1.0, cmap=None, title=None, colorbar=False, axecolor='w', cbmin=0.0, cbmax=1.0, savefig=False, filename='fig.png'):
+def matplotlib_hex_map(ax, d, color, som_m, som_n, size=None, lcolor='white', alpha=None, r=0.5, scale=1.0, cmap=None, title=None, colorbar=False, axecolor='w', cbmin=0.0, cbmax=1.0, savefig=False, filename='fig.png'):
     xx, yy = som_hexmesh(range(som_m), range(som_n), r=0.5)
     matplotlib.rcParams.update({'font.size': 20})
-    fig, ax = plt.subplots()
+    x0, y0, W, H = ax.get_position().bounds
+    # fig, ax = plt.subplots()
     dmin = d[d.nonzero()].min()
     dmax = d.max()
     d[d==0] = dmin
     d = (d - dmin)/(dmax-dmin)
+    
     if cmap is None:
         cmap = plt.cm.get_cmap('jet')
     else:
         cmap = plt.cm.get_cmap(cmap)
+    if alpha is None:
+        alpha = np.ones((som_m,som_n))
+
     for i in range(som_m):
         for j in range(som_n):
-            fig, ax = add_matplotlib_hexagon(fig, ax,
+            ax = add_matplotlib_hexagon(ax,
                                              xx[j,i],
                                              yy[j,i],
                                              d[i,j],
                                              color=color[i,j],
+                                             lcolor=lcolor,
+                                             alpha=alpha[i,j],
                                              cmap=cmap,
                                              size=size[i,j],
                                              r=r,
                                              scale=scale)
-    if colorbar:
-        norm = matplotlib.colors.Normalize(vmin=cbmin,vmax=cbmax)
-        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-        sm.set_array([])
-        plt.colorbar(sm)
-    ax.axis('off')
+    # if colorbar:
+    #     norm = matplotlib.colors.Normalize(vmin=cbmin,vmax=cbmax)
+    #     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    #     sm.set_array([])
+    #     plt.colorbar(sm)
     ax.set_aspect('equal')
-    ax.set_facecolor(axecolor)
-    plt.title(title)
-    plt.autoscale()
-    if savefig:
-        plt.savefig(filename, bbox_inches='tight', transparent=True)
-    plt.show()
+    ax.set_xlim(xmin=-1, xmax=som_m-0.5)
+    ax.set_ylim(ymin=-0.5, ymax=som_n*0.75-0.25)
+    ax.axis('off')
+    # ax.set_aspect('equal')
+    # ax.set_facecolor(axecolor)
+    # plt.title(title)
+    # plt.autoscale()
+    # if savefig:
+    #     plt.savefig(filename, bbox_inches='tight', transparent=True)
+    # plt.show()
+    return ax
     
 def hex_map_test(x, y, color=[[0.7]], cmin=0, cmax=1, size=1.0, r=0.5, axecolor='w'):
-    fig, ax = plt.subplots()
-    ax.set_facecolor(axecolor)
+    fig, ax = plt.subplots(2,2)
+    ax[1][0].set_facecolor(axecolor)
     d = np.array([0.1,0.3,0.5,0.7,0.9,1.0])
     dmin = d[d.nonzero()].min()
     dmax = d.max()
@@ -107,7 +119,7 @@ def hex_map_test(x, y, color=[[0.7]], cmin=0, cmax=1, size=1.0, r=0.5, axecolor=
     d = (d - dmin)/(dmax-dmin)
     cmap = plt.cm.get_cmap()
     for i in range(len(x)):
-        fig, ax = add_matplotlib_hexagon(fig, ax, y[i], x[i],
+        ax[1][0] = add_matplotlib_hexagon(ax[1][0], y[i], x[i],
                                          d,
                                          color=color[i],
                                          cmap=cmap,
@@ -119,8 +131,7 @@ def hex_map_test(x, y, color=[[0.7]], cmin=0, cmax=1, size=1.0, r=0.5, axecolor=
     norm = matplotlib.colors.Normalize(vmin=np.array(color).min(),vmax=np.array(color).max())
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
-    ax.set_aspect('equal')
-    plt.colorbar(sm)
+    ax[1][0].set_aspect('equal')
     plt.autoscale()
     plt.show()
     
