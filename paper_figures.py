@@ -26,7 +26,7 @@ def set_figure():
     plt.rc('font', family='serif')
    
 def fig_datacoverage(data, cols, fname=None):    
-    fig, ax = plt.subplots(1, 1, figzise=(4,3))
+    fig, ax = plt.subplots(1, 1, figsize=(4,3))
     set_figure()
     ax.set_xlabel('Year')
     ax.set_ylabel('Number of entries')
@@ -115,7 +115,7 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, cmap='Set1', fname=None
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
-def fig_maps(m, n, som, x, data, px, py, hits, dist, W, wmix, pcomp, scaler, feat, fname=None):
+def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, pcomp, scaler, feat, fname=None):
     fig, ax = plt.subplots(2 , 4, figsize=cm2inch((16,7)))
     set_figure()
     
@@ -162,10 +162,9 @@ def fig_maps(m, n, som, x, data, px, py, hits, dist, W, wmix, pcomp, scaler, fea
     ax[0][1].plot([i,i-0.5], [j*0.75,j*0.75+0.75], 'r-', lw=2) 
             
     #-- Oxygen ratio in [0,2]
-    ftr_name = 'O7to6'
     ftr = feat.index(ftr_name)
     size=np.ones_like(hits)
-    WW = W.reshape(m*n, 3)
+    WW = W.reshape(m*n, -1)
     WW = pcomp.inverse_transform(WW)
     WW = scaler.inverse_transform(WW)
     WW = WW.reshape(m, n, len(feat))
@@ -200,7 +199,7 @@ def fig_maps(m, n, som, x, data, px, py, hits, dist, W, wmix, pcomp, scaler, fea
 
     #-- Three components in row [1,0:3]
     size  = np.ones_like(hits)
-    color = W
+    color = W[:,:,:3]
     cmin  = color.min()
     cmax  = color.max()
     color = (color - cmin) / (cmax - cmin)
