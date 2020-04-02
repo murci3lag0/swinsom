@@ -23,10 +23,10 @@ from matplotlib_hex_map import matplotlib_hex_map as map_plot
 ## Seting up the path and range -----------------------------------------------
 # acedir : directory containing the hdf5 ACE data
 # outdir : figure output directory
-acedir = '/home/amaya/Data/ACE'
-outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
-# acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
-# outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
+# acedir = '/home/amaya/Data/ACE'
+# outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
+acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
+outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
 optim = True
 calculate_som = True
 clustering = True
@@ -39,7 +39,7 @@ dynamic = True
 params = {'Roberts' :
               {'ybeg' : 2002,
                'yend' : 2004,
-               'autoencode' : False,
+               'autoencode' : True,
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -53,7 +53,7 @@ params = {'Roberts' :
           'XuBorovsky' :
               {'ybeg' : 1998,
                'yend' : 2008,
-               'autoencode' : False,
+               'autoencode' : True,
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -67,7 +67,7 @@ params = {'Roberts' :
           'ZhaZuFi' :
               {'ybeg' : 1998,
                'yend' : 2008,
-               'autoencode' : False,
+               'autoencode' : True,
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -315,6 +315,17 @@ if calculate_som:
     print(" Mean distance: ", dist.mean())
     
     '''
+        ---------------------
+        Cluster the SOM nodes
+        ---------------------
+    '''
+    from sklearn import cluster
+    C1 = cluster.DBSCAN(eps=1, min_samples=4).fit(W.reshape(m*n,-1))
+    C1 = np.array(C1.labels_)
+    C1 = C1.reshape((m,n))
+    
+    
+    '''
         ----------------
         Plot the results
         ----------------
@@ -327,6 +338,7 @@ if calculate_som:
     plot_components = False     # Plot maps of the three components
     plot_features = False       # plot maps of the corresponding features
     plot_datamean = False
+    plot_somclustering = False
     
     ## Select the neighbour to visualize
     if plot_neighbors:
@@ -441,6 +453,17 @@ if calculate_som:
         plt_mapdatamean('Xu_SW_type')
         plt_mapdatamean('Zhao_SW_type')
         
+    if plot_somclustering:
+        color = C1
+        cmin = color.min()
+        cmax = color.max()
+        color = (color - cmin) / (cmax - cmin)
+    
+        fig, ax = plt.subplots(1,1)
+        cmap = plt.cm.get_cmap('jet_r', 5)
+        map_plot(ax, dist, color, m, n, size=size, scale=6, cmap=cmap, lcolor='black')
+        plt.title(ftr_name)
+        
 
 '''
     ------------------------
@@ -450,9 +473,9 @@ if calculate_som:
 
 import paper_figures as pfig
 
-# fig_path = outdir+case
+fig_path = outdir+case
 # pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
-# pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
-# pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
-pfig.fig_maps(m, n, som, x, data, feat[case][0], 2, 4, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
+pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
+pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
+pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
 pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')

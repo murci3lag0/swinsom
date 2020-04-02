@@ -36,7 +36,7 @@ def fig_datacoverage(data, cols, fname=None):
         
 def fig_dimreduc(data, x1, x2, cmap='Set1', fname=None):
     cmap = plt.cm.get_cmap(cmap, 5)
-    fig, ax = plt.subplots(2,6, figsize=cm2inch((16,6)), sharex='none', sharey='none')
+    fig, ax = plt.subplots(2,6, figsize=cm2inch((16,6)), sharex='none', sharey='row')
     set_figure()
     alpha = 0.6
     size = 0.1
@@ -45,14 +45,14 @@ def fig_dimreduc(data, x1, x2, cmap='Set1', fname=None):
     ax[0][1].scatter(x1[:,2], x1[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     ax[0][2].scatter(x1[:,0], x1[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     ax[0][3].scatter(x1[:,2], x1[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[0][4].hist2d (x1[:,0], x1[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.75))
-    ax[0][5].hist2d (x1[:,2], x1[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.75))
+    ax[0][4].hist2d (x1[:,0], x1[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.3))
+    ax[0][5].hist2d (x1[:,2], x1[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.3))
     ax[1][0].scatter(x2[:,0], x2[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     ax[1][1].scatter(x2[:,2], x2[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     ax[1][2].scatter(x2[:,0], x2[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     sct = ax[1][3].scatter(x2[:,2], x2[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[1][4].hist2d (x2[:,0], x2[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.75))
-    ax[1][5].hist2d (x2[:,2], x2[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.75))
+    ax[1][4].hist2d (x2[:,0], x2[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.3))
+    hst = ax[1][5].hist2d (x2[:,2], x2[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.3))
 
     ax[0][0].text(0.05, 0.9, 'a)', fontsize=11, transform=ax[0][0].transAxes)
     ax[0][1].text(0.05, 0.9, 'b)', fontsize=11, transform=ax[0][1].transAxes)
@@ -67,9 +67,12 @@ def fig_dimreduc(data, x1, x2, cmap='Set1', fname=None):
     ax[1][4].text(0.05, 0.9, 'k)', fontsize=11, transform=ax[1][4].transAxes)
     ax[1][5].text(0.05, 0.9, 'l)', fontsize=11, transform=ax[1][5].transAxes)
     
-    fig.subplots_adjust(right=0.9)
-    cbar_ax = fig.add_axes([0.92, 0.11, 0.02, 0.77])
-    fig.colorbar(sct, cax=cbar_ax, ticks=range(5))
+    fig.subplots_adjust(right=0.9, left=0.1)
+    cbar1 = fig.add_axes([0.04, 0.11, 0.02, 0.77])
+    fig.colorbar(sct, cax=cbar1, ticks=range(5))
+    cbar1.yaxis.set_ticks_position('left')
+    cbar2 = fig.add_axes([0.92, 0.11, 0.02, 0.77])
+    fig.colorbar(hst[3], cax=cbar2)
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
