@@ -21,17 +21,12 @@ from acedata import *
 from matplotlib_hex_map import matplotlib_hex_map as map_plot 
 
 ## Seting up the path and range -----------------------------------------------
-# acedir  : directory containing the hdf5 ACE data
-# ybeg    : year of start of the analysis
-# yend    : year of ending of the analysis
+# acedir : directory containing the hdf5 ACE data
+# outdir : figure output directory
 acedir = '/home/amaya/Data/ACE'
 outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
 # acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
 # outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
-# ybeg  = 2002
-# yend  = 2004
-ybeg  = 1998
-yend  = 2011
 optim = True
 calculate_som = True
 clustering = True
@@ -39,7 +34,7 @@ clustering = True
 ## Code options ---------------------------------------------------------------
 # acode   : use autoencoding to generate the training data
 # case    : selection of features from the available options in the dict
-case = 'Amaya'
+case = 'Roberts'
 dynamic = True
 params = {'Roberts' :
               {'ybeg' : 2002,
@@ -56,8 +51,8 @@ params = {'Roberts' :
                'init_method' : 'rand_points',
                'bottle_neck' : 8,},
           'XuBorovsky' :
-              {'ybeg' : 2002,
-               'yend' : 2004,
+              {'ybeg' : 1998,
+               'yend' : 2008,
                'autoencode' : False,
                'pca' : True,
                'm' : 12,
@@ -70,7 +65,9 @@ params = {'Roberts' :
                'init_method' : 'rand_points',
                'bottle_neck' : 4,},
           'ZhaZuFi' :
-              {'autoencode' : False,
+              {'ybeg' : 1998,
+               'yend' : 2008,
+               'autoencode' : False,
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -82,7 +79,9 @@ params = {'Roberts' :
                'init_method' : 'rand_points',
                'bottle_neck' : 3,},
           'Amaya' :
-              {'autoencode' : True,
+              {'ybeg' : 1998,
+               'yend' : 2011,
+               'autoencode' : True,
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -178,6 +177,8 @@ feat = {'Roberts' :
 
 
 ## Seting up the options, given the case
+ybeg    = params[case]['ybeg']
+yend    = params[case]['yend']
 acode   = params[case]['autoencode']
 pca     = params[case]['pca']
 mmax    = params[case]['m']
@@ -199,7 +200,7 @@ if acode:
 ## Loading the data
 data, nulls = acedata(acedir, cols, ybeg, yend)
 if case=='Roberts':
-    data['2002-11','2004-05']
+    data=data['2002-11':'2004-05']
 print('Data set size after reading files:', len(data))
 data = aceaddextra(data, nulls, xcols=xcols, window='6H', center=False)
 print('Data set size after adding extras:', len(data))
@@ -219,17 +220,21 @@ if acode:
     from autoencoder import autoencoder
     nodes = [raw.shape[1], 16, 9, bneck]
     ae = autoencoder(nodes)
+    print('Autoencoder fit...')
     L, T = ae.fit(torch.Tensor(raw), batch_size, num_epochs)
-    print('...done')
+    print('Autoencoder encode...')
     x = ae.encode(torch.Tensor(raw)).detach().numpy()
     if pca:
+        print('PCA for comparison...')
         pcomp = PCA(n_components=bneck, whiten=True)
         xpca = pcomp.fit_transform(raw)
 else:
     if pca:
+        print('PCA transormation...')
         pcomp = PCA(n_components=bneck, whiten=True)
         x = pcomp.fit_transform(raw)
     else:
+        print('No data reduction...')
         x = raw
 
 '''
@@ -241,16 +246,20 @@ else:
 if clustering:
     print('Clustering...')
     from sklearn import cluster, mixture
+    print('Loading clustering methods...')
     kms = cluster.MiniBatchKMeans(n_clusters=4)
     spc = cluster.SpectralClustering(n_clusters=4, eigen_solver='arpack', affinity="nearest_neighbors")
     gmm = mixture.GaussianMixture(n_components=4, covariance_type='full')
     
+    print('Cluster by k-means...')
     y_kms = kms.fit_predict(x)
-    print('Done with k-means...')
+
+    print('Cluster by Spectral Clustering...')
     y_spc = spc.fit_predict(x)
-    print('Done with spc...')
+    print('Cluster by GMM...')
     y_gmm = gmm.fit_predict(x)
     if acode and pca:
+        print('Cluster again but for PCA for comparison...')
         y_kms_pca = kms.fit_predict(xpca)
         y_spc_pca = spc.fit_predict(xpca)
         print('Done with spc...')
@@ -275,7 +284,8 @@ if optim:
         dist = som_distances(som)
         print(" Mean distance: ", dist.mean())
         return som.quantization_error(x) + dist.mean() + 0.05*sg
-    
+
+    print('SOM HPO...')    
     study = optuna.create_study()
     study.optimize(objective, n_trials=200)
     
@@ -288,7 +298,8 @@ if optim:
 if calculate_som:
     from som import *
 
-    ## Run the model   
+    ## Run the model 
+    print('SOM training...')
     som = selfomap(x, m, n, maxiter, sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
     
     ## processing of the SOM
@@ -439,9 +450,9 @@ if calculate_som:
 
 import paper_figures as pfig
 
-fig_path = outdir+case
-pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
-pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
-pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
-pfig.fig_maps(m, n, som, x, data, 2, 4, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
+# fig_path = outdir+case
+# pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
+# pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
+# pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
+pfig.fig_maps(m, n, som, x, data, feat[case][0], 2, 4, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
 pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')
