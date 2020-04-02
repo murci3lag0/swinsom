@@ -355,12 +355,31 @@ if calculate_som:
         cmax = color.max()
         color = (color - cmin) / (cmax - cmin)
     
-        map_plot(dist, color, m, n, size=size, scale=8, cmap='inferno_r')
+        fig, ax = plt.subplots(1,1)
+        map_plot(ax, dist, color, m, n, size=size, scale=8, cmap=cmap)
         plt.title(ftr_name)
-        
+             
     if plot_features:
         plt_features('proton_speed')
         plt_features('O7to6')
+       
+    def plt_mapdatamean(K):
+        color = np.zeros((m, n))
+        size=hits
+        for x in range(m):
+            for y in range(n):
+                color[x,y] = data[K].iloc[wmix[x,y]].mean()
+        color = np.nan_to_num(color)
+        cbmin = color.min()
+        cbmax = color.max()
+        color = (color - cbmin)/(cbmax - cbmin)
+        fig, ax = plt.subplots(1,1)
+        cmap = plt.cm.get_cmap('jet_r', 5)
+        map_plot(ax, dist, color, m, n, size=size, scale=6, cmap=cmap, lcolor='black')
+        
+    if plot_datamean:
+        plt_mapdatamean('Xu_SW_type')
+        plt_mapdatamean('Zhao_SW_type')
         
 
 '''
@@ -375,4 +394,4 @@ fig_path = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontier
 # pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
 # pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
 # pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
-pfig.fig_maps(m, n, som, x, data, px, py, hits, dist, W, pcomp, scaler)
+pfig.fig_maps(m, n, som, x, data, 2, 4, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')

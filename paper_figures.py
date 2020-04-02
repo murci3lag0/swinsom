@@ -12,29 +12,32 @@ from matplotlib_hex_map import matplotlib_hex_map as map_plot
 import numpy as np
 from som import *
 
-def set_figure(size, latex=False):
-    plt.rcParams.update({'font.size': 11})
+def cm2inch(*tupl):
+    inch = 1.5 #2.54
+    if isinstance(tupl[0], tuple):
+        return tuple(i/inch for i in tupl[0])
+    else:
+        return tuple(i/inch for i in tupl)
+    
+def set_figure():
+    plt.rcParams['font.size'] = 10
+    plt.rcParams['axes.titlesize'] = 10
+    plt.rcParams['axes.titlesize'] = 10
     plt.rc('font', family='serif')
-    plt.rc('xtick', labelsize='x-small')
-    plt.rc('ytick', labelsize='x-small')
-    if latex:
-        plt.rc('text', usetex=True)
-        
-    fig = plt.figure(figsize=(size))
-    ax = fig.add_subplot(1, 1, 1)
-    return fig, ax
    
-def fig_datacoverage(data, cols, fname=None, latex=False):    
-    fig, ax = set_figure((4,3))
+def fig_datacoverage(data, cols, fname=None):    
+    fig, ax = plt.subplots(1, 1, figzise=(4,3))
+    set_figure()
     ax.set_xlabel('Year')
     ax.set_ylabel('Number of entries')
     ax = data[cols[0]].groupby(data.index.year).count().plot(kind="bar")
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
-def fig_dimreduc(data, x1, x2, cmap='Set1', fname=None, latex=False):
+def fig_dimreduc(data, x1, x2, cmap='Set1', fname=None):
     cmap = plt.cm.get_cmap(cmap, 5)
-    fig, ax = plt.subplots(2,6,figsize=(16,6),sharex='none', sharey='none')
+    fig, ax = plt.subplots(2,6, figsize=cm2inch((16,6)), sharex='none', sharey='none')
+    set_figure()
     alpha = 0.6
     size = 0.1
     
@@ -70,9 +73,10 @@ def fig_dimreduc(data, x1, x2, cmap='Set1', fname=None, latex=False):
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
-def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, cmap='Set1', fname=None, latex=False):
+def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, cmap='Set1', fname=None):
     cmap = plt.cm.get_cmap(cmap, 5)
-    fig, ax = plt.subplots(3,4,figsize=(16,9),sharex='col', sharey='col')
+    fig, ax = plt.subplots(3,4,figsize=cm2inch((16,9)),sharex='col', sharey='col')
+    set_figure()
     alpha = 0.6
     size = 0.1
     
@@ -111,8 +115,9 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, cmap='Set1', fname=None
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
-def fig_maps(m, n, som, x, data, px, py, hits, dist, W, pcomp, scaler):
-    fig, ax = plt.subplots(2,2)
+def fig_maps(m, n, som, x, data, px, py, hits, dist, W, wmix, pcomp, scaler, feat, fname=None):
+    fig, ax = plt.subplots(2 , 4, figsize=cm2inch((16,7)))
+    set_figure()
     
     #-- Histogram plot in [0,0]
     color = W.sum(axis=2)
@@ -120,42 +125,99 @@ def fig_maps(m, n, som, x, data, px, py, hits, dist, W, pcomp, scaler):
     cmax = color.max() #np.max(x, axis=0)
     color = (color - cmin) / (cmax - cmin)
 
-    # add_data = np.arange(m*n).reshape((m,n))
-    # add_name = 'node'
-    # hbin = ax[0][0].hexbin(x[:,0], x[:,1], bins='log', gridsize=30, cmap='BuGn')  
-    # ax[0][0].scatter(W[:,:,0].flatten(), W[:,:,1].flatten(), c=color.reshape((m*n)), cmap='inferno_r', s=30, marker='o', label='nodes')
+    add_data = np.arange(m*n).reshape((m,n))
+    add_name = 'node'
+    hbin = ax[0][0].hexbin(x[:,0], x[:,1], bins='log', gridsize=30, cmap='BuGn')  
+    ax[0][0].scatter(W[:,:,0].flatten(), W[:,:,1].flatten(), c=color.reshape((m*n)), cmap='inferno_r', s=10, marker='o', label='nodes')
     
-    # f = lambda p, q: p-1 if (q%2 == 0) else p
-    # i = f(px, py)
-    # j = py
-    # ax[0][0].plot([W[px,py,0], W[i +1,j+1,0]], [W[px,py,1], W[i +1,j+1,1]], 'k-', lw=2)
-    # ax[0][0].plot([W[px,py,0], W[px+1,j+0,0]], [W[px,py,1], W[px+1,j+0,1]], 'k-', lw=2)
-    # ax[0][0].plot([W[px,py,0], W[i +1,j-1,0]], [W[px,py,1], W[i +1,j-1,1]], 'k-', lw=2)
-    # ax[0][0].plot([W[px,py,0], W[i +0,j-1,0]], [W[px,py,1], W[i +0,j-1,1]], 'k-', lw=2)
-    # ax[0][0].plot([W[px,py,0], W[px-1,j+0,0]], [W[px,py,1], W[px-1,j+0,1]], 'k-', lw=2)
-    # ax[0][0].plot([W[px,py,0], W[i +0,j+1,0]], [W[px,py,1], W[i +0,j+1,1]], 'k-', lw=2)
+    f = lambda p, q: p-1 if (q%2 == 0) else p
+    i = f(px, py)
+    j = py
+    ax[0][0].plot([W[px,py,0], W[i +1,j+1,0]], [W[px,py,1], W[i +1,j+1,1]], 'r-', lw=2)
+    ax[0][0].plot([W[px,py,0], W[px+1,j+0,0]], [W[px,py,1], W[px+1,j+0,1]], 'r-', lw=2)
+    ax[0][0].plot([W[px,py,0], W[i +1,j-1,0]], [W[px,py,1], W[i +1,j-1,1]], 'r-', lw=2)
+    ax[0][0].plot([W[px,py,0], W[i +0,j-1,0]], [W[px,py,1], W[i +0,j-1,1]], 'r-', lw=2)
+    ax[0][0].plot([W[px,py,0], W[px-1,j+0,0]], [W[px,py,1], W[px-1,j+0,1]], 'r-', lw=2)
+    ax[0][0].plot([W[px,py,0], W[i +0,j+1,0]], [W[px,py,1], W[i +0,j+1,1]], 'r-', lw=2)
+    
+    ax[0][0].xaxis.set_ticks_position("top")
     
     #-- hit map in [0,1]
     size=hits # np.ones_like(hits)
     
-    map_plot(ax[0][1], dist, color, m, n, size=size, scale=8, cmap='inferno_r', lcolor='black')
+    map_plot(ax[0][1], dist, color, m, n, size=size, scale=8, cmap='inferno_r', lcolor='black', title='Hit map')
     ax[0][1].set_aspect('equal')
-    ax[0][1].set_xlim(xmin=-1, xmax=m-0.5)
-    ax[0][1].set_ylim(ymin=-0.5, ymax=n*0.75-0.25)
-    plt.autoscale()
+    ax[0][1].set_xlim(-1, m-0.5)
+    ax[0][1].set_ylim(-0.5, n*0.75-0.25)
     
-    # if plot_neighbors:
-    #     f = lambda p, q: p-0.5 if (q%2 == 0) else p
-        
-    #     i = f(px, py)
-    #     j = py
-    #     plt.plot([i,i+0.5], [j*0.75,j*0.75+0.75], 'k-')
-    #     plt.plot([i,i+1  ], [j*0.75,j*0.75     ], 'k-')
-    #     plt.plot([i,i+0.5], [j*0.75,j*0.75-0.75], 'k-')
-    #     plt.plot([i,i-0.5], [j*0.75,j*0.75-0.75], 'k-')
-    #     plt.plot([i,i-1  ], [j*0.75,j*0.75     ], 'k-')
-    #     plt.plot([i,i-0.5], [j*0.75,j*0.75+0.75], 'k-')  
-        
-    # plt.tight_layout()
+    f = lambda p, q: p-0.5 if (q%2 == 0) else p
+    
+    i = f(px, py)
+    j = py
+    ax[0][1].plot([i,i+0.5], [j*0.75,j*0.75+0.75], 'r-', lw=2)
+    ax[0][1].plot([i,i+1  ], [j*0.75,j*0.75     ], 'r-', lw=2)
+    ax[0][1].plot([i,i+0.5], [j*0.75,j*0.75-0.75], 'r-', lw=2)
+    ax[0][1].plot([i,i-0.5], [j*0.75,j*0.75-0.75], 'r-', lw=2)
+    ax[0][1].plot([i,i-1  ], [j*0.75,j*0.75     ], 'r-', lw=2)
+    ax[0][1].plot([i,i-0.5], [j*0.75,j*0.75+0.75], 'r-', lw=2) 
+            
+    #-- Oxygen ratio in [0,2]
+    ftr_name = 'O7to6'
+    ftr = feat.index(ftr_name)
+    size=np.ones_like(hits)
+    WW = W.reshape(m*n, 3)
+    WW = pcomp.inverse_transform(WW)
+    WW = scaler.inverse_transform(WW)
+    WW = WW.reshape(m, n, len(feat))
+    
+    color = WW[:,:,ftr]
+    cmin = color.min()
+    cmax = color.max()
+    color = (color - cmin) / (cmax - cmin)
 
+    map_plot(ax[0][2], dist, color, m, n, size=size, scale=8, cmap='inferno_r', title=ftr_name)
     
+    #-- Xu solar wind type int [0,3]
+    K = 'avqO'
+    Q = 'Xu_SW_type'
+    V = 2
+    color = np.zeros((m, n))
+    size  = np.zeros((m, n))
+    for x in range(m):
+        for y in range(n):
+            color[x,y] = data[K].iloc[wmix[x,y]].mean()
+            vc = data[Q].iloc[wmix[x,y]].value_counts()
+            size [x,y] = vc.loc[V] if V in vc else 0
+    color = np.nan_to_num(color)
+    cbmin = color.min()
+    cbmax = color.max()
+    color = (color - cbmin)/(cbmax - cbmin)
+    
+    sbmin = size.min()
+    sbmax = size.max()
+    size  = (size - sbmin)/(sbmax - sbmin) if sbmax>sbmin else np.zeros((m, n))
+    map_plot(ax[0][3], dist, color, m, n, size=size, scale=6, cmap='inferno_r', lcolor='black', title=K+' ['+Q+'='+str(V)+']')
+
+    #-- Three components in row [1,0:3]
+    size  = np.ones_like(hits)
+    color = W
+    cmin  = color.min()
+    cmax  = color.max()
+    color = (color - cmin) / (cmax - cmin)
+    map_plot(ax[1][0], dist, color, m, n, size=size, scale=8, cmap='inferno_r', title='Feature map')
+    ax[1][0].set_aspect('equal')
+    ax[1][0].set_xlim(-1, m-0.5)
+    ax[1][0].set_ylim(-0.5, n*0.75-0.25)
+        
+    for i in range(3):
+        color = W[:,:,i]
+        cmin  = color.min()
+        cmax  = color.max()
+        color = (color - cmin) / (cmax - cmin)
+        map_plot(ax[1][i+1], dist, color, m, n, size=size, scale=8, cmap='inferno_r', title='Component '+str(i+1))
+        ax[1][i+1].set_aspect('equal')
+        ax[1][i+1].set_xlim(-1, m-0.5)
+        ax[1][i+1].set_ylim(-0.5, n*0.75-0.25)
+    
+    if fname is not None:
+        plt.savefig(fname, bbox_inches='tight', transparent=True)
