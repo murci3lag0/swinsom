@@ -25,9 +25,9 @@ from matplotlib_hex_map import matplotlib_hex_map as map_plot
 # ybeg    : year of start of the analysis
 # yend    : year of ending of the analysis
 acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
-ybeg  = 1998
+ybeg  = 2009
 yend  = 2011
-optim = False
+optim = True
 calculate_som = True
 clustering = True
 
@@ -35,31 +35,55 @@ clustering = True
 # acode   : use autoencoding to generate the training data
 # case    : selection of features from the available options in the dict
 case = 'Amaya'
+dynamic = True
 params = {'Roberts' :
               {'autoencode' : False,
-               'pca' : False,
-               'm' : 7,
-               'n' : 9,
-               'maxiter' : 50000,
-               'dynamic' : False,
-               'sigma' : 4.0,
-               'learning_rate' : 0.1,
-               'init_method' : 'random',
-               'bottle_neck' : 3,
-              },
-          'Amaya' :
-              {'autoencode' : True,
                'pca' : True,
-               'm' : 7,
-               'n' : 9,
+               'm' : 12,
+               'n' : 12,
                'maxiter' : 50000,
                'batch size' : 32,
                'nepochs' : 30,
-               'dynamic' : True,
                'sigma' : 5.0,
                'learning_rate' : 0.25,
-               'init_method' : 'random',
-               'bottle_neck' : 3,
+               'init_method' : 'rand_points',
+               'bottle_neck' : 8,},
+          'XuBorovsky' :
+              {'autoencode' : False,
+               'pca' : True,
+               'm' : 12,
+               'n' : 12,
+               'maxiter' : 50000,
+               'batch size' : 32,
+               'nepochs' : 30,
+               'sigma' : 5.0,
+               'learning_rate' : 0.25,
+               'init_method' : 'rand_points',
+               'bottle_neck' : 4,},
+          'ZhaZuFi' :
+              {'autoencode' : False,
+               'pca' : True,
+               'm' : 12,
+               'n' : 12,
+               'maxiter' : 50000,
+               'batch size' : 32,
+               'nepochs' : 30,
+               'sigma' : 5.0,
+               'learning_rate' : 0.25,
+               'init_method' : 'rand_points',
+               'bottle_neck' : 3,},
+          'Amaya' :
+              {'autoencode' : True,
+               'pca' : True,
+               'm' : 12,
+               'n' : 12,
+               'maxiter' : 50000,
+               'batch size' : 32,
+               'nepochs' : 30,
+               'sigma' : 5.0,
+               'learning_rate' : 0.25,
+               'init_method' : 'rand_points',
+               'bottle_neck' : 8,
               },
          }
 
@@ -102,8 +126,8 @@ xcols = ['sigmac',
 
 feat = {'Roberts' : ['log_proton_speed',
                      'log_proton_density',
-                     'log_sigmac',
-                     'log_sigmar',
+                     'sigmac',
+                     'sigmar',
                      'log_O7to6',
                      'log_FetoO',
                      'log_avqFe',
@@ -112,7 +136,7 @@ feat = {'Roberts' : ['log_proton_speed',
                         'log_Va',
                         'log_Tratio'],
         'ZhaZuFi' : ['O7to6',
-                     'proton_speed'],
+                     'log_proton_speed'],
         'Amaya' : ['proton_speed',
                   'proton_temp',
                   'proton_density',
@@ -126,6 +150,7 @@ feat = {'Roberts' : ['log_proton_speed',
                   'sigmar',
                   'proton_speed_range',
                   'proton_density_range',
+                  'proton_temp_range',
                   'Bgsm_x_range',
                   'Bgsm_y_range',
                   'Bgsm_z_range',
@@ -135,7 +160,6 @@ feat = {'Roberts' : ['log_proton_speed',
                   'Bmag_std',
                   'log_Sp',
                   'log_Va',
-                  'log_Texp',
                   'log_Tratio'],
        }
 
@@ -143,8 +167,8 @@ feat = {'Roberts' : ['log_proton_speed',
 ## Seting up the options, given the case
 acode   = params[case]['autoencode']
 pca     = params[case]['pca']
-m       = params[case]['m']
-n       = params[case]['n']
+mmax    = params[case]['m']
+nmax    = params[case]['n']
 maxiter = params[case]['maxiter']
 dynamic = params[case]['dynamic']
 sg      = params[case]['sigma']
@@ -178,7 +202,7 @@ raw = scaler.fit_transform(raw)
 
 if acode:
     from autoencoder import autoencoder
-    nodes = [raw.shape[1], 13, 7, bneck]
+    nodes = [raw.shape[1], 18, 12, bneck]
     ae = autoencoder(nodes)
     L, T = ae.fit(torch.Tensor(raw), batch_size, num_epochs)
     x = ae.encode(torch.Tensor(raw)).detach().numpy()
@@ -223,8 +247,8 @@ if optim:
     from som import *
     import optuna
     def objective(trial):
-        m = trial.suggest_int('m', 5, 12)
-        n = trial.suggest_int('n', 5, 12)
+        m = trial.suggest_int('m', 5, mmax)
+        n = trial.suggest_int('n', 5, nmax)
         lr = trial.suggest_uniform('lr', 0.01, 1.0)
         sg = trial.suggest_uniform('sg', 1.0, 6.0)
         som = selfomap(x, m, n, 1000, sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
