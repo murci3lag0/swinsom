@@ -24,17 +24,17 @@ from matplotlib_hex_map import matplotlib_hex_map as map_plot
 # acedir  : directory containing the hdf5 ACE data
 # ybeg    : year of start of the analysis
 # yend    : year of ending of the analysis
-#acedir = '/home/amaya/Data/ACE'
-#outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
-acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
-outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
+acedir = '/home/amaya/Data/ACE'
+outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
+# acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
+# outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
 # ybeg  = 2002
 # yend  = 2004
 ybeg  = 1998
 yend  = 2011
-optim = False
-calculate_som = False
-clustering = False
+optim = True
+calculate_som = True
+clustering = True
 
 ## Code options ---------------------------------------------------------------
 # acode   : use autoencoding to generate the training data
@@ -82,8 +82,8 @@ params = {'Roberts' :
                'init_method' : 'rand_points',
                'bottle_neck' : 3,},
           'Amaya' :
-              {'autoencode' : False,
-               'pca' : False,
+              {'autoencode' : True,
+               'pca' : True,
                'm' : 12,
                'n' : 12,
                'maxiter' : 50000,
@@ -92,7 +92,7 @@ params = {'Roberts' :
                'sigma' : 5.0,
                'learning_rate' : 0.25,
                'init_method' : 'rand_points',
-               'bottle_neck' : 8,
+               'bottle_neck' : 6,
               },
          }
 
@@ -151,21 +151,19 @@ feat = {'Roberts' :
             ['O7to6',
              'log_proton_speed'],
         'Amaya' : 
-            ['O7to6',
+            ['log_O7to6',
              'log_proton_speed',
-             'log_Sp',
-             'log_Va',
-             'log_Tratio',
-             'log_Bmag',
+             'log_proton_density',
+             'sigmac',
+             'sigmar',
+             'log_FetoO',
+             'log_avqFe',
+             'log_Bmag'
+             'log_C6to5',
              'proton_temp',
              'proton_density',
              'Ma',
              'He4toprotons',
-             'FetoO',
-             'C6to5',
-             'avqFe',
-             'sigmac',
-             'sigmar',
              'proton_speed_range',
              'proton_density_range',
              'proton_temp_range',
@@ -217,10 +215,12 @@ raw = data[feat[case]].values
 raw = scaler.fit_transform(raw)
 
 if acode:
+    print('Autoencoder...')
     from autoencoder import autoencoder
-    nodes = [raw.shape[1], 18, 12, bneck]
+    nodes = [raw.shape[1], 16, 9, bneck]
     ae = autoencoder(nodes)
     L, T = ae.fit(torch.Tensor(raw), batch_size, num_epochs)
+    print('...done')
     x = ae.encode(torch.Tensor(raw)).detach().numpy()
     if pca:
         pcomp = PCA(n_components=bneck, whiten=True)
@@ -239,17 +239,21 @@ else:
 '''
 
 if clustering:
+    print('Clustering...')
     from sklearn import cluster, mixture
     kms = cluster.MiniBatchKMeans(n_clusters=4)
     spc = cluster.SpectralClustering(n_clusters=4, eigen_solver='arpack', affinity="nearest_neighbors")
     gmm = mixture.GaussianMixture(n_components=4, covariance_type='full')
     
     y_kms = kms.fit_predict(x)
+    print('Done with k-means...')
     y_spc = spc.fit_predict(x)
+    print('Done with spc...')
     y_gmm = gmm.fit_predict(x)
     if acode and pca:
         y_kms_pca = kms.fit_predict(xpca)
         y_spc_pca = spc.fit_predict(xpca)
+        print('Done with spc...')
         y_gmm_pca = gmm.fit_predict(xpca)
 
 '''
@@ -435,9 +439,9 @@ if calculate_som:
 
 import paper_figures as pfig
 
-# fig_path = outdir+case
-# pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
-# pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
-# pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
-# pfig.fig_maps(m, n, som, x, data, 2, 4, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
+fig_path = outdir+case
+pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
+pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
+pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
+pfig.fig_maps(m, n, som, x, data, 2, 4, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
 pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')
