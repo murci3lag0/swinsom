@@ -219,7 +219,8 @@ def aceaddextra(data, nulls, xcols, window=5, center=False):
         func = getattr(pd.core.window.Rolling, end)
         for c in xcols:
             if c.endswith(end):
-                var = c[:-len(end)-1]
+                e = 4 if c.startswith('log_') else 0
+                var = c[e:-len(end)-1]
                 varfunc = func(data[var].rolling(window, center=center))
                 data[c] = varfunc
                 
@@ -228,7 +229,8 @@ def aceaddextra(data, nulls, xcols, window=5, center=False):
         fmin = pd.core.window.Rolling.min
         for c in xcols:
             if c.endswith(end):
-                var = c[:-len(end)-1]
+                e = 4 if c.startswith('log_') else 0
+                var = c[e:-len(end)-1]
                 vmax = fmax(data[var].rolling(window, center=center))
                 vmin = fmin(data[var].rolling(window, center=center))
                 data[c] = vmax - vmin
@@ -237,14 +239,14 @@ def aceaddextra(data, nulls, xcols, window=5, center=False):
         func = lambda x: pd.Series(x).autocorr()
         for c in xcols:
             if c.endswith(end):
-                var = c[:-len(end)-1]
+                e = 4 if c.startswith('log_') else 0
+                var = c[e:-len(end)-1]
                 data[c] = data[var].rolling(window, center=center).apply(func, raw=False)
-                
-    for beg in ['log']:
-        for c in xcols:
-            if c.startswith(beg):
-                var = c[len(beg)+1:]
-                data[c] = np.log(data[var])
+    
+    for c in xcols:
+        if c.startswith('log'):
+            var = c[4:]
+            data[c] = np.log(data[var])                
                 
     data = data.dropna(axis=0)
     
@@ -262,26 +264,25 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     
     cols = allacecols
-    acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
-    ybeg = 2010
+    acedir = '/home/amaya/Data/ACE'
+    ybeg = 1998
     yend = 2011
     
     data, nulls = acedata(acedir, cols, ybeg, yend)
     
-    xcols = ['log_proton_speed',
-             'Sp',
-             'Va',
-             'Tratio',
-             'Texp',
-             'log_Sp',
-             'log_Va',
-             'log_Tratio',
-             'log_Bmag',
-             'Ma',
+    xcols = ['log_O7to6',
+             'log_proton_speed',
+             'log_proton_density',
              'sigmac',
              'sigmar',
+             'log_FetoO',
+             'log_avqFe',
+             'log_Bmag',
+             'log_C6to5',
+             'log_proton_temp',
+             'proton_density',
+             'Ma',
              'proton_speed_range',
-             'proton_density_range',
              'proton_density_range',
              'proton_temp_range',
              'Bgsm_x_range',
@@ -290,26 +291,34 @@ if __name__ == "__main__":
              'Bmag_range',
              'Bmag_acor',
              'Bmag_mean',
-             'Bmag_std']
+             'Bmag_std',
+             'log_Ma',
+             'log_proton_speed_range',
+             'log_proton_density_range',
+             'log_proton_temp_range',
+             'log_Bgsm_x_range',
+             'log_Bgsm_y_range',
+             'log_Bgsm_z_range',
+             'log_Bmag_range',
+             'log_Bmag_acor',
+             'log_Bmag_mean',
+             'log_Bmag_std',]
     data = aceaddextra(data, nulls, xcols=xcols, window=7, center=False)
         
     tdata = (data - data.min(axis=0))/(data.max(axis=0) - data.min(axis=0))
     
-    pcols = ['O7to6',
+    pcols = ['log_O7to6',
              'log_proton_speed',
-             'log_Sp',
-             'log_Va',
-             'log_Tratio',
-             'log_Bmag',
-             'proton_temp',
-             'proton_density',
-             'Ma',
-             'He4toprotons',
-             'FetoO',
-             'C6to5',
-             'avqFe',
+             'log_proton_density',
              'sigmac',
              'sigmar',
+             'log_FetoO',
+             'log_avqFe',
+             'log_Bmag',
+             'log_C6to5',
+             'log_proton_temp',
+             'proton_density',
+             'Ma',
              'proton_speed_range',
              'proton_density_range',
              'proton_temp_range',
@@ -319,7 +328,18 @@ if __name__ == "__main__":
              'Bmag_range',
              'Bmag_acor',
              'Bmag_mean',
-             'Bmag_std']
+             'Bmag_std',
+             'log_Ma',
+             'log_proton_speed_range',
+             'log_proton_density_range',
+             'log_proton_temp_range',
+             'log_Bgsm_x_range',
+             'log_Bgsm_y_range',
+             'log_Bgsm_z_range',
+             'log_Bmag_range',
+             'log_Bmag_acor',
+             'log_Bmag_mean',
+             'log_Bmag_std',]
     tdata = np.array([tdata[c].values for c in pcols]).T
     plt.violinplot(tdata, showextrema=False)
     plt.boxplot(tdata, notch=True, showfliers=False, showmeans=True)
