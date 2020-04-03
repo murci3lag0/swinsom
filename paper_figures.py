@@ -8,8 +8,10 @@ Created on Mon Mar 30 08:04:29 2020
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+import matplotlib.dates as mdates
 from matplotlib_hex_map import matplotlib_hex_map as map_plot
 import numpy as np
+import pandas as pd
 from som import *
 
 def cm2inch(*tupl):
@@ -232,3 +234,53 @@ def fig_datarange(data, fname=None):
     plt.xticks(range(1,data.shape[1]+1))
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
+        
+def fig_timeseries(data, beg, end, n_clusters, fname=None):
+    fig, ax = plt.subplots(6,1, figsize=cm2inch((16,7)), sharex='all')
+    set_figure()
+    
+    ax[0].set_xlim(pd.to_datetime(beg), pd.to_datetime(end))
+    cmap = plt.cm.get_cmap('jet', n_clusters)
+    ax[0].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-kmeans-8'], cmap=cmap, s=5)
+    ax[1].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-agglo-8'], cmap=cmap, s=5)
+    ax[2].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-birch-8'], cmap=cmap, s=5)
+    
+    dparser = lambda x : pd.datetime.strptime(x, '%Y/%m/%d %H%M')
+    icme = pd.read_csv('catalogs/Richarson_Cane_ICME_cat.csv', comment="#", date_parser=dparser, parse_dates=['Datetime'])
+    icme['Start'] = pd.to_datetime(icme['Start'])
+    icme['End'] = pd.to_datetime(icme['End'])
+    icme = icme.set_index('Datetime')
+    ax[2].plot(icme[beg:end])
+    
+    ax[3].plot(data[beg:end]['Bgsm_x'], 'r-')
+    ax[3].plot(data[beg:end]['Bgsm_y'], 'g-')
+    
+    ax[4].plot(data[beg:end]['Bgsm_z'], 'b-')
+    
+    ax[5].plot(data[beg:end]['log_O7to6'], 'r-')
+    # ax2b = ax[2].twinx()
+    ax[5].plot(np.log(6.008)-0.00578*data[beg:end]['proton_speed'], 'b-.')
+    ax[5].hlines(np.log(0.145), beg, end, color='blue', linestyles='dashed')
+    
+    ax[0].set_ylabel(r'$V_{sw}$ $[km/s]$')
+    ax[1].set_ylabel(r'$V_{sw}$ $[km/s]$')
+    ax[2].set_ylabel(r'$V_{sw}$ $[km/s]$')
+    ax[3].set_ylabel(r'$B_{x,y}$ $[nT]$')
+    ax[4].set_ylabel(r'$B_z$ $[nT]$')
+    ax[5].set_ylabel(r'$\log O^{7+}/O^{6+}$')
+    
+    ax[0].text(0.01, 0.7, 'a)', fontsize=11, transform=ax[0].transAxes)
+    ax[1].text(0.01, 0.7, 'b)', fontsize=11, transform=ax[1].transAxes)
+    ax[2].text(0.01, 0.7, 'c)', fontsize=11, transform=ax[2].transAxes)
+    ax[3].text(0.01, 0.7, 'd)', fontsize=11, transform=ax[3].transAxes)
+    ax[4].text(0.01, 0.7, 'e)', fontsize=11, transform=ax[4].transAxes)
+    ax[5].text(0.01, 0.7, 'f)', fontsize=11, transform=ax[5].transAxes)
+        
+    locator = mdates.MonthLocator()
+    fmt = mdates.DateFormatter('%b-%Y')
+    plt.gca().xaxis.set_major_locator(locator)
+    plt.gca().xaxis.set_major_formatter(fmt)
+    
+    if fname is not None:
+        plt.savefig(fname, bbox_inches='tight', transparent=True)
+    
