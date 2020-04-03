@@ -23,10 +23,10 @@ from matplotlib_hex_map import matplotlib_hex_map as map_plot
 ## Seting up the path and range -----------------------------------------------
 # acedir : directory containing the hdf5 ACE data
 # outdir : figure output directory
-acedir = '/home/amaya/Data/ACE'
-outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
-# acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
-# outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
+# acedir = '/home/amaya/Data/ACE'
+# outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
+acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
+outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
 optim = True
 calculate_som = True
 clustering = True
@@ -39,7 +39,7 @@ dynamic = True
 params = {'Roberts' :
               {'ybeg' : 2002,
                'yend' : 2004,
-               'autoencode' : False,
+               'autoencode' : True,
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -53,7 +53,7 @@ params = {'Roberts' :
           'XuBorovsky' :
               {'ybeg' : 1998,
                'yend' : 2008,
-               'autoencode' : False,
+               'autoencode' : True,
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -67,7 +67,7 @@ params = {'Roberts' :
           'ZhaZuFi' :
               {'ybeg' : 1998,
                'yend' : 2008,
-               'autoencode' : False,
+               'autoencode' : True,
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -319,6 +319,28 @@ if calculate_som:
     print(" Mean distance: ", dist.mean())
     
     '''
+        ---------------------
+        Cluster the SOM nodes
+        ---------------------
+    '''
+    from sklearn import cluster
+    n_clusters = 8
+    C1 = cluster.MiniBatchKMeans(n_clusters=n_clusters).fit(W.reshape(m*n,-1))
+    C1 = np.array(C1.labels_)
+    C1 = C1.reshape((m,n))
+    data = som_addinfo(som, data, x, C1, 'class-kmeans-8')
+    
+    C2 = cluster.AgglomerativeClustering(linkage="average", affinity="cityblock", n_clusters=n_clusters).fit(W.reshape(m*n,-1))
+    C2 = np.array(C2.labels_)
+    C2 = C2.reshape((m,n))
+    data = som_addinfo(som, data, x, C2, 'class-agglo-8')
+
+    C3 = cluster.Birch(n_clusters=n_clusters, threshold=0.1).fit(W.reshape(m*n,-1))
+    C3 = np.array(C3.labels_)
+    C3 = C3.reshape((m,n))
+    data = som_addinfo(som, data, x, C3, 'class-birch-8')
+    
+    '''
         ----------------
         Plot the results
         ----------------
@@ -331,6 +353,8 @@ if calculate_som:
     plot_components = False     # Plot maps of the three components
     plot_features = False       # plot maps of the corresponding features
     plot_datamean = False
+    plot_somclustering = False
+    plot_timeseries = False
     
     ## Select the neighbour to visualize
     if plot_neighbors:
@@ -445,6 +469,57 @@ if calculate_som:
         plt_mapdatamean('Xu_SW_type')
         plt_mapdatamean('Zhao_SW_type')
         
+    if plot_somclustering:
+        size  = np.ones_like(hits)
+        color = C1
+        cmin  = color.min()
+        cmax  = color.max()
+        color = (color - cmin) / (cmax - cmin)
+    
+        fig, ax = plt.subplots(1,1)
+        cmap = plt.cm.get_cmap('jet', n_clusters)
+        map_plot(ax, dist, color, m, n, size=size, scale=6, cmap=cmap, lcolor='white')
+        plt.title('Clustering SOM')
+        
+        color = C2
+        cmin  = color.min()
+        cmax  = color.max()
+        color = (color - cmin) / (cmax - cmin)
+        fig, ax = plt.subplots(1,1)
+        cmap = plt.cm.get_cmap('jet', n_clusters)
+        map_plot(ax, dist, color, m, n, size=size, scale=6, cmap=cmap, lcolor='white')
+        plt.title('Clustering SOM')
+        
+        color = C3
+        cmin  = color.min()
+        cmax  = color.max()
+        color = (color - cmin) / (cmax - cmin)
+        fig, ax = plt.subplots(1,1)
+        cmap = plt.cm.get_cmap('jet', n_clusters)
+        map_plot(ax, dist, color, m, n, size=size, scale=6, cmap=cmap, lcolor='white')
+        plt.title('Clustering SOM')
+        
+    if plot_timeseries:
+        beg = '2003-05-01'
+        end = '2003-09-01'
+        
+        fig, ax = plt.subplots(6,1, sharex='all') #, gridspec_kw = {'height_ratios':[4, 4, 4, 1, 1, 4]})
+        ax[0].set_xlim(pd.to_datetime(beg), pd.to_datetime(end))
+        cmap = plt.cm.get_cmap('jet', n_clusters)
+        ax[0].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-kmeans-8'], cmap=cmap, s=5)
+        ax[1].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-agglo-8'], cmap=cmap, s=5)
+        ax[2].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-birch-8'], cmap=cmap, s=5)
+        
+        ax[3].plot(data[beg:end]['Bgsm_x'], 'r-')
+        ax[3].plot(data[beg:end]['Bgsm_y'], 'g-')
+        
+        ax[4].plot(data[beg:end]['Bgsm_z'], 'b-')
+        
+        ax[5].plot(data[beg:end]['log_O7to6'], 'r-')
+        # ax2b = ax[2].twinx()
+        ax[5].plot(np.log(6.008)-0.00578*data[beg:end]['proton_speed'], 'b-.')
+        ax[5].hlines(np.log(0.145), beg, end, color='blue', linestyles='dashed')
+
 
 '''
     ------------------------
@@ -456,7 +531,8 @@ import paper_figures as pfig
 
 fig_path = outdir+case
 # pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
-pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
-pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
-pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
-pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')
+# pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
+# pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
+# pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
+# pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')
+pfig.fig_timeseries(data, beg, end, n_clusters, fname=fig_path+'/datarange.png')
