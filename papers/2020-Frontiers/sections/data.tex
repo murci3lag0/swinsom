@@ -1,13 +1,13 @@
-\paragraph{Data Set Used}
+\subsubsection{Data Set Used}
 The solar wind data used in this work was obtained by the Advanced Composition Explorer (ACE) spacecraft, during a period of 14 years, between 1998 and 2011. The data can be downloaded from the \href{ftp://mussel.srl.caltech.edu/pub/ace/level2/multi}{FTP servers of The ACE Science Center (ASC)}. The files in this repository correspond to a compilation of hourly average data from three instruments: MAG (Magnetometer), SWEPAM (Solar Wind Electron, Proton, and Alpha Monitor) and EPAM (Electron, Proton, and Alpha Monitor). A detailed description of the entries in this data set can be found in the \href{http://www.srl.caltech.edu/cgi-bin/dib/rundibviewmultil2/ACE/ASC/DATA/level2/multi}{ASC website} listed in section \ref{sec:repos}.
 
 A total of 122712 data points are available. However, routine maintenance operations, low statistics, instrument saturation and instrument degradation produce gaps and errors in the data. The SWICS data includes a flag assessing the quality of the calculated plasma moments. We retain only `Good quality' entries. Fig.\ref{fig:datacoverage} shows the final number of items retained per year. Our pre-processed data set contains a total of 72454 points.
 
-\paragraph{Additional Derived Features}
+\subsubsection{Additional Derived Features}
 We created additional features for each entry, based on expert and previous knowledge of the physical properties of the solar wind. These new features are derived from the existing properties in the data set or computed from statistical analysis of their temporal evolution.
 
-Multiple techniques have been proposed in the literature to identify ejecta, ICMEs, and solar wind origins in the ACE data. \citep{Zhao2009} suggest that during solar cycle 23 three classes of solar wind can be identified using the solar wind speed, $V_{sw}$, and the oxygen ion charge state ratio, $O^{7+}/O^{6+}$. The classification boundaries based on these three parameters are presented in Table \ref{tab:swtypes}. This solar wind classification will be known in this manuscript as the Zhao classification.
-
+Multiple techniques have been proposed in the literature to identify ejecta, Interplanetary Coronal Mass Ejections (ICME), and solar wind origins in the ACE data. \citep{Zhao2009} suggest that during solar cycle 23 three classes of solar wind can be identified using the solar wind speed, $V_{sw}$, and the oxygen ion charge state ratio, $O^{7+}/O^{6+}$. The classification boundaries based on these three parameters are presented in Table \ref{tab:swtypes}. This solar wind classification will be known in this manuscript as the Zhao classification.
+cme
 \citep{Xu2015} suggested an alternative four class classification based on the proton-specific entropy, $S_p = T_p/n_p^{2/3}$, the Alfv\'en speed, $V_A = B / (\mu_0 m_p n_p)^{1/2}$, and the velocity-dependent expected proton temperature, $T_\text{exp} = (V_{sw}/258)^{3.113}$. The classification conditions based on these three parameters are also presented in Table \ref{tab:swtypes}. This solar wind classification will be known in this manuscript as the Xu classification. For each entry in the data set we have included the values of $S_p$, $V_A$, $T_\text{exp}$, and the solar wind type given by the two classification methods. Additional auxiliary variables, like the Alfv\'en Mach number ($M_A$) and the temperature ratio ($T_\text{exp}/T_p$), have also been included in the data set.
 
 In addition to these instantaneous quantities, we can perform statistical operations over a window of time of six hours, including values of the maximum, minimum, mean, standard deviation, variance, auto-correlation, and range. These quantities can be used to take into account temporal variations of the solar wind over the previous few hours.
@@ -23,39 +23,4 @@ Due to gaps in the data, some of the above quantities can not be calculated. We 
 
 To account for the differences in units and scale, each feature column $\boldsymbol{F}$ in the data set is normalized to values between 0 and 1, using: $\boldsymbol{f}=\left(\boldsymbol{F}-\min{\boldsymbol{F}}\right) /\left(\max{\boldsymbol{F}}-\min{\boldsymbol{F}}\right)$.
 
-\paragraph{Dimensional reduction using PCA}
-Principal Component Analysis (PCA) is a mathematical tool used in data analysis to simplify and extract the most relevant features in the data set. This technique is used to create entries composed of linearly uncorrelated `principal components'. These are the eigenvectors of the covariance matrix $\Sigma$ applied to the centered data, eq.\eqref{eq:covariance}, ordered from the largest to the smallest eigenvalue, $\lambda_1 \ge \lambda_2 \le ... \le \lambda_n$, where $\overline{\boldsymbol{X}}$ is the mean value of each original feature, eq.\eqref{eq:xmean}. The projection of the data onto the principal component space ensures a maximal variance on the direction of the first component. Each subsequent principal component is orthogonal to the previous ones and points in the direction of maximal variance in the residual sub-space \citep{Shlens2014}.
-
-\begin{align}
-\overline{\boldsymbol{X}} & = \frac{1}{m} \sum_{i=1}^{m} \boldsymbol{X}_i \label{eq:xmean} \\
-\Sigma & = \frac{1}{m} \sum_{i=1}^{m} \left( \boldsymbol{X}_i - \overline{\boldsymbol{X}} \right)\left( \boldsymbol{X}_i - \overline{\boldsymbol{X}} \right) \label{eq:covariance}
-\end{align}
-
-The PCA transformation creates as many components as features in the original data. However, components with small eigenvalues belong to a dimension where the variance is so small that it is impossible to separate points in the data. It is a general practice in data reduction to keep only the first $k$ components that explain at least a significant portion, $\epsilon \le \lambda_i/(\lambda_1 - \lambda_n)$, of the total variance of the data. This allows for a selection of information that will effectively differentiate data points, and for a reduction of the amount of data to process during analysis.
-
-Fig. \ref{fig:dimreduc}-a,b is a scatter plot of all the data points, colored by the Xu classification, projected on the first three PCA components. The features used to create this figure are presented in section \ref{sec:[WHICH ONE??]}. Panels c and d contain the same data colored by the Zhao classification. These projections show that some of the empirical solar wind classes are almost linearly separable. However, class 2, ICMEs/Ejecta, is restricted to a small domain in this coordinate system. Panels e and f are 2D histograms of the point distribution in the three main PCA planes. They show that there are multiple clusters of high density points that can be potentially isolated using unsupervised classification techniques. The point distribution shows similar variance in each one of the three PCA components, and present a sharp drop in density at its borders.
-
-\paragraph{Dimensional Reduction Using Autoencoders}
-PCA has a limitation: the principal components are a linear combination of the original features of the data. An alternative to data reduction is the use of autoencoders. These are machine learning techniques that can create non-linear combinations of the original features projected on a latent space with less dimensions. This is accomplished by creating a system where an encoding function, $\phi$, maps the original data $\boldsymbol{X}$ to a latent space, $\boldsymbol{\mathcal{F}}$, eq.\eqref{eq:encoder}. A decoder function, $\psi$, then maps the latent space back to the original input space \eqref{eq:decoder}. The objective of the autoencoder is to minimize the error between the original data and the data produced by the compression-decompression procedure as shown in eq.\eqref{eq:aeminimization}.
-
-\begin{align}
-\phi: & \boldsymbol{X} \rightarrow \boldsymbol{\mathcal{F}} \label{eq:encoder}\\
-\psi: & \boldsymbol{\mathcal{F}} \rightarrow \boldsymbol{X} \label{eq:decoder} \\
-\phi,\psi = & \underset{\phi,\psi}{\arg \min} \left\lVert \boldsymbol{X} - (\phi \circ \psi) \boldsymbol{X} \right\rVert^2 \label{eq:aeminimization}
-\end{align}
-
-Autoencoders can be represented as feed-forward neural networks, where the size of each consecutive layer decreases down to a bottleneck and then expands reaching again the input layer size. An encoded element, $\boldsymbol{z} \in \boldsymbol{\mathcal{F}}$, can be obtained from a data entry, $\boldsymbol{x} \in \boldsymbol{X}$, following the standard neural network function, eq.\eqref{eq:encodex}, where $\boldsymbol{W}$ is the weights matrix, $b$ is the bias, and $\sigma$ is the non-linear activation function.
-
-\begin{align}
-\boldsymbol{z} & = \sigma \left( \boldsymbol{W}\boldsymbol{x} + \boldsymbol{b} \right) \label{eq:encodex} \\
-\boldsymbol{\hat{x}} & = \sigma' \left( \boldsymbol{W'}\boldsymbol{z} + \boldsymbol{b'} \right) \label{eq:decodez} \\ 
-\mathcal{L}(\boldsymbol{x}, \boldsymbol{\hat{x}}) & =  \left\lVert \boldsymbol{x}- \boldsymbol{\hat{x}} \right\rVert^2 \label{eq:aeloss}
-\end{align}
-
-The decoding procedure, shown in eq.\eqref{eq:decodez}, transforms $\boldsymbol{z}\rightarrow\boldsymbol{\hat{x}}$, where the prime quantities are associated with the decoder. The loss function, $\mathcal{L}(\boldsymbol{x}, \boldsymbol{\hat{x}})$, is the objective to be minimized by the training of the neural network using gradient descent. Once trained, the vector $\boldsymbol{z}$ is a projection of the input vector $\boldsymbol{x}$ onto the lower dimesion latent space $\boldsymbol{\mathcal{F}}$.
-
-Additional enhancements and variations of this simple autoencoder setup exist in the literature, including multiple regularization techniques to minimize over-fitting \citep{[REF??]}, Variational Autoencoders (VAE) that produce encoded Gaussian distribution functions \citep{[REF??]}, and Generative Adversarial Networks (GAN) that produce new (unseen) data \citep{[REF??]}. In this work we use the most basic form of autoencoders, presented above.
-
-The second row of panels in Fig.\ref{fig:dimreduc}, from g to l, contains the same information as the first row, but with the data set encoded in a three dimensional latent space. Panels g-j show that all empirical solar wind types are easily differentiated, including ICMEs/Ejecta (class 2, in [COLOR??]). This projection also shows that class 4 from the Zhao classification (non-coronal hole wind) overlaps with class 3 (sector reversal origin), and partially with class 2 (ejecta) from the Xu classification. Panels k and l show the density of points observed in the latent space. Here again it is possible to observe multiple zones of high concentration, suggesting that multiple types of solar wind are present in the data and that they can be differentiated using an unsupervised classification technique.
-
-\paragraph{Existing Data Catalogs}
+\subsubsection{Complementary Data Catalogs}

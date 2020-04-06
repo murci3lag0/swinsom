@@ -264,7 +264,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     
     cols = allacecols
-    acedir = '/home/amaya/Data/ACE'
+    acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
     ybeg = 1998
     yend = 2011
     
@@ -293,6 +293,9 @@ if __name__ == "__main__":
              'Bmag_mean',
              'Bmag_std',
              'log_Ma',
+             'log_Lambda',
+             'log_Delta',
+             'log_He4toprotons',
              'log_proton_speed_range',
              'log_proton_density_range',
              'log_proton_temp_range',
@@ -316,9 +319,13 @@ if __name__ == "__main__":
              'log_avqFe',
              'log_Bmag',
              'log_C6to5',
+             'proton_temp',
              'log_proton_temp',
              'proton_density',
+             'He4toprotons',
              'Ma',
+             'Lambda',
+             'Delta',
              'proton_speed_range',
              'proton_density_range',
              'proton_temp_range',
@@ -330,6 +337,9 @@ if __name__ == "__main__":
              'Bmag_mean',
              'Bmag_std',
              'log_Ma',
+             'log_Lambda',
+             'log_Delta',
+             'log_He4toprotons',
              'log_proton_speed_range',
              'log_proton_density_range',
              'log_proton_temp_range',

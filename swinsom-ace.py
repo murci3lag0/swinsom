@@ -12,6 +12,7 @@ Created on Mon Mar 23 18:35:27 2020
     ---------------------
 '''
 
+import sys
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,6 +26,11 @@ from matplotlib_hex_map import matplotlib_hex_map as map_plot
 # outdir : figure output directory
 # acedir = '/home/amaya/Data/ACE'
 # outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
+
+np.random.seed(1234)
+torch.manual_seed(5678)
+
+
 acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
 outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
 optim = True
@@ -34,7 +40,17 @@ clustering = True
 ## Code options ---------------------------------------------------------------
 # acode   : use autoencoding to generate the training data
 # case    : selection of features from the available options in the dict
-case = 'Amaya'
+cases = ['Roberts', 'XuBorovsky', 'ZhaZuFi', 'Amaya']
+if len(sys.argv)!=2:
+    print('ERROR! Number of arguments')
+    print('       Must be one of: ', cases)
+    exit()
+if str(sys.argv[1]) not in cases:
+    print('ERROR! Incorrect case name')
+    print('       Must be one of: ', cases)
+    exit()
+    
+case = str(sys.argv[1])
 dynamic = True
 params = {'Roberts' :
               {'ybeg' : 2002,
@@ -50,7 +66,7 @@ params = {'Roberts' :
                'learning_rate' : 0.25,
                'init_method' : 'rand_points',
                'bottle_neck' : 8,
-               'nbr_clusters' : 4},
+               'nbr_clusters' : 3},
           'XuBorovsky' :
               {'ybeg' : 1998,
                'yend' : 2008,
@@ -65,7 +81,7 @@ params = {'Roberts' :
                'learning_rate' : 0.25,
                'init_method' : 'rand_points',
                'bottle_neck' : 4,
-               'nbr_clusters' : 4},
+               'nbr_clusters' : 3},
           'ZhaZuFi' :
               {'ybeg' : 1998,
                'yend' : 2008,
@@ -80,7 +96,7 @@ params = {'Roberts' :
                'learning_rate' : 0.25,
                'init_method' : 'rand_points',
                'bottle_neck' : 3,
-               'nbr_clusters' : 4},
+               'nbr_clusters' : 3},
           'Amaya' :
               {'ybeg' : 1998,
                'yend' : 2011,
@@ -95,7 +111,7 @@ params = {'Roberts' :
                'learning_rate' : 0.25,
                'init_method' : 'rand_points',
                'bottle_neck' : 6,
-               'nbr_clusters' : 6
+               'nbr_clusters' : 3
               },
          }
 
@@ -136,7 +152,20 @@ xcols = ['sigmac',
          'log_Sp',
          'log_Va',
          'log_Texp',
-         'log_Tratio']
+         'log_Tratio',
+         'log_Bmag_std',
+         'log_Ma',
+         'log_He4toprotons',
+         'log_Bgsm_x_range',
+         'log_Bmag_range',
+         'log_Bmag_mean',
+         'log_Bmag_acor',
+         'log_Bgsm_z_range',
+         'log_proton_temp',
+         'log_proton_temp_range',
+         'log_proton_speed_range',
+         'log_Bgsm_y_range',
+         'log_proton_density_range']
 
 feat = {'Roberts' :
             ['log_O7to6',
@@ -152,32 +181,36 @@ feat = {'Roberts' :
              'log_Va',
              'log_Tratio'],
         'ZhaZuFi' : 
-            ['O7to6',
+            ['log_O7to6',
              'log_proton_speed'],
         'Amaya' : 
             ['log_O7to6',
              'log_proton_speed',
              'log_proton_density',
+             'log_Sp',
+             'log_Va',
+             'log_Tratio',
              'sigmac',
              'sigmar',
+             'Bmag_acor',
+             'Lambda',
+             'Delta',
              'log_FetoO',
              'log_avqFe',
              'log_Bmag',
              'log_C6to5',
-             'proton_temp',
-             'proton_density',
-             'Ma',
-             'He4toprotons',
-             'proton_speed_range',
-             'proton_density_range',
-             'proton_temp_range',
-             'Bgsm_x_range',
-             'Bgsm_y_range',
-             'Bgsm_z_range',
-             'Bmag_range',
-             'Bmag_acor',
-             'Bmag_mean',
-             'Bmag_std'],
+             'log_proton_temp',
+             'log_Ma',
+             'log_He4toprotons',
+             'log_proton_speed_range',
+             'log_proton_density_range',
+             'log_proton_temp_range',
+             'log_Bgsm_x_range',
+             'log_Bgsm_y_range',
+             'log_Bgsm_z_range',
+             'log_Bmag_range',
+             'log_Bmag_mean',
+             'log_Bmag_std',],
        }
 
 
@@ -224,7 +257,7 @@ raw = scaler.fit_transform(raw)
 if acode:
     print('Autoencoder...')
     from autoencoder import autoencoder
-    nodes = [raw.shape[1], 16, 9, bneck]
+    nodes = [raw.shape[1], 15, 7, bneck]
     ae = autoencoder(nodes)
     print('Autoencoder fit...')
     L, T = ae.fit(torch.Tensor(raw), batch_size, num_epochs)
@@ -254,12 +287,12 @@ if clustering:
     from sklearn import cluster, mixture
     from sklearn.neighbors import kneighbors_graph
     print('Loading clustering methods...')
-    kms = cluster.MiniBatchKMeans(n_clusters=n_clstr)
-    spc = cluster.SpectralClustering(n_clusters=n_clstr, eigen_solver='arpack', affinity="nearest_neighbors")
+    kms = cluster.MiniBatchKMeans(verbose=1, n_clusters=n_clstr, n_init=500)
+    spc = cluster.SpectralClustering(n_clusters=n_clstr, eigen_solver='arpack', affinity="nearest_neighbors", n_init=500)
     con = kneighbors_graph(x, n_neighbors=10, include_self=False)
     con = 0.5 * (con + con.T) # make connectivity symmetric
     wrd = cluster.AgglomerativeClustering(n_clusters=n_clstr, linkage='ward', connectivity=con)
-    gmm = mixture.GaussianMixture(n_components=n_clstr, covariance_type='full')
+    gmm = mixture.GaussianMixture(verbose=1, n_components=n_clstr, covariance_type='full', n_init=500)
     
     print('Cluster by k-means...')
     y_kms = kms.fit_predict(x)
@@ -330,7 +363,7 @@ if calculate_som:
     '''
     from sklearn import cluster
     n_clusters = n_clstr
-    C1 = cluster.MiniBatchKMeans(n_clusters=n_clusters).fit(W.reshape(m*n,-1))
+    C1 = cluster.MiniBatchKMeans(n_clusters=n_clusters, n_init=500).fit(W.reshape(m*n,-1))
     C1 = np.array(C1.labels_)
     C1 = C1.reshape((m,n))
     data = som_addinfo(som, data, x, C1, 'class-kmeans-8')
@@ -340,7 +373,7 @@ if calculate_som:
     C2 = C2.reshape((m,n))
     data = som_addinfo(som, data, x, C2, 'class-agglo-8')
 
-    C3 = cluster.Birch(n_clusters=n_clusters, threshold=0.1).fit(W.reshape(m*n,-1))
+    C3 = cluster.Birch(n_clusters=n_clusters, threshold=0.01).fit(W.reshape(m*n,-1))
     C3 = np.array(C3.labels_)
     C3 = C3.reshape((m,n))
     data = som_addinfo(som, data, x, C3, 'class-birch-8')
@@ -540,10 +573,10 @@ pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
 pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
 pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
 pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')
-pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-kmeans-8', [1,0,0], fname=fig_path+'/classesdatarange.png')
-pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-agglo-8', [0,1,0], fname=fig_path+'/classesdatarange.png')
-pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-birch-8', [0,0,1], fname=fig_path+'/classesdatarange.png')
+pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-kmeans-8', [1,0,0], fname=fig_path+'/classesdatarange-kmeans.png')
+pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-agglo-8', [0,1,0], fname=fig_path+'/classesdatarange-agglo.png')
+pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-birch-8', [0,0,1], fname=fig_path+'/classesdatarange-birch.png')
 
 beg = '2003-05-01'
 end = '2003-09-01'
-pfig.fig_timeseries(data, beg, end, n_clstr, fname=fig_path+'/datarange.png')
+pfig.fig_timeseries(data, beg, end, n_clstr, fname=fig_path+'/timeseries.png')

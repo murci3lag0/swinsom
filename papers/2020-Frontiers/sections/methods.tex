@@ -1,15 +1,53 @@
-\paragraph{Clustering Techniques}
+\subsubsection{Dimension Reduction using PCA}
+Principal Component Analysis (PCA) is a mathematical tool used in data analysis to simplify and extract the most relevant features in the data set. This technique is used to create entries composed of linearly uncorrelated `principal components'. These are the eigenvectors of the covariance matrix $\Sigma$ applied to the centered data, eq.\eqref{eq:covariance}, ordered from the largest to the smallest eigenvalue, $\lambda_1 \ge \lambda_2 \ge ... \ge \lambda_n$, where $\overline{\boldsymbol{X}}$ is the mean value of each original feature, eq.\eqref{eq:xmean}. The projection of the data onto the principal component space ensures a maximal variance on the direction of the first component. Each subsequent principal component is orthogonal to the previous ones and points in the direction of maximal variance in the residual sub-space \citep{Shlens2014}.
+
+\begin{align}
+\overline{\boldsymbol{X}} & = \frac{1}{m} \sum_{i=1}^{m} \boldsymbol{X}_i \label{eq:xmean} \\
+\Sigma & = \frac{1}{m} \sum_{i=1}^{m} \left( \boldsymbol{X}_i - \overline{\boldsymbol{X}} \right)\left( \boldsymbol{X}_i - \overline{\boldsymbol{X}} \right) \label{eq:covariance}
+\end{align}
+
+The PCA transformation creates as many components as features in the original data. However, components with small eigenvalues belong to a dimension where the variance is so small that it is impossible to separate points in the data. It is a general practice in data reduction to keep only the first $k$ components that explain at least a significant portion of the total variance of the data, $\lambda_{i=1..k}/\text{Tr}(\Sigma) > \epsilon$. This allows for a selection of information that will effectively differentiate data points, and for a reduction of the amount of data to process during analysis.
+
+Fig. \ref{fig:dimreduc}-a,b is a scatter plot of all the data points, colored by the Xu classification, projected on the first three PCA components. The features used to create this figure are presented in section \ref{sec:[WHICH ONE??]}. Panels c and d contain the same data colored by the Zhao classification. These projections show that some of the empirical solar wind classes are almost linearly separable. However, class 2, ICMEs/Ejecta, is restricted to a small domain in this coordinate system. Panels e and f are 2D histograms of the point distribution in the three main PCA planes. They show that there are multiple clusters of high density points that can be potentially isolated using unsupervised classification techniques. The point distribution shows similar variance in each one of the three PCA components, and present a sharp drop in density at its borders.
+
+\subsubsection{Dimension Reduction Using Autoencoders}
+PCA has a limitation: the principal components are a linear combination of the original features of the data. An alternative to data reduction is the use of autoencoders. These are machine learning techniques that can create non-linear combinations of the original features projected on a latent space with less dimensions \citep{Hinton2006}. This is accomplished by creating a system where an encoding function, $\phi$, maps the original data $\boldsymbol{X}$ to a latent space, $\boldsymbol{\mathcal{F}}$, eq.\eqref{eq:encoder}. A decoder function, $\psi$, then maps the latent space back to the original input space \eqref{eq:decoder}. The objective of the autoencoder is to minimize the error between the original data and the data produced by the compression-decompression procedure as shown in eq.\eqref{eq:aeminimization}.
+
+\begin{align}
+\phi: & \boldsymbol{X} \rightarrow \boldsymbol{\mathcal{F}} \label{eq:encoder}\\
+\psi: & \boldsymbol{\mathcal{F}} \rightarrow \boldsymbol{X} \label{eq:decoder} \\
+\phi,\psi = & \underset{\phi,\psi}{\arg \min} \left\lVert \boldsymbol{X} - (\phi \circ \psi) \boldsymbol{X} \right\rVert^2 \label{eq:aeminimization}
+\end{align}
+
+Autoencoders can be represented as feed-forward neural networks, where the size of each consecutive layer decreases down to a bottleneck and then expands reaching again the input layer size. An encoded element, $\boldsymbol{z} \in \boldsymbol{\mathcal{F}}$, can be obtained from a data entry, $\boldsymbol{x} \in \boldsymbol{X}$, following the standard neural network function, eq.\eqref{eq:encodex}, where $\boldsymbol{W}$ is the weights matrix, $b$ is the bias, and $\sigma$ is the non-linear activation function.
+
+\begin{align}
+\boldsymbol{z} & = \sigma \left( \boldsymbol{W}\boldsymbol{x} + \boldsymbol{b} \right) \label{eq:encodex} \\
+\boldsymbol{\hat{x}} & = \sigma' \left( \boldsymbol{W'}\boldsymbol{z} + \boldsymbol{b'} \right) \label{eq:decodez} \\ 
+\mathcal{L}(\boldsymbol{x}, \boldsymbol{\hat{x}}) & =  \left\lVert \boldsymbol{x}- \boldsymbol{\hat{x}} \right\rVert^2 \label{eq:aeloss}
+\end{align}
+
+The decoding procedure, shown in eq.\eqref{eq:decodez}, transforms $\boldsymbol{z}\rightarrow\boldsymbol{\hat{x}}$, where the prime quantities are associated with the decoder. The loss function, $\mathcal{L}(\boldsymbol{x}, \boldsymbol{\hat{x}})$, is the objective to be minimized by the training of the neural network using gradient descent. Once trained, the vector $\boldsymbol{z}$ is a projection of the input vector $\boldsymbol{x}$ onto the lower dimesion latent space $\boldsymbol{\mathcal{F}}$.
+
+Additional enhancements and variations of this simple autoencoder setup exist in the literature, including multiple regularization techniques to minimize over-fitting \citep{[REF??]}, Variational Autoencoders (VAE) that produce encoded Gaussian distribution functions \citep{[REF??]}, and Generative Adversarial Networks (GAN) that produce new (unseen) data \citep{[REF??]}. In this work we use the most basic form of autoencoders, presented above.
+
+The second row of panels in Fig.\ref{fig:dimreduc}, from g to l, contains the same information as the first row, but with the data set encoded in a three dimensional latent space. Panels g-j show that all empirical solar wind types are easily differentiated, including ICMEs/Ejecta (class 2, in [COLOR??]). This projection also shows that class 4 from the Zhao classification (non-coronal hole wind) overlaps with class 3 (sector reversal origin), and partially with class 2 (ejecta) from the Xu classification. Panels k and l show the density of points observed in the latent space. Here again it is possible to observe multiple zones of high concentration, suggesting that multiple types of solar wind are present in the data and that they can be differentiated using an unsupervised classification technique.
+
+\subsubsection{Clustering Techniques}
 \label{sec:clustering}
 The goal of unsupervised machine learning is to group data points in a limited number of clusters in the N-dimensional space $\Omega\in\Bbb R^N$, where N is the number of features (components) in the data set. Multiple techniques can be used to perform multi-dimensional clustering. We present in Fig. \ref{fig:clustering} three clustering techniques used to classify our 3D reduced data. The panels in the first column shows the data projected in the first and second dimensions of the autoencoded latent space, while the second column shows the data in the first and third dimensions. Panels in columns 3 and 4 contain the same type of projection in the PCA reduced space. Each row corresponds to a different clustering method where the number of classes has been imposed to four. The top four panels (a, b, g, h) were obtained using the $k$-means method \citep{[REF??]}, the classification in the middle panels (c, d, i, j) was obtained using the Spectral Clustering (SC) method \citep{[REF??]}, and the bottom two panels (e, f, k, l) feature a classification based on the Gaussian Mixture Model (GMM) \citep{[REF??]}.
 
 The $k$-means technique has been used in a recent publication for the determination of solar wind states \citep{Roberts2020}. To our knowledge the SC and GMM methods have never been used in the literature to classify the solar wind, but \citep{Dupuis2020} has used the GMM to characterize magnetic reconnection regions in simulations using their velocity distribution information.
 
 [REVIEW THIS PARAGRAHP??]
-In this data set the most glaring issue is that different techniques lead to different clusters of points. Some similarities can be observed between the $k$-means technique and the SC method, but the GMM leads to clusters that do not seem to correlate with the previous two. The differences do not stop between clustering techniques: for a single method, e.g. $k$-means, slight modifications of the clustering parameters, e.g. using a different seed for the random number generator, can lead to very different results. Moreover, the cloud of points is convex and evenly distributed in all three components. This raises one additional issue, observed more clearly in columns 3 and 4 of Fig.\ref{fig:clustering}: when classical clustering methods are applied to homogeneously dense data, it divides the feature space in Vorono\"i regions with linear hyper-plane boundaries. Modern clustering techniques based on point density, e.g. DBSCAN \citep{[REF newDBSCAN paper??]}, do not suffer from this issue, but lead to a single class in homogeneous clouds.
+In this data set the most glaring issue is that different techniques lead to different clusters of points. Some similarities can be observed between the $k$-means technique and the SC method, but the GMM leads to clusters that do not seem to correlate with the previous two. The differences do not stop between clustering techniques: for a single method, e.g. $k$-means, slight modifications of the clustering parameters, e.g. using a different seed for the random number generator, can lead to very different results. Moreover, the cloud of points is convex and evenly distributed in all three components. This raises one additional issue, observed more clearly in columns 3 and 4 of Fig.\ref{fig:clustering}: when classical clustering methods are applied to homogeneously dense data, it divides the feature space in Vorono\"i regions with linear hyper-plane boundaries. Density-based clustering techniques, such as DBSCAN, \citep{[REF newDBSCAN paper??]}, do not suffer from this issue, but lead to a single class in homogeneous clouds.
 
 There is no guarantee that a single classification method, with a particular set of parameters will converge to a physically meaningful classification of the data if the points in this data do not have some level of separability, or show clear zones of high density. This is also true for other classification methods based on `supervised learning'. The same issues will be observed if the training data uses target classes derived from dense data clouds using simple hyper-plane boundaries, as done for the Zhao and Xu classes (Table \ref{tab:swtypes}).
 
-\paragraph{Self-Organizing Maps}
+\subsubsection{Self-Organizing Maps}
+
+\paragraph{Classical SOM}
+
 Following the definitions and notations by \citep{[REF 23 in ROUGIER??]}, a class can be defined as $C_i\overset{\text{def}}{=} \{x\in\Omega | \Phi(x)=\boldsymbol{w}_i\}$, where $\Phi$ is a function from $\Omega$ to a finite subset of $k$ points $\{\boldsymbol{w}_i\in\Bbb R^N\}_{i=1..k}$. A cluster $C_i$ is then a partition of $\Omega$, and $\{\boldsymbol{w}_i\}$ are the code words (also known as nodes, weights or centroids) associated. The mapping from the data space to the code word set, $\Phi: \Omega\rightarrow\mathcal{W}$, is obtained by finding the closest neighbor, eq.\eqref{eq:winner}. The code word $\boldsymbol{w_x}$, the closest node to the input $\boldsymbol{x}$, is called the `winning element'. The class $C_i$ corresponds to a Vorono\"i region of $\Omega$ with center in $\boldsymbol{w}_i$.
 
 \begin{equation}
@@ -45,7 +83,7 @@ Q_E = \frac{1}{M} \sum_{i=1}^M \left\lVert x_i - w_{x_i} \right\rVert
 
 where $M$, is the total number of entries in the data set.
 
-\paragraph{Dynamic Self-Organizing Maps}
+\paragraph{Dynamic SOM}
 The time dependence of the SOM training allows the code words $\boldsymbol{w}_i$ to reach steady coordinates by slowing down their movement over the iterations. Due to the minimization of the distance in eq.\eqref{eq:winner} code words tend to agglomerate around high density zones of the feature space. The Dynamic Self-Organizing Maps (DSOM), introduced by \citep{Rougier2011}, eliminate the time dependence and allows to cover larger zones of the space outside of the high density regions.
 
 The DSOM is a variation of the SOM where the learning function \eqref{eq:learnsom} and the neighbor function \eqref{eq:neigsom} are replaced by eqs. \eqref{eq:learndsom} and \eqref{eq:neigdsom} respectively:
@@ -70,4 +108,18 @@ The fourth panel in the top row of Fig.\ref{fig:maps} shows that the nodes of th
 
 The bottom row of Fig.\ref{fig:maps} displays all three components of the $\boldsymbol{p}_i$ nodes. In the first panel they have been mapped to the basic colors Red, Green and Blue (RGB). The remaining panels have been colored using each individual component. The first panel is the RGB composition of the three remaining ones.
 
-\paragraph{The Full Architecture}
+\subsubsection{The Full Architecture}
+
+\paragraph{Our model}
+
+\paragraph{Budget}
+Machine learning models require fine tuning of different parameters, from the selection and testing of multiple methods, to the parameterization of the final architecture. \citep{[REF??]} suggests that every publication in machine learning should include a section on the budget used for the development and training of the method. The budget is the amount of resources used in the data processing, the selection of the model hyper-parameters (HP), and its training.
+
+The most time-consuming task in the present work has been the data preparation, the model setup and debugging and the writing of the SOM visualization routines. All the techniques described in the Methods section \ref{sec:methods} have been coded in python and are freely accessible in the repositories listed in section \ref{sec:repos}. We estimate the effort to bring this work from scratch to a total of 2 persons month. Of these, one person week was dedicated to the testing an selection of different model HPs (autoencoder architecture, feature selection, learning rates, initialization methods, number of epochs for training, selection of data compression method, size of the time windows, etc.).
+
+All classic clustering techniques presented in section \ref{sec:clustering} require only a few lines of code and can be trained in less than a minute on a current generation laptop (e.g. Dell XPS 13 2016 with an Intel Core i7-7500U CPU). The most time consuming task is the training of the autoencoder which can last for up to 3 minutes. The training of the SOM is performed in less than a minute.
+
+\paragraph{Hyper-Parameter Optimization}
+We are focusing in this work on the use of the SOMs. These require the selection of four main HPs: the size of the lattice, $(m\times n)$, the initial learning rate, $\epsilon_0$HPs are replaced by the constant learning rate, $\epsilon$, and the elasticity, $\eta$. The automatic selection of the best HP for machine learning model is called Hyper-Parameter Optimization (HPO).
+
+We use the library `optuna' \citep{[REF??]} to perform an automatic optimization of the four HPs. The optimization is based on a technique called Tree-structured Parzen Estimator (TPE) \citep{[REF 3 IN OPTUNA PAPER??]}. The objective function of the optimizer was set to minimize the quantization error $Q_E$, the mean inter nodal distance, and the elasticity (or the neighborhood width) of the SOM. After a total of 100 trials (runs of the model using different HPs), the optimizer selected the parameters presented in table \ref{tab:hpo}. The total run-time for a single HPO is in the order of 30 minutes on a home computer. HPO is, understandably, the most expensive procedure.

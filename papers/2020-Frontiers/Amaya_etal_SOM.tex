@@ -56,7 +56,7 @@ $^{2}$Jet Propulsion Laboratory, Interstellar and Heliospheric Physics Division,
 
 
 \maketitle
-
+me
 
 \begin{abstract}
 
@@ -78,11 +78,8 @@ This is the \href{https://github.com/murci3lag0}{link to my personal GitHub page
 \subsection{Data and Processing}
 \input{sections/data}
 
-\subsection{Unsupervised classification}
+\subsection{Dimension Reduction and Clustering}
 \input{sections/methods}
-
-\subsection{Model Hyper-Parameter Selection}
-\input{sections/optim}
 
 \section{Results and comparisons}
 \input{sections/results}
@@ -183,17 +180,17 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 		\toprule
 		ID & Name  & Amaya et al. & Roberts et al. & Xu \& Borovsky & Zhao et al. \\
 		\midrule
-		1 & O7to6 & $\checkmark$ & $\checkmark$, log & & $\checkmark$, log \\
-		2 & proton\_speed & $\checkmark$, log & $\checkmark$, log & & $\checkmark$, log \\
-		3 & proton\_density & $\checkmark$ & $\checkmark$, log & & \\
-		4 & FetoO & $\checkmark$ & $\checkmark$, log & & \\
-		5 & avqFe & $\checkmark$ & $\checkmark$, log & & \\
-		6 & sigmac & $\checkmark$ & $\checkmark$, log & & \\
-		7 & sigmar & $\checkmark$ & $\checkmark$, log & & \\
-		8 & Bmag & $\checkmark$ & $\checkmark$, log & & \\
-		9 & Sp & $\checkmark$, log & & $\checkmark$, log & \\
-		10 & Va & $\checkmark$, log & &$\checkmark$, log & \\
-		11 & Tratio & $\checkmark$, log & & $\checkmark$, log & \\
+		1 & O7to6 & $\checkmark$ & $\checkmark$ & & $\checkmark$ \\
+		2 & proton\_speed & $\checkmark$ & $\checkmark$ & & $\checkmark$ \\
+		3 & proton\_density & $\checkmark$ & $\checkmark$ & & \\
+		4 & FetoO & $\checkmark$ & $\checkmark$ & & \\
+		5 & avqFe & $\checkmark$ & $\checkmark$ & & \\
+		6 & sigmac$^{(*)}$ & $\checkmark$ & $\checkmark$ & & \\
+		7 & sigmar$^{(*)}$ & $\checkmark$ & $\checkmark$ & & \\
+		8 & Bmag & $\checkmark$ & $\checkmark$ & & \\
+		9 & Sp & $\checkmark$ & & $\checkmark$ & \\
+		10 & Va & $\checkmark$ & &$\checkmark$ & \\
+		11 & Tratio & $\checkmark$ & & $\checkmark$ & \\
 		12 & proton\_temp & $\checkmark$ & & & \\
 		13 & Ma & $\checkmark$ & & & \\
 		14 & He4toprotons & $\checkmark$ & & & \\
@@ -205,9 +202,11 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 		20 & Bgsm\_y\_range & $\checkmark$ & & & \\
 		21 & Bgsm\_z\_range & $\checkmark$ & & & \\
 		22 & Bmag\_range & $\checkmark$ & & & \\
-		23 & Bmag\_acor & $\checkmark$ & & & \\
+		23 & Bmag\_acor$^{(*)}$ & $\checkmark$ & & & \\
 		24 & Bmag\_mean & $\checkmark$ & & & \\
 		25 & Bmag\_std & $\checkmark$ & & & \\
+		26 & Lambda$^{(*)}$ & $\checkmark$ & & & \\
+		27 & Delta$^{(*)}$ & $\checkmark$ & & & \\
 		\midrule
 		 & Initial year & 1998 & 2002 & 2000 & 2000 \\
 		 & Final year & 2011 & 2004 & 2011 & 2011 \\
@@ -232,21 +231,21 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=10cm]{Amaya/datacoverage}% This is a *.eps file
+		\includegraphics[width=10cm]{Roberts/datacoverage}% This is a *.eps file
 	\end{center}
 	\caption{ Data coverage.}\label{fig:datacoverage}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=16cm]{Amaya/dimreduc}% This is a *.eps file
+		\includegraphics[width=16cm]{Roberts/dimreduc}% This is a *.eps file
 	\end{center}
 	\caption{ Dimension reduction. Zhao vs Xu, PCA vs AE}\label{fig:dimreduc}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=16cm]{Amaya/clustering}% This is a *.eps file
+		\includegraphics[width=16cm]{Roberts/clustering}% This is a *.eps file
 	\end{center}
 	\caption{ Clustering k-means, GMM, spectral}\label{fig:clustering}
 \end{figure}
@@ -260,9 +259,23 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=16cm]{Amaya/datarange}% This is a *.eps file
+		\includegraphics[width=16cm]{Roberts/datarange}% This is a *.eps file
 	\end{center}
 	\caption{ Data range for the Amaya et al case.}\label{fig:datarange}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=10cm]{Roberts/classesdatarange}% This is a *.eps file
+	\end{center}
+	\caption{ Classes data range for the Roberts et al case.}\label{fig:classesdatarange}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=18cm]{Roberts/timeseries}% This is a *.eps file
+	\end{center}
+	\caption{ Time series for the Roberts et al case.}\label{fig:timeseries}
 \end{figure}
 
 \end{document}
