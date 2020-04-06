@@ -236,31 +236,54 @@ def fig_datarange(data, fname=None):
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
 def fig_timeseries(data, beg, end, n_clusters, fname=None):
-    fig, ax = plt.subplots(6,1, figsize=cm2inch((16,7)), sharex='all')
+    fig, ax = plt.subplots(6,1, figsize=(16,7), sharex='all')
     set_figure()
     
     ax[0].set_xlim(pd.to_datetime(beg), pd.to_datetime(end))
-    cmap = plt.cm.get_cmap('jet', n_clusters)
-    ax[0].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-kmeans-8'], cmap=cmap, s=5)
-    ax[1].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-agglo-8'], cmap=cmap, s=5)
-    ax[2].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-birch-8'], cmap=cmap, s=5)
+    cmap = mcolors.ListedColormap(['#ffe119','#e6194B', '#4363d8', '#f58231', '#42d4f4','#3cb44b', '#fabebe', '#469990', '#e6beff', '#f032e6', '#9A6324', '#fffac8', '#800000', '#aaffc3', '#000075', '#a9a9a9'])
+    # cmap = plt.cm.get_cmap('jet', n_clusters)
+    ax[0].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-kmeans-8'], cmap=cmap, s=5, zorder=3)
+    ax[1].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-agglo-8'], cmap=cmap, s=5, zorder=3)
+    ax[2].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-birch-8'], cmap=cmap, s=5, zorder=3)
+        
+    shck = pd.read_csv('catalogs/HSCA_Shock_cat.csv', comment="#", parse_dates={'Datetime' : ['Year','Month','Day','UT']}, index_col='Datetime')
+    aces = pd.read_csv('catalogs/ACE_Shocks_cat.csv', comment="#", parse_dates={'Datetime' : ['Month','Day','Year','Time']}, index_col='Datetime')
+    icme = pd.read_csv('catalogs/Richarson_Cane_ICME_cat.csv', comment="#", parse_dates=['Datetime'], index_col='Datetime')
+
+    for a in range(3):
+        for idx in shck[beg:end].index:
+            ax[a].axvline(idx, color='blue', alpha=0.5, zorder=1)
+        for idx in aces[beg:end].index:
+            ax[a].axvline(idx, ls='--', color='blue', alpha=0.3, zorder=1)
+        icme['Start'] = pd.to_datetime(icme['Start'])
+        icme['End'] = pd.to_datetime(icme['End'])
+        for i in range(len(icme[beg:end])):
+            x1 = icme[beg:end].iloc[i]['Start']
+            x2 = icme[beg:end].iloc[i]['End']
+            ax[a].axvspan(x1, x2, color='grey', edgecolor='none', alpha=0.3, zorder=1)
     
-    dparser = lambda x : pd.datetime.strptime(x, '%Y/%m/%d %H%M')
-    icme = pd.read_csv('catalogs/Richarson_Cane_ICME_cat.csv', comment="#", date_parser=dparser, parse_dates=['Datetime'])
-    icme['Start'] = pd.to_datetime(icme['Start'])
-    icme['End'] = pd.to_datetime(icme['End'])
-    icme = icme.set_index('Datetime')
-    ax[2].plot(icme[beg:end])
+    y1 = data[beg:end]['Bgsm_x']
+    y2 = data[beg:end]['Bgsm_y']
+    # ax[3].plot(y1, 'r-')
+    # ax[3].plot(y2, 'g-')
+    ax[3].fill_between(y1.index, y1, y2, where=y1>y2, interpolate=True, color='red')
+    ax[3].fill_between(y1.index, y1, y2, where=y1<y2, interpolate=True, color='green')
     
-    ax[3].plot(data[beg:end]['Bgsm_x'], 'r-')
-    ax[3].plot(data[beg:end]['Bgsm_y'], 'g-')
     
-    ax[4].plot(data[beg:end]['Bgsm_z'], 'b-')
-    
-    ax[5].plot(data[beg:end]['log_O7to6'], 'r-')
+    y1 = data[beg:end]['Bgsm_z']
+    # ax[4].plot(y1, 'b-')
+    ax[4].fill_between(y1.index, y1, 0.0, where=y1>0.0, interpolate=True, color='b')
+    ax[4].fill_between(y1.index, y1, 0.0, where=y1<0.0, interpolate=True, color='r')
+
+    y1 = data[beg:end]['log_O7to6']
+    y2  = np.log(6.008)-0.00578*data[beg:end]['proton_speed']
+    y3 = np.log(0.145)    
+    ax[5].plot(y1, 'k:')
     # ax2b = ax[2].twinx()
-    ax[5].plot(np.log(6.008)-0.00578*data[beg:end]['proton_speed'], 'b-.')
-    ax[5].hlines(np.log(0.145), beg, end, color='blue', linestyles='dashed')
+    ax[5].fill_between(y1.index, y2, y3, where=y2>y3, interpolate=True, color='red', alpha=0.3)
+    ax[5].plot(y2, 'b-')
+    # ax[5].hlines(y3, beg, end, color='blue', linestyles='dashed')
+
     
     ax[0].set_ylabel(r'$V_{sw}$ $[km/s]$')
     ax[1].set_ylabel(r'$V_{sw}$ $[km/s]$')

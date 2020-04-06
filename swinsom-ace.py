@@ -535,4 +535,7 @@ fig_path = outdir+case
 # pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
 # pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
 # pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')
+
+beg = '2003-05-01'
+end = '2003-09-01'
 pfig.fig_timeseries(data, beg, end, n_clusters, fname=fig_path+'/datarange.png')
