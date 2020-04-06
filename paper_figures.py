@@ -13,13 +13,6 @@ from matplotlib_hex_map import matplotlib_hex_map as map_plot
 import numpy as np
 import pandas as pd
 from som import *
-
-def cm2inch(*tupl):
-    inch = 1.5 #2.54
-    if isinstance(tupl[0], tuple):
-        return tuple(i/inch for i in tupl[0])
-    else:
-        return tuple(i/inch for i in tupl)
     
 def set_figure():
     plt.rcParams['font.size'] = 10
@@ -38,7 +31,7 @@ def fig_datacoverage(data, cols, fname=None):
         
 def fig_dimreduc(data, x1, x2, cmap='Set1', fname=None):
     cmap = plt.cm.get_cmap(cmap, 5)
-    fig, ax = plt.subplots(2,6, figsize=cm2inch((16,6)), sharex='none', sharey='row')
+    fig, ax = plt.subplots(2,6, figsize=(16,6), sharex='none', sharey='row')
     set_figure()
     alpha = 0.6
     size = 0.1
@@ -80,7 +73,7 @@ def fig_dimreduc(data, x1, x2, cmap='Set1', fname=None):
         
 def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, cmap='Set1', fname=None):
     cmap = plt.cm.get_cmap(cmap, 5)
-    fig, ax = plt.subplots(3,4,figsize=cm2inch((16,9)),sharex='col', sharey='col')
+    fig, ax = plt.subplots(3,4,figsize=(16,9),sharex='col', sharey='col')
     set_figure()
     alpha = 0.6
     size = 0.1
@@ -121,7 +114,7 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, cmap='Set1', fname=None
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
 def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, pcomp, scaler, feat, fname=None):
-    fig, ax = plt.subplots(2 , 4, figsize=cm2inch((16,7)))
+    fig, ax = plt.subplots(2 , 4, figsize=(16,7))
     set_figure()
     
     #-- Histogram plot in [0,0]
@@ -227,11 +220,37 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, pcomp, s
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
 def fig_datarange(data, fname=None):
-    fig, ax = plt.subplots(1, 1, figsize=cm2inch((16,7)))
+    fig, ax = plt.subplots(1, 1, figsize=(16,7))
     set_figure()
-    plt.violinplot(data, showextrema=False)
+    # plt.violinplot(data, showextrema=False)
     plt.boxplot(data, notch=True, showfliers=False, showmeans=True)
     plt.xticks(range(1,data.shape[1]+1))
+    if fname is not None:
+        plt.savefig(fname, bbox_inches='tight', transparent=True)
+        
+def fig_classesdatarange(data, ftr, scaler, nclasses, classname, c, fname=None):
+    fig, ax = plt.subplots(nclasses, 1, figsize=(8, 2*nclasses), sharex='all', sharey='all')
+    set_figure()
+        
+    for cl in range(nclasses):
+        boxprops = dict(linestyle='-', linewidth=1, color=c, facecolor=c)
+        medianprops = dict(linestyle='-', linewidth=1, color='k')
+        meanprops = dict(linestyle='--', color='k')
+        df = data[data[classname]==cl][ftr]
+        raw = scaler.transform(df.values)
+        k = raw.mean(axis=0)
+        box = ax[cl].boxplot(raw, notch=True, showfliers=False, showmeans=True, meanline=True, patch_artist=True,
+                           boxprops=boxprops,
+                           #capprops=dict(color=c),
+                           #whiskerprops=dict(color=c),
+                           #flierprops=dict(color=c, markeredgecolor=c),
+                           medianprops=medianprops,
+                           meanprops=meanprops,)
+        for i, patch in enumerate(box['boxes']):
+            color = np.append(c, k[i])
+            patch.set_facecolor(color)
+        plt.xticks(range(1,raw.shape[1]+1))
+    
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         

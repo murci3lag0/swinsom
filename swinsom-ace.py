@@ -49,7 +49,8 @@ params = {'Roberts' :
                'sigma' : 5.0,
                'learning_rate' : 0.25,
                'init_method' : 'rand_points',
-               'bottle_neck' : 8,},
+               'bottle_neck' : 8,
+               'nbr_clusters' : 4},
           'XuBorovsky' :
               {'ybeg' : 1998,
                'yend' : 2008,
@@ -63,7 +64,8 @@ params = {'Roberts' :
                'sigma' : 5.0,
                'learning_rate' : 0.25,
                'init_method' : 'rand_points',
-               'bottle_neck' : 4,},
+               'bottle_neck' : 4,
+               'nbr_clusters' : 4},
           'ZhaZuFi' :
               {'ybeg' : 1998,
                'yend' : 2008,
@@ -77,7 +79,8 @@ params = {'Roberts' :
                'sigma' : 5.0,
                'learning_rate' : 0.25,
                'init_method' : 'rand_points',
-               'bottle_neck' : 3,},
+               'bottle_neck' : 3,
+               'nbr_clusters' : 4},
           'Amaya' :
               {'ybeg' : 1998,
                'yend' : 2011,
@@ -92,6 +95,7 @@ params = {'Roberts' :
                'learning_rate' : 0.25,
                'init_method' : 'rand_points',
                'bottle_neck' : 6,
+               'nbr_clusters' : 6
               },
          }
 
@@ -189,6 +193,7 @@ sg      = params[case]['sigma']
 lr      = params[case]['learning_rate']
 init    = params[case]['init_method']
 bneck   = params[case]['bottle_neck']
+n_clstr = params[case]['nbr_clusters']
 nfeat   = len(feat[case])
 
 if not dynamic:
@@ -249,12 +254,12 @@ if clustering:
     from sklearn import cluster, mixture
     from sklearn.neighbors import kneighbors_graph
     print('Loading clustering methods...')
-    kms = cluster.MiniBatchKMeans(n_clusters=4)
-    spc = cluster.SpectralClustering(n_clusters=4, eigen_solver='arpack', affinity="nearest_neighbors")
+    kms = cluster.MiniBatchKMeans(n_clusters=n_clstr)
+    spc = cluster.SpectralClustering(n_clusters=n_clstr, eigen_solver='arpack', affinity="nearest_neighbors")
     con = kneighbors_graph(x, n_neighbors=10, include_self=False)
     con = 0.5 * (con + con.T) # make connectivity symmetric
-    wrd = cluster.AgglomerativeClustering(n_clusters=4, linkage='ward', connectivity=con)
-    gmm = mixture.GaussianMixture(n_components=4, covariance_type='full')
+    wrd = cluster.AgglomerativeClustering(n_clusters=n_clstr, linkage='ward', connectivity=con)
+    gmm = mixture.GaussianMixture(n_components=n_clstr, covariance_type='full')
     
     print('Cluster by k-means...')
     y_kms = kms.fit_predict(x)
@@ -324,7 +329,7 @@ if calculate_som:
         ---------------------
     '''
     from sklearn import cluster
-    n_clusters = 8
+    n_clusters = n_clstr
     C1 = cluster.MiniBatchKMeans(n_clusters=n_clusters).fit(W.reshape(m*n,-1))
     C1 = np.array(C1.labels_)
     C1 = C1.reshape((m,n))
@@ -530,12 +535,15 @@ if calculate_som:
 import paper_figures as pfig
 
 fig_path = outdir+case
-# pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
-# pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
-# pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
-# pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
-# pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')
+pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
+pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
+pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
+pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
+pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')
+pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-kmeans-8', [1,0,0], fname=fig_path+'/classesdatarange.png')
+pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-agglo-8', [0,1,0], fname=fig_path+'/classesdatarange.png')
+pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-birch-8', [0,0,1], fname=fig_path+'/classesdatarange.png')
 
 beg = '2003-05-01'
 end = '2003-09-01'
-pfig.fig_timeseries(data, beg, end, n_clusters, fname=fig_path+'/datarange.png')
+pfig.fig_timeseries(data, beg, end, n_clstr, fname=fig_path+'/datarange.png')
