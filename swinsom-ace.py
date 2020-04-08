@@ -26,13 +26,12 @@ from matplotlib_hex_map import matplotlib_hex_map as map_plot
 # outdir : figure output directory
 # acedir = '/home/amaya/Data/ACE'
 # outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
+acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
+outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
 
 np.random.seed(1234)
 torch.manual_seed(5678)
 
-
-acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
-outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
 optim = True
 calculate_som = True
 clustering = True
@@ -361,15 +360,6 @@ if calculate_som:
     C1 = cluster.MiniBatchKMeans(n_clusters=n_clstr, n_init=500).fit(W.reshape(m*n,-1))
     C1 = np.array(C1.labels_)
     C1 = C1.reshape((m,n))
-    
-    # Organize the classes always in the same order
-    CC = []
-    for c in range (n_clstr):
-        CC.append([np.where(C1==c)[0][0],np.where(C1==c)[1][0]])
-    CSORT = sorted(range(len(CC)),key=lambda k:CC[k])   
-    CP = C1.copy()
-    for c in range (n_clstr):
-        C1[CP==c]=CSORT.index(c)
     data = som_addinfo(som, data, x, C1, 'class-som')
     
     '''
@@ -564,7 +554,7 @@ import paper_figures as pfig
 fig_path = outdir+case
 pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
 
-if acode and xpca:
+if acode and pca:
     pfig.fig_dimreduc(data, xpca, x, n_clstr, cmap='jet_r', fname=fig_path+'/dimreduc.png')
     pfig.fig_clustering(data, x, xpca, y_kms, y_gmm, data['class-som'].values, y_kms_pca, y_gmm_pca, data['class-som'].values, n_clstr, cmap='jet', fname=fig_path+'/clustering.png')
 pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
@@ -576,3 +566,6 @@ pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-som', [0,0,1
 beg = '2003-05-01'
 end = '2003-09-01'
 pfig.fig_timeseries(data, beg, end, n_clstr, fname=fig_path+'/timeseries.png')
+pfig.fig_tsfeatures(data, feat[case], 'class-kmeans', beg, end, n_clstr, fname=fig_path+'/tsfeatures-kmeans.png')
+pfig.fig_tsfeatures(data, feat[case], 'class-gmm', beg, end, n_clstr, fname=fig_path+'/tsfeatures-gmm.png')
+pfig.fig_tsfeatures(data, feat[case], 'class-som', beg, end, n_clstr, fname=fig_path+'/tsfeatures-som.png')

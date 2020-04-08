@@ -171,7 +171,7 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 							   & v3 & v4 \\
 		\bottomrule
 	\end{tabular}
-	\caption{Selected hyper-parameters.}
+	\caption{Hyper-parameters for the SOM/DSOM classification, obtained using Hyper-Parameter Optimization (HPO).}
 	\label{tab:swtypes}
 \end{table}
 
@@ -210,10 +210,12 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 		\midrule
 		 & Initial year & 1998 & 2002 & 2000 & 2000 \\
 		 & Final year & 2011 & 2004 & 2011 & 2011 \\
-		 & PCA transformation & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+		 & PCA transformation & $\checkmark$ & $\checkmark$ & $\checkmark$ &  \\
 		 & AE encoding & $\checkmark$ & $\checkmark$ & & \\
 		\bottomrule
 	\end{tabular}
+	\caption{List of features used for each classification case. The logarithm of all quantities was used, except for the features marked with an asterisk (*). Bottom: data range and transformations used.}
+	\label{tab:features}
 \end{table}
 
 \section*{Figure captions}
@@ -231,51 +233,60 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=10cm]{Roberts/datacoverage}% This is a *.eps file
+		\includegraphics[width=.5\textwidth]{Amaya/datacoverage}
 	\end{center}
-	\caption{ Data coverage.}\label{fig:datacoverage}
+	\caption{Histogram of the number of entries in the data set for this work.}\label{fig:datacoverage}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=16cm]{Roberts/dimreduc}% This is a *.eps file
 	\end{center}
-	\caption{ Dimension reduction. Zhao vs Xu, PCA vs AE}\label{fig:dimreduc}
+	\caption{Dimension reduction scatter plot (first four columns, panels a-d and g-j) and density plots (two last columns, panels e, f, k, l). Top row: PCA transformation. Bottom row: autoencoder transformation. The y-axis in all the panels represent the second component of the transformed space. The x-axis in the odd (even) columns correspond to the first (third) component.}\label{fig:dimreduc}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=16cm]{Roberts/clustering}% This is a *.eps file
 	\end{center}
-	\caption{ Clustering k-means, GMM, spectral}\label{fig:clustering}
+	\caption{Scatter plot of the data set points projected on the transformed space. The two left (right) columns correspond to the PCA (autoencoder) projection. The y-axis in all the panels represent the second component of the transformed space. The x-axis in the odd (even) columns correspond to the first (third) component. First row: k-means classification. Second row: Gaussian Mixture Model classification. Third row: Self-Organizing Map classification.}\label{fig:clustering}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=16cm]{maps}% This is a *.eps file
 	\end{center}
-	\caption{ SOM Maps}\label{fig:maps}
+	\caption{Visualization of the Self-Organizing maps. In columns 2 to 4 the colors evolve from black, to orange to yellow. Top left panel: histogram with the density of data points superposed by the code words (nodes) of the SOM. As an example, a single node is connected to its closest neighbors by red lines. Second panel, top row, Hit map: colred by the sum of the node components, the size of the hexagon corresponds to the number of points associated to the node, and the lines between nodes correspond to their relative distance. Third panel top row: example of the corresponding feature value to each node. Top row last panel: example of the statistics applied to the points associated to each node, in this case mean value of `avqO' in color, with solar wind type hits as hexagon size. Bottom row: the three components of the map nodes, where the first panel is an RGB combination of the following three.}\label{fig:maps}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=16cm]{Roberts/datarange}% This is a *.eps file
+		\includegraphics[width=13cm]{Roberts/datarange}% This is a *.eps file
 	\end{center}
-	\caption{ Data range for the Amaya et al case.}\label{fig:datarange}
+	\caption{Composition of all the solar wind points. Violin plot superposed by a box plot of the solar wind features. The box hight represents the Inter Quartile Range (IQR), the central continuous line represents the median and the dashed line the mean. The central notch represents the confidence of the median. The upper (lower) whiskers represent the lesser 25th (greater 75th) percentile of the data. }\label{fig:datarange}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=10cm]{Roberts/classesdatarange}% This is a *.eps file
+		\includegraphics[width=5cm]{Roberts/classesdatarange-kmeans}\hfill
+		\includegraphics[width=5cm]{Roberts/classesdatarange-gmm}\hfill
+		\includegraphics[width=5cm]{Roberts/classesdatarange-som}
 	\end{center}
-	\caption{ Classes data range for the Roberts et al case.}\label{fig:classesdatarange}
+	\caption{Solar wind `fingerprint': composition of each class (one color per class), obtained with the k-means classification (left), the GMM classification (center), and the DSOM classification (right).}\label{fig:classesdatarange}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=18cm]{Roberts/timeseries}% This is a *.eps file
 	\end{center}
-	\caption{ Time series for the Roberts et al case.}\label{fig:timeseries}
+	\caption{Four months of solar wind information. This is the same period used by \citep{Roberts2020}. Top three panels: solar wind speed colored by a) k-means classification, b) Gaussian Mixture Model classification, and c) DSOM classification. The colors correspond to the `fingerprints' in Fig.\ref{fig:classesdatarange}. Vertical gray zones correspond to Richardson and Cane ICME catalog entries \citep{[RichardsonAndCane??]}, and vertical dashed lines to entries in the ACE and HSCA catalogs \citep{[ACECatalog??][HSCAcatalog??]}. d) Magnetic field polarity color representation using $B_{x,y}$ as the top and bottom limits: red $B_x>B_y$, green $B_x<B_y$. The vertical gray zones correspond periods of 27 days. e) $B_z$ component of the magnetic field: blue positive, red negative. f) plot of the ionized oxygen (dotted line), and the solar wind type limits from \citep{Zhao2009} in table \ref{tab:swtypes}}\label{fig:timeseries}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=18cm]{Roberts/tsfeatures-som}% This is a *.eps file
+	\end{center}
+	\caption{Solar wind features in the same window of time as Fig.\ref{fig:timeseries}. Al points are colored by the class number obtained by the DSOM algorithm. Vertical blue zones correspond to Richardson and Cane ICME catalog entries \citep{[RichardsonAndCane??]}, and vertical dashed lines to entries in the ACE and HSCA catalogs \citep{[ACECatalog??][HSCAcatalog??]} }\label{fig:tsfeatures-som}. The vertical gray zones correspond periods of 27 days.
 \end{figure}
 
 \end{document}

@@ -14,6 +14,8 @@ import numpy as np
 import pandas as pd
 from som import *
     
+cpalette = ['#e6194B', '#3cb44b', '#4363d8', '#f58231', '#42d4f4', '#f032e6', '#469990', '#e6beff', '#9A6324', '#800000', '#000075']
+
 def set_figure():
     plt.rcParams['font.size'] = 10
     plt.rcParams['axes.titlesize'] = 10
@@ -220,20 +222,32 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, pcomp, s
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
 def fig_datarange(data, fname=None):
-    fig, ax = plt.subplots(1, 1, figsize=(16,7))
+    fig, ax = plt.subplots(1, 1, figsize=(8,3))
     set_figure()
-    # plt.violinplot(data, showextrema=False)
-    plt.boxplot(data, notch=True, showfliers=False, showmeans=True)
+    plt.violinplot(data, showextrema=False)
+    boxprops = dict(linestyle='-', linewidth=2, color='red', facecolor='red', alpha=0.3)
+    medianprops = dict(linestyle='-', linewidth=1, color='k')
+    meanprops = dict(linestyle='--', color='k')
+    whiskerprops = dict(linestyle='-', linewidth=2, color='k')
+    plt.boxplot(data, notch=True, showfliers=False, showmeans=True, patch_artist=True, 
+                boxprops=boxprops, meanline=True, medianprops=medianprops, meanprops=meanprops,
+                whiskerprops=whiskerprops, capprops=whiskerprops)
     plt.xticks(range(1,data.shape[1]+1))
+    plt.xlabel('Feature number')
+    plt.ylabel('Normalized feature value')
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
 def fig_classesdatarange(data, ftr, scaler, nclasses, classname, c, fname=None):
-    fig, ax = plt.subplots(nclasses, 1, figsize=(8, 2*nclasses), sharex='all', sharey='all')
+    import matplotlib.ticker as plticker    
+
+    fig, ax = plt.subplots(nclasses, 1, figsize=(4, nclasses), sharex='all', sharey='all')
     set_figure()
+    intervals = 0.25 
+    loc = plticker.MultipleLocator(base=intervals)
         
     for cl in range(nclasses):
-        boxprops = dict(linestyle='-', linewidth=1, color=c, facecolor=c)
+        boxprops = dict(linestyle='-', linewidth=1, color=cpalette[cl], facecolor=cpalette[cl])
         medianprops = dict(linestyle='-', linewidth=1, color='k')
         meanprops = dict(linestyle='--', color='k')
         df = data[data[classname]==cl][ftr]
@@ -246,9 +260,11 @@ def fig_classesdatarange(data, ftr, scaler, nclasses, classname, c, fname=None):
                            #flierprops=dict(color=c, markeredgecolor=c),
                            medianprops=medianprops,
                            meanprops=meanprops,)
+        ax[cl].yaxis.set_major_locator(loc)
+        ax[cl].grid(which='major', axis='y', alpha=0.5)
         for i, patch in enumerate(box['boxes']):
-            color = np.append(c, k[i])
-            patch.set_facecolor(color)
+            # color = np.append(cpalette[cl], k[i])
+            patch.set_facecolor(cpalette[cl])
         plt.xticks(range(1,raw.shape[1]+1))
     
     if fname is not None:
@@ -259,7 +275,7 @@ def fig_timeseries(data, beg, end, n_clusters, fname=None):
     set_figure()
     
     ax[0].set_xlim(pd.to_datetime(beg), pd.to_datetime(end))
-    cmap = mcolors.ListedColormap(['#ffe119','#e6194B', '#4363d8', '#f58231', '#42d4f4','#3cb44b', '#fabebe', '#469990', '#e6beff', '#f032e6', '#9A6324', '#fffac8', '#800000', '#aaffc3', '#000075', '#a9a9a9'])
+    cmap = mcolors.ListedColormap(cpalette)
     # cmap = plt.cm.get_cmap('jet', n_clusters)
     ax[0].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-kmeans'], cmap=cmap, s=5, zorder=3)
     ax[1].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-gmm'], cmap=cmap, s=5, zorder=3)
@@ -268,10 +284,10 @@ def fig_timeseries(data, beg, end, n_clusters, fname=None):
     shck = pd.read_csv('catalogs/HSCA_Shock_cat.csv', comment="#", parse_dates={'Datetime' : ['Year','Month','Day','UT']}, index_col='Datetime')
     aces = pd.read_csv('catalogs/ACE_Shocks_cat.csv', comment="#", parse_dates={'Datetime' : ['Month','Day','Year','Time']}, index_col='Datetime')
     icme = pd.read_csv('catalogs/Richarson_Cane_ICME_cat.csv', comment="#", parse_dates=['Datetime'], index_col='Datetime')
-
+        
     for a in range(3):
         for idx in shck[beg:end].index:
-            ax[a].axvline(idx, color='blue', alpha=0.5, zorder=1)
+            ax[a].axvline(idx, color='blue', alpha=0.3, zorder=1)
         for idx in aces[beg:end].index:
             ax[a].axvline(idx, ls='--', color='blue', alpha=0.3, zorder=1)
         icme['Start'] = pd.to_datetime(icme['Start'])
@@ -279,8 +295,11 @@ def fig_timeseries(data, beg, end, n_clusters, fname=None):
         for i in range(len(icme[beg:end])):
             x1 = icme[beg:end].iloc[i]['Start']
             x2 = icme[beg:end].iloc[i]['End']
-            ax[a].axvspan(x1, x2, color='grey', edgecolor='none', alpha=0.3, zorder=1)
+            ax[a].axvspan(x1, x2, color='grey', edgecolor='none', alpha=0.2, zorder=1)
     
+    from datetime import timedelta
+    for date in pd.date_range(pd.to_datetime(beg), pd.to_datetime(end), freq='52D'):
+        ax[3].axvspan(date, date+timedelta(days=27), color='grey', edgecolor='none', alpha=0.2, zorder=1)
     y1 = data[beg:end]['Bgsm_x']
     y2 = data[beg:end]['Bgsm_y']
     # ax[3].plot(y1, 'r-')
@@ -288,9 +307,9 @@ def fig_timeseries(data, beg, end, n_clusters, fname=None):
     ax[3].fill_between(y1.index, y1, y2, where=y1>y2, interpolate=True, color='red')
     ax[3].fill_between(y1.index, y1, y2, where=y1<y2, interpolate=True, color='green')
     
-    
     y1 = data[beg:end]['Bgsm_z']
     # ax[4].plot(y1, 'b-')
+    
     ax[4].fill_between(y1.index, y1, 0.0, where=y1>0.0, interpolate=True, color='b')
     ax[4].fill_between(y1.index, y1, 0.0, where=y1<0.0, interpolate=True, color='r')
 
@@ -326,3 +345,40 @@ def fig_timeseries(data, beg, end, n_clusters, fname=None):
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
     
+def fig_tsfeatures(data, ftr, cl, beg, end, n_clusters, fname=None):
+    nfeat = len(ftr)
+    fig, ax = plt.subplots(nfeat, 1, figsize=(16,2*(nfeat+1)), sharex='all')
+    set_figure()
+    
+    shck = pd.read_csv('catalogs/HSCA_Shock_cat.csv', comment="#", parse_dates={'Datetime' : ['Year','Month','Day','UT']}, index_col='Datetime')
+    aces = pd.read_csv('catalogs/ACE_Shocks_cat.csv', comment="#", parse_dates={'Datetime' : ['Month','Day','Year','Time']}, index_col='Datetime')
+    icme = pd.read_csv('catalogs/Richarson_Cane_ICME_cat.csv', comment="#", parse_dates=['Datetime'], index_col='Datetime')
+    
+    ax[0].set_xlim(pd.to_datetime(beg), pd.to_datetime(end))
+    cmap = mcolors.ListedColormap(cpalette)
+    
+    for a, f in enumerate(ftr):
+        ax[a].scatter(data[beg:end].index, data[beg:end][f], c=data[beg:end][cl], cmap=cmap, s=5, zorder=3)
+        ax[a].set_ylabel(f)
+        for idx in shck[beg:end].index:
+            ax[a].axvline(idx, color='blue', alpha=0.3, zorder=1)
+        for idx in aces[beg:end].index:
+            ax[a].axvline(idx, ls='--', color='blue', alpha=0.3, zorder=1)
+        icme['Start'] = pd.to_datetime(icme['Start'])
+        icme['End'] = pd.to_datetime(icme['End'])
+        for i in range(len(icme[beg:end])):
+            x1 = icme[beg:end].iloc[i]['Start']
+            x2 = icme[beg:end].iloc[i]['End']
+            ax[a].axvspan(x1, x2, color='blue', edgecolor='none', alpha=0.15, zorder=2)
+    
+        from datetime import timedelta
+        for date in pd.date_range(pd.to_datetime(beg), pd.to_datetime(end), freq='52D'):
+            ax[a].axvspan(date, date+timedelta(days=27), color='grey', edgecolor='none', alpha=0.2, zorder=1)
+
+    locator = mdates.MonthLocator()
+    fmt = mdates.DateFormatter('%b-%Y')
+    plt.gca().xaxis.set_major_locator(locator)
+    plt.gca().xaxis.set_major_formatter(fmt)
+    
+    if fname is not None:
+        plt.savefig(fname, bbox_inches='tight', transparent=True)
