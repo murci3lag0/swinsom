@@ -115,7 +115,7 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fnam
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
-def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, pcomp, scaler, feat, fname=None):
+def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, feat, pcomp=None, fname=None):
     fig, ax = plt.subplots(2 , 4, figsize=(16,7))
     set_figure()
     
@@ -165,7 +165,8 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, pcomp, s
     ftr = feat.index(ftr_name)
     size=np.ones_like(hits)
     WW = W.reshape(m*n, -1)
-    WW = pcomp.inverse_transform(WW)
+    if (pcomp):
+        WW = pcomp.inverse_transform(WW)
     WW = scaler.inverse_transform(WW)
     WW = WW.reshape(m, n, len(feat))
     

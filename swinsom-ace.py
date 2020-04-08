@@ -557,7 +557,7 @@ pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
 if acode and pca:
     pfig.fig_dimreduc(data, xpca, x, n_clstr, cmap='jet_r', fname=fig_path+'/dimreduc.png')
     pfig.fig_clustering(data, x, xpca, y_kms, y_gmm, data['class-som'].values, y_kms_pca, y_gmm_pca, data['class-som'].values, n_clstr, cmap='jet', fname=fig_path+'/clustering.png')
-pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
+pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, scaler, feat[case], pcomp=pcomp, fname=fig_path+'/maps.png')
 pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')
 pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-kmeans', [1,0,0], fname=fig_path+'/classesdatarange-kmeans.png')
 pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-gmm', [0,1,0], fname=fig_path+'/classesdatarange-gmm.png')
