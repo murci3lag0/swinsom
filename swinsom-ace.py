@@ -44,11 +44,11 @@ cases = ['Roberts', 'XuBorovsky', 'ZhaZuFi', 'Amaya']
 if len(sys.argv)!=2:
     print('ERROR! Number of arguments')
     print('       Must be one of: ', cases)
-    exit()
+    sys.exit("Number of arguments error.")
 if str(sys.argv[1]) not in cases:
     print('ERROR! Incorrect case name')
     print('       Must be one of: ', cases)
-    exit()
+    sys.exit("Arguments error.")
     
 case = str(sys.argv[1])
 dynamic = True
@@ -86,7 +86,7 @@ params = {'Roberts' :
               {'ybeg' : 1998,
                'yend' : 2008,
                'autoencode' : False,
-               'pca' : True,
+               'pca' : False,
                'm' : 12,
                'n' : 12,
                'maxiter' : 50000,
@@ -95,7 +95,7 @@ params = {'Roberts' :
                'sigma' : 5.0,
                'learning_rate' : 0.25,
                'init_method' : 'rand_points',
-               'bottle_neck' : 3,
+               'bottle_neck' : 2,
                'nbr_clusters' : 4},
           'Amaya' :
               {'ybeg' : 1998,
@@ -288,24 +288,20 @@ if clustering:
     from sklearn.neighbors import kneighbors_graph
     print('Loading clustering methods...')
     kms = cluster.MiniBatchKMeans(verbose=1, n_clusters=n_clstr, n_init=500)
-    spc = cluster.SpectralClustering(n_clusters=n_clstr, eigen_solver='arpack', affinity="nearest_neighbors", n_init=500)
-    con = kneighbors_graph(x, n_neighbors=10, include_self=False)
-    con = 0.5 * (con + con.T) # make connectivity symmetric
-    wrd = cluster.AgglomerativeClustering(n_clusters=n_clstr, linkage='ward', connectivity=con)
     gmm = mixture.GaussianMixture(verbose=1, n_components=n_clstr, covariance_type='full', n_init=500)
     
     print('Cluster by k-means...')
     y_kms = kms.fit_predict(x)
-    print('Cluster by Spectral Clustering...')
-    y_spc = wrd.fit_predict(x)
     print('Cluster by GMM...')
     y_gmm = gmm.fit_predict(x)
     if acode and pca:
         print('Cluster again but for PCA for comparison...')
         y_kms_pca = kms.fit_predict(xpca)
-        y_spc_pca = wrd.fit_predict(xpca)
         print('Done with spc...')
         y_gmm_pca = gmm.fit_predict(xpca)
+        
+    data['class-kmeans'] = y_kms
+    data['class-gmm'] = y_gmm
 
 '''
     -------------
@@ -362,21 +358,19 @@ if calculate_som:
         ---------------------
     '''
     from sklearn import cluster
-    n_clusters = n_clstr
-    C1 = cluster.MiniBatchKMeans(n_clusters=n_clusters, n_init=500).fit(W.reshape(m*n,-1))
+    C1 = cluster.MiniBatchKMeans(n_clusters=n_clstr, n_init=500).fit(W.reshape(m*n,-1))
     C1 = np.array(C1.labels_)
     C1 = C1.reshape((m,n))
-    data = som_addinfo(som, data, x, C1, 'class-kmeans-8')
     
-    C2 = cluster.AgglomerativeClustering(linkage="average", affinity="cityblock", n_clusters=n_clusters).fit(W.reshape(m*n,-1))
-    C2 = np.array(C2.labels_)
-    C2 = C2.reshape((m,n))
-    data = som_addinfo(som, data, x, C2, 'class-agglo-8')
-
-    C3 = cluster.Birch(n_clusters=n_clusters, threshold=0.01).fit(W.reshape(m*n,-1))
-    C3 = np.array(C3.labels_)
-    C3 = C3.reshape((m,n))
-    data = som_addinfo(som, data, x, C3, 'class-birch-8')
+    # Organize the classes always in the same order
+    CC = []
+    for c in range (n_clstr):
+        CC.append([np.where(C1==c)[0][0],np.where(C1==c)[1][0]])
+    CSORT = sorted(range(len(CC)),key=lambda k:CC[k])   
+    CP = C1.copy()
+    for c in range (n_clstr):
+        C1[CP==c]=CSORT.index(c)
+    data = som_addinfo(som, data, x, C1, 'class-som')
     
     '''
         ----------------
@@ -515,7 +509,7 @@ if calculate_som:
         color = (color - cmin) / (cmax - cmin)
     
         fig, ax = plt.subplots(1,1)
-        cmap = plt.cm.get_cmap('jet', n_clusters)
+        cmap = plt.cm.get_cmap('jet', n_clstr)
         map_plot(ax, dist, color, m, n, size=size, scale=6, cmap=cmap, lcolor='white')
         plt.title('Clustering SOM')
         
@@ -524,7 +518,7 @@ if calculate_som:
         cmax  = color.max()
         color = (color - cmin) / (cmax - cmin)
         fig, ax = plt.subplots(1,1)
-        cmap = plt.cm.get_cmap('jet', n_clusters)
+        cmap = plt.cm.get_cmap('jet', n_clstr)
         map_plot(ax, dist, color, m, n, size=size, scale=6, cmap=cmap, lcolor='white')
         plt.title('Clustering SOM')
         
@@ -533,7 +527,7 @@ if calculate_som:
         cmax  = color.max()
         color = (color - cmin) / (cmax - cmin)
         fig, ax = plt.subplots(1,1)
-        cmap = plt.cm.get_cmap('jet', n_clusters)
+        cmap = plt.cm.get_cmap('jet', n_clstr)
         map_plot(ax, dist, color, m, n, size=size, scale=6, cmap=cmap, lcolor='white')
         plt.title('Clustering SOM')
         
@@ -543,7 +537,7 @@ if calculate_som:
         
         fig, ax = plt.subplots(6,1, sharex='all') #, gridspec_kw = {'height_ratios':[4, 4, 4, 1, 1, 4]})
         ax[0].set_xlim(pd.to_datetime(beg), pd.to_datetime(end))
-        cmap = plt.cm.get_cmap('jet', n_clusters)
+        cmap = plt.cm.get_cmap('jet', n_clstr)
         ax[0].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-kmeans-8'], cmap=cmap, s=5)
         ax[1].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-agglo-8'], cmap=cmap, s=5)
         ax[2].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-birch-8'], cmap=cmap, s=5)
@@ -569,13 +563,15 @@ import paper_figures as pfig
 
 fig_path = outdir+case
 pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
-pfig.fig_dimreduc(data, xpca, x, cmap='jet_r', fname=fig_path+'/dimreduc.png')
-pfig.fig_clustering(data, x, xpca, y_kms, y_spc, y_gmm, y_kms_pca, y_spc_pca, y_gmm_pca, cmap='jet', fname=fig_path+'/clustering.png')
+
+if acode and xpca:
+    pfig.fig_dimreduc(data, xpca, x, n_clstr, cmap='jet_r', fname=fig_path+'/dimreduc.png')
+    pfig.fig_clustering(data, x, xpca, y_kms, y_gmm, data['class-som'].values, y_kms_pca, y_gmm_pca, data['class-som'].values, n_clstr, cmap='jet', fname=fig_path+'/clustering.png')
 pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, pcomp, scaler, feat[case], fname=fig_path+'/maps.png')
 pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')
-pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-kmeans-8', [1,0,0], fname=fig_path+'/classesdatarange-kmeans.png')
-pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-agglo-8', [0,1,0], fname=fig_path+'/classesdatarange-agglo.png')
-pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-birch-8', [0,0,1], fname=fig_path+'/classesdatarange-birch.png')
+pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-kmeans', [1,0,0], fname=fig_path+'/classesdatarange-kmeans.png')
+pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-gmm', [0,1,0], fname=fig_path+'/classesdatarange-gmm.png')
+pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-som', [0,0,1], fname=fig_path+'/classesdatarange-som.png')
 
 beg = '2003-05-01'
 end = '2003-09-01'

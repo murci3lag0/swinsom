@@ -29,7 +29,7 @@ def fig_datacoverage(data, cols, fname=None):
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
-def fig_dimreduc(data, x1, x2, cmap='Set1', fname=None):
+def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
     cmap = plt.cm.get_cmap(cmap, 5)
     fig, ax = plt.subplots(2,6, figsize=(16,6), sharex='none', sharey='row')
     set_figure()
@@ -64,14 +64,14 @@ def fig_dimreduc(data, x1, x2, cmap='Set1', fname=None):
     
     fig.subplots_adjust(right=0.9, left=0.1)
     cbar1 = fig.add_axes([0.04, 0.11, 0.02, 0.77])
-    fig.colorbar(sct, cax=cbar1, ticks=range(5))
+    fig.colorbar(sct, cax=cbar1, ticks=range(ncls+1))
     cbar1.yaxis.set_ticks_position('left')
     cbar2 = fig.add_axes([0.92, 0.11, 0.02, 0.77])
     fig.colorbar(hst[3], cax=cbar2)
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
-def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, cmap='Set1', fname=None):
+def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fname=None):
     cmap = plt.cm.get_cmap(cmap, 5)
     fig, ax = plt.subplots(3,4,figsize=(16,9),sharex='col', sharey='col')
     set_figure()
@@ -85,12 +85,12 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, cmap='Set1', fname=None
     ax[2][0].scatter(x1[:,0], x1[:,1], c=y3, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     ax[2][1].scatter(x1[:,2], x1[:,1], c=y3, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     
-    ax[0][2].scatter(x2[:,0], x2[:,1], c=y4, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    sct = ax[0][2].scatter(x2[:,0], x2[:,1], c=y4, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     ax[0][3].scatter(x2[:,2], x2[:,1], c=y4, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     ax[1][2].scatter(x2[:,0], x2[:,1], c=y5, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     ax[1][3].scatter(x2[:,2], x2[:,1], c=y5, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     ax[2][2].scatter(x2[:,0], x2[:,1], c=y6, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    sct = ax[2][3].scatter(x2[:,2], x2[:,1], c=y6, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    ax[2][3].scatter(x2[:,2], x2[:,1], c=y6, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
     
     ax[0][0].text(0.05, 0.9, 'a)', fontsize=11, transform=ax[0][0].transAxes)
     ax[0][1].text(0.05, 0.9, 'b)', fontsize=11, transform=ax[0][1].transAxes)
@@ -108,7 +108,7 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, cmap='Set1', fname=None
     
     fig.subplots_adjust(right=0.9)
     cbar_ax = fig.add_axes([0.92, 0.11, 0.02, 0.77])
-    fig.colorbar(sct, cax=cbar_ax, ticks=range(5))
+    fig.colorbar(sct, cax=cbar_ax, ticks=range(ncls+1))
     
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
@@ -261,9 +261,9 @@ def fig_timeseries(data, beg, end, n_clusters, fname=None):
     ax[0].set_xlim(pd.to_datetime(beg), pd.to_datetime(end))
     cmap = mcolors.ListedColormap(['#ffe119','#e6194B', '#4363d8', '#f58231', '#42d4f4','#3cb44b', '#fabebe', '#469990', '#e6beff', '#f032e6', '#9A6324', '#fffac8', '#800000', '#aaffc3', '#000075', '#a9a9a9'])
     # cmap = plt.cm.get_cmap('jet', n_clusters)
-    ax[0].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-kmeans-8'], cmap=cmap, s=5, zorder=3)
-    ax[1].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-agglo-8'], cmap=cmap, s=5, zorder=3)
-    ax[2].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-birch-8'], cmap=cmap, s=5, zorder=3)
+    ax[0].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-kmeans'], cmap=cmap, s=5, zorder=3)
+    ax[1].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-gmm'], cmap=cmap, s=5, zorder=3)
+    ax[2].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-som'], cmap=cmap, s=5, zorder=3)
         
     shck = pd.read_csv('catalogs/HSCA_Shock_cat.csv', comment="#", parse_dates={'Datetime' : ['Year','Month','Day','UT']}, index_col='Datetime')
     aces = pd.read_csv('catalogs/ACE_Shocks_cat.csv', comment="#", parse_dates={'Datetime' : ['Month','Day','Year','Time']}, index_col='Datetime')
