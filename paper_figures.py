@@ -199,8 +199,9 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
     map_plot(ax[0][3], dist, color, m, n, size=size, scale=6, cmap='inferno_r', lcolor='black', title=K+' ['+Q+'='+str(V)+']')
 
     #-- Three components in row [1,0:3]
+    maxk = min(3, len(feat))
     size  = np.ones_like(hits)
-    color = W[:,:,:3]
+    color = W[:,:,:maxk]
     cmin  = color.min()
     cmax  = color.max()
     color = (color - cmin) / (cmax - cmin)
@@ -210,20 +211,23 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
     ax[1][0].set_ylim(-0.5, n*0.75-0.25)
         
     for i in range(3):
-        color = W[:,:,i]
-        cmin  = color.min()
-        cmax  = color.max()
-        color = (color - cmin) / (cmax - cmin)
-        map_plot(ax[1][i+1], dist, color, m, n, size=size, scale=8, cmap='inferno_r', title='Component '+str(i+1))
-        ax[1][i+1].set_aspect('equal')
-        ax[1][i+1].set_xlim(-1, m-0.5)
-        ax[1][i+1].set_ylim(-0.5, n*0.75-0.25)
+        if i>=maxk:
+            ax[1][i+1].axis('off')
+        else:
+            color = W[:,:,i]
+            cmin  = color.min()
+            cmax  = color.max()
+            color = (color - cmin) / (cmax - cmin)
+            map_plot(ax[1][i+1], dist, color, m, n, size=size, scale=8, cmap='inferno_r', title='Component '+str(i+1))
+            ax[1][i+1].set_aspect('equal')
+            ax[1][i+1].set_xlim(-1, m-0.5)
+            ax[1][i+1].set_ylim(-0.5, n*0.75-0.25)
     
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
 def fig_datarange(data, fname=None):
-    fig, ax = plt.subplots(1, 1, figsize=(8,3))
+    fig, ax = plt.subplots(1, 1, figsize=(12,5))
     set_figure()
     plt.violinplot(data, showextrema=False)
     boxprops = dict(linestyle='-', linewidth=2, color='red', facecolor='red', alpha=0.3)
