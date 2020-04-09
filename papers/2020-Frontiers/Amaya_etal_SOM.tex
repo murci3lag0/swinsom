@@ -45,7 +45,7 @@ $^{2}$Jet Propulsion Laboratory, Interstellar and Heliospheric Physics Division,
 \onecolumn
 \firstpage{1}
 
-\title[Unsipervised classification of the solar wind]{Interpretable classification of the solar wind using unsupervised machine learning} 
+\title[Unsupervised Clustering of the Solar Wind]{Classification of the Solar Wind Using Unsupervised Clustering} 
 
 \author[\firstAuthorLast ]{\Authors} %This field will be automatically populated
 \address{} %This field will be automatically populated
@@ -96,7 +96,7 @@ The authors declare that the research was conducted in the absence of any commer
 
 \section*{Author Contributions}
 
-The Author Contributions section is mandatory for all articles, including articles by sole authors. If an appropriate statement is not provided on submission, a standard one will be inserted during the production process. The Author Contributions statement must describe the contributions of individual authors referred to by their initials and, in doing so, all authors agree to be accountable for the content of the work. Please see  \href{http://home.frontiersin.org/about/author-guidelines#AuthorandContributors}{here} for full authorship criteria.
+JA created the software used in this work. RD provided important insights into the use of the machine learning techniques, and performed revisions of the different drafts. MEI gathered information from other experts in the domain and provided insights into the data use. GL supervised the work. All authors contributed to manuscript revision, read and approved the submitted version.
 
 \section*{Funding}
 
@@ -105,7 +105,6 @@ JA has received funding from the European Union’s Horizon 2020 research and in
 RD has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 776262 (\href{https://www.aida-space.eu}{AIDA, www.aida-space.eu}).
 
 \section*{Acknowledgments}
-The authors would like to acknowledge the help of D. Aaron Roberts (NASA, GSFC).
 
 \section*{Supplemental Data}
 Codes can be found in the \href{http://github.com/murci3lag0}{github.com/murci3lag0}.
@@ -172,7 +171,7 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 		\bottomrule
 	\end{tabular}
 	\caption{Hyper-parameters for the SOM/DSOM classification, obtained using Hyper-Parameter Optimization (HPO).}
-	\label{tab:swtypes}
+	\label{tab:hpo}
 \end{table}
 
 \begin{table}\centering
@@ -255,37 +254,37 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=16cm]{maps}% This is a *.eps file
+		\includegraphics[width=16cm]{Amaya/maps}% This is a *.eps file
 	\end{center}
 	\caption{Visualization of the Self-Organizing maps. In columns 2 to 4 the colors evolve from black, to orange to yellow. Top left panel: histogram with the density of data points superposed by the code words (nodes) of the SOM. As an example, a single node is connected to its closest neighbors by red lines. Second panel, top row, Hit map: colred by the sum of the node components, the size of the hexagon corresponds to the number of points associated to the node, and the lines between nodes correspond to their relative distance. Third panel top row: example of the corresponding feature value to each node. Top row last panel: example of the statistics applied to the points associated to each node, in this case mean value of `avqO' in color, with solar wind type hits as hexagon size. Bottom row: the three components of the map nodes, where the first panel is an RGB combination of the following three.}\label{fig:maps}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=13cm]{Roberts/datarange}% This is a *.eps file
+		\includegraphics[width=13cm]{Amaya/datarange}% This is a *.eps file
 	\end{center}
 	\caption{Composition of all the solar wind points. Violin plot superposed by a box plot of the solar wind features. The box hight represents the Inter Quartile Range (IQR), the central continuous line represents the median and the dashed line the mean. The central notch represents the confidence of the median. The upper (lower) whiskers represent the lesser 25th (greater 75th) percentile of the data. }\label{fig:datarange}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=5cm]{Roberts/classesdatarange-kmeans}\hfill
-		\includegraphics[width=5cm]{Roberts/classesdatarange-gmm}\hfill
-		\includegraphics[width=5cm]{Roberts/classesdatarange-som}
+		\includegraphics[width=5cm]{Amaya/classesdatarange-kmeans}\hfill
+		\includegraphics[width=5cm]{Amaya/classesdatarange-gmm}\hfill
+		\includegraphics[width=5cm]{Amaya/classesdatarange-som}
 	\end{center}
 	\caption{Solar wind `fingerprint': composition of each class (one color per class), obtained with the k-means classification (left), the GMM classification (center), and the DSOM classification (right).}\label{fig:classesdatarange}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=18cm]{Roberts/timeseries}% This is a *.eps file
+		\includegraphics[width=18cm]{Amaya/timeseries}% This is a *.eps file
 	\end{center}
 	\caption{Four months of solar wind information. This is the same period used by \citep{Roberts2020}. Top three panels: solar wind speed colored by a) k-means classification, b) Gaussian Mixture Model classification, and c) DSOM classification. The colors correspond to the `fingerprints' in Fig.\ref{fig:classesdatarange}. Vertical gray zones correspond to Richardson and Cane ICME catalog entries, and vertical dashed lines to entries in the UNH and CfA catalogs. d) Magnetic field polarity color representation using $B_{x,y}$ as the top and bottom limits: red $B_x>B_y$, green $B_x<B_y$. The vertical gray zones correspond periods of 27 days. e) $B_z$ component of the magnetic field: blue positive, red negative. f) plot of the ionized oxygen (dotted line), and the solar wind type limits from \citep{Zhao2009} in table \ref{tab:swtypes}}\label{fig:timeseries}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=18cm]{Roberts/tsfeatures-som}% This is a *.eps file
+		\includegraphics[width=18cm]{Amaya/tsfeatures-som}% This is a *.eps file
 	\end{center}
 	\caption{Solar wind features in the same window of time as Fig.\ref{fig:timeseries}. Al points are colored by the class number obtained by the DSOM algorithm. Vertical blue zones correspond to Richardson and Cane ICME catalog entries, and vertical dashed lines to entries in the UNH and CfA catalogs. The vertical gray zones correspond periods of 27 days.}\label{fig:tsfeatures-som}.
 \end{figure}
