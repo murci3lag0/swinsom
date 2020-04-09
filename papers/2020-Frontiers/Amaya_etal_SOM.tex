@@ -178,7 +178,7 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 \begin{table}\centering
 	\begin{tabular}{@{}rlcccc@{}}
 		\toprule
-		ID & Name  & Amaya et al. & Roberts et al. & Xu \& Borovsky & Zhao et al. \\
+		ID & Name  & A & R & X & Z \\
 		\midrule
 		1 & O7to6 & $\checkmark$ & $\checkmark$ & & $\checkmark$ \\
 		2 & proton\_speed & $\checkmark$ & $\checkmark$ & & $\checkmark$ \\
@@ -212,6 +212,7 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 		 & Final year & 2011 & 2004 & 2011 & 2011 \\
 		 & PCA transformation & $\checkmark$ & $\checkmark$ & $\checkmark$ &  \\
 		 & AE encoding & $\checkmark$ & $\checkmark$ & & \\
+		 & Neurons/ encoding layer & [27, 15, 6, 3] & [8, 6, 4, 3] & & \\
 		\bottomrule
 	\end{tabular}
 	\caption{List of features used for each classification case. The logarithm of all quantities was used, except for the features marked with an asterisk (*). Bottom: data range and transformations used.}
@@ -279,14 +280,21 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 	\begin{center}
 		\includegraphics[width=18cm]{Roberts/timeseries}% This is a *.eps file
 	\end{center}
-	\caption{Four months of solar wind information. This is the same period used by \citep{Roberts2020}. Top three panels: solar wind speed colored by a) k-means classification, b) Gaussian Mixture Model classification, and c) DSOM classification. The colors correspond to the `fingerprints' in Fig.\ref{fig:classesdatarange}. Vertical gray zones correspond to Richardson and Cane ICME catalog entries \citep{[RichardsonAndCane??]}, and vertical dashed lines to entries in the ACE and HSCA catalogs \citep{[ACECatalog??][HSCAcatalog??]}. d) Magnetic field polarity color representation using $B_{x,y}$ as the top and bottom limits: red $B_x>B_y$, green $B_x<B_y$. The vertical gray zones correspond periods of 27 days. e) $B_z$ component of the magnetic field: blue positive, red negative. f) plot of the ionized oxygen (dotted line), and the solar wind type limits from \citep{Zhao2009} in table \ref{tab:swtypes}}\label{fig:timeseries}
+	\caption{Four months of solar wind information. This is the same period used by \citep{Roberts2020}. Top three panels: solar wind speed colored by a) k-means classification, b) Gaussian Mixture Model classification, and c) DSOM classification. The colors correspond to the `fingerprints' in Fig.\ref{fig:classesdatarange}. Vertical gray zones correspond to Richardson and Cane ICME catalog entries, and vertical dashed lines to entries in the UNH and CfA catalogs. d) Magnetic field polarity color representation using $B_{x,y}$ as the top and bottom limits: red $B_x>B_y$, green $B_x<B_y$. The vertical gray zones correspond periods of 27 days. e) $B_z$ component of the magnetic field: blue positive, red negative. f) plot of the ionized oxygen (dotted line), and the solar wind type limits from \citep{Zhao2009} in table \ref{tab:swtypes}}\label{fig:timeseries}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=18cm]{Roberts/tsfeatures-som}% This is a *.eps file
 	\end{center}
-	\caption{Solar wind features in the same window of time as Fig.\ref{fig:timeseries}. Al points are colored by the class number obtained by the DSOM algorithm. Vertical blue zones correspond to Richardson and Cane ICME catalog entries \citep{[RichardsonAndCane??]}, and vertical dashed lines to entries in the ACE and HSCA catalogs \citep{[ACECatalog??][HSCAcatalog??]} }\label{fig:tsfeatures-som}. The vertical gray zones correspond periods of 27 days.
+	\caption{Solar wind features in the same window of time as Fig.\ref{fig:timeseries}. Al points are colored by the class number obtained by the DSOM algorithm. Vertical blue zones correspond to Richardson and Cane ICME catalog entries, and vertical dashed lines to entries in the UNH and CfA catalogs. The vertical gray zones correspond periods of 27 days.}\label{fig:tsfeatures-som}.
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=10cm]{architecture}% This is a *.eps file
+	\end{center}
+	\caption{General architecture used in model A: data set entries are encoded into a latent space with a much smaller number of dimensions. The encoded data is used to train the SOM. Clustering techniques are used to group together nodes of the SOM lattice.}\label{fig:architecture}
 \end{figure}
 
 \end{document}
