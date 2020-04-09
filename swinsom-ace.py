@@ -55,7 +55,7 @@ params = {'Roberts' :
               {'ybeg' : 2002,
                'yend' : 2004,
                'autoencode' : True,
-               'nodes' : [8, 6, 4, 3],
+               'nodes' : [8, 5, 3],
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -101,7 +101,7 @@ params = {'Roberts' :
               {'ybeg' : 1998,
                'yend' : 2011,
                'autoencode' : True,
-               'nodes' : [27, 15, 6, 3],
+               'nodes' : [27, 17, 7, 3],
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -322,9 +322,6 @@ if optim:
         lr = trial.suggest_uniform('lr', 0.01, lrmax)
         sg = trial.suggest_uniform('sg', 1.0, sgmax)
         som = selfomap(x, m, n, int(maxiter/(sg*lr*100)), sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
-        # dist = som_distances(som)
-        # print(" Mean distance: ", dist.mean())
-        # return som.quantization_error(x) + dist.mean() + 0.05*sg
         return som.quantization_error(x)
 
     print('SOM HPO...')    

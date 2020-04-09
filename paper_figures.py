@@ -32,22 +32,22 @@ def fig_datacoverage(data, cols, fname=None):
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
 def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
-    cmap = plt.cm.get_cmap(cmap, ncls)
+    cmap = mcolors.ListedColormap(cpalette[:ncls])
     fig, ax = plt.subplots(2,6, figsize=(16,6), sharex='none', sharey='row')
     set_figure()
     alpha = 0.6
     size = 0.1
     
-    ax[0][0].scatter(x1[:,0], x1[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[0][1].scatter(x1[:,2], x1[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[0][2].scatter(x1[:,0], x1[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[0][3].scatter(x1[:,2], x1[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    ax[0][0].scatter(x1[:,0], x1[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[0][1].scatter(x1[:,2], x1[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[0][2].scatter(x1[:,0], x1[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[0][3].scatter(x1[:,2], x1[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
     ax[0][4].hist2d (x1[:,0], x1[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.3))
     ax[0][5].hist2d (x1[:,2], x1[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.3))
-    ax[1][0].scatter(x2[:,0], x2[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[1][1].scatter(x2[:,2], x2[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[1][2].scatter(x2[:,0], x2[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    sct = ax[1][3].scatter(x2[:,2], x2[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    ax[1][0].scatter(x2[:,0], x2[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[1][1].scatter(x2[:,2], x2[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[1][2].scatter(x2[:,0], x2[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    sct = ax[1][3].scatter(x2[:,2], x2[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
     ax[1][4].hist2d (x2[:,0], x2[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.3))
     hst = ax[1][5].hist2d (x2[:,2], x2[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.3))
 
@@ -74,25 +74,25 @@ def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
 def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fname=None):
-    cmap = plt.cm.get_cmap(cmap, ncls)
+    cmap = mcolors.ListedColormap(cpalette[:ncls])
     fig, ax = plt.subplots(3,4,figsize=(16,9),sharex='col', sharey='col')
     set_figure()
     alpha = 0.6
     size = 0.1
     
-    ax[0][0].scatter(x1[:,0], x1[:,1], c=y1, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[0][1].scatter(x1[:,2], x1[:,1], c=y1, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[1][0].scatter(x1[:,0], x1[:,1], c=y2, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[1][1].scatter(x1[:,2], x1[:,1], c=y2, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[2][0].scatter(x1[:,0], x1[:,1], c=y3, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[2][1].scatter(x1[:,2], x1[:,1], c=y3, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    ax[0][0].scatter(x1[:,0], x1[:,1], c=y1, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[0][1].scatter(x1[:,2], x1[:,1], c=y1, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[1][0].scatter(x1[:,0], x1[:,1], c=y2, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[1][1].scatter(x1[:,2], x1[:,1], c=y2, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[2][0].scatter(x1[:,0], x1[:,1], c=y3, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[2][1].scatter(x1[:,2], x1[:,1], c=y3, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
     
-    sct = ax[0][2].scatter(x2[:,0], x2[:,1], c=y4, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[0][3].scatter(x2[:,2], x2[:,1], c=y4, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[1][2].scatter(x2[:,0], x2[:,1], c=y5, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[1][3].scatter(x2[:,2], x2[:,1], c=y5, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[2][2].scatter(x2[:,0], x2[:,1], c=y6, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
-    ax[2][3].scatter(x2[:,2], x2[:,1], c=y6, s=size, alpha=alpha, vmin=0, vmax=5, cmap=cmap)
+    sct = ax[0][2].scatter(x2[:,0], x2[:,1], c=y4, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[0][3].scatter(x2[:,2], x2[:,1], c=y4, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[1][2].scatter(x2[:,0], x2[:,1], c=y5, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[1][3].scatter(x2[:,2], x2[:,1], c=y5, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[2][2].scatter(x2[:,0], x2[:,1], c=y6, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    ax[2][3].scatter(x2[:,2], x2[:,1], c=y6, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
     
     ax[0][0].text(0.05, 0.9, 'a)', fontsize=11, transform=ax[0][0].transAxes)
     ax[0][1].text(0.05, 0.9, 'b)', fontsize=11, transform=ax[0][1].transAxes)
@@ -145,7 +145,7 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
     #-- hit map in [0,1]
     size=hits # np.ones_like(hits)
     
-    map_plot(ax[0][1], dist, color, m, n, size=size, scale=8, cmap='inferno_r', lcolor='black', title='Hit map')
+    map_plot(ax[0][1], dist, color, m, n, size=size, scale=3, cmap='inferno_r', lcolor='black', title='Hit map')
     ax[0][1].set_aspect('equal')
     ax[0][1].set_xlim(-1, m-0.5)
     ax[0][1].set_ylim(-0.5, n*0.75-0.25)
@@ -175,7 +175,7 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
     cmax = color.max()
     color = (color - cmin) / (cmax - cmin)
 
-    map_plot(ax[0][2], dist, color, m, n, size=size, scale=8, cmap='inferno_r', title=ftr_name)
+    map_plot(ax[0][2], dist, color, m, n, size=size, scale=3, cmap='inferno_r', title=ftr_name)
     
     #-- Xu solar wind type int [0,3]
     K = 'avqO'
@@ -196,7 +196,7 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
     sbmin = size.min()
     sbmax = size.max()
     size  = (size - sbmin)/(sbmax - sbmin) if sbmax>sbmin else np.zeros((m, n))
-    map_plot(ax[0][3], dist, color, m, n, size=size, scale=6, cmap='inferno_r', lcolor='black', title=K+' ['+Q+'='+str(V)+']')
+    map_plot(ax[0][3], dist, color, m, n, size=size, scale=3, cmap='inferno_r', lcolor='black', title=K+' ['+Q+'='+str(V)+']')
 
     #-- Three components in row [1,0:3]
     maxk = min(3, len(feat))
@@ -205,7 +205,7 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
     cmin  = color.min()
     cmax  = color.max()
     color = (color - cmin) / (cmax - cmin)
-    map_plot(ax[1][0], dist, color, m, n, size=size, scale=8, cmap='inferno_r', title='Feature map')
+    map_plot(ax[1][0], dist, color, m, n, size=size, scale=3, cmap='inferno_r', title='Feature map')
     ax[1][0].set_aspect('equal')
     ax[1][0].set_xlim(-1, m-0.5)
     ax[1][0].set_ylim(-0.5, n*0.75-0.25)
@@ -218,7 +218,7 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
             cmin  = color.min()
             cmax  = color.max()
             color = (color - cmin) / (cmax - cmin)
-            map_plot(ax[1][i+1], dist, color, m, n, size=size, scale=8, cmap='inferno_r', title='Component '+str(i+1))
+            map_plot(ax[1][i+1], dist, color, m, n, size=size, scale=3, cmap='inferno_r', title='Component '+str(i+1))
             ax[1][i+1].set_aspect('equal')
             ax[1][i+1].set_xlim(-1, m-0.5)
             ax[1][i+1].set_ylim(-0.5, n*0.75-0.25)
@@ -280,8 +280,7 @@ def fig_timeseries(data, beg, end, n_clusters, fname=None):
     set_figure()
     
     ax[0].set_xlim(pd.to_datetime(beg), pd.to_datetime(end))
-    cmap = mcolors.ListedColormap(cpalette)
-    # cmap = plt.cm.get_cmap('jet', n_clusters)
+    cmap = mcolors.ListedColormap(cpalette[:n_clusters])
     ax[0].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-kmeans'], cmap=cmap, s=5, zorder=3)
     ax[1].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-gmm'], cmap=cmap, s=5, zorder=3)
     ax[2].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-som'], cmap=cmap, s=5, zorder=3)
@@ -360,7 +359,7 @@ def fig_tsfeatures(data, ftr, cl, beg, end, n_clusters, fname=None):
     icme = pd.read_csv('catalogs/Richarson_Cane_ICME_cat.csv', comment="#", parse_dates=['Datetime'], index_col='Datetime')
     
     ax[0].set_xlim(pd.to_datetime(beg), pd.to_datetime(end))
-    cmap = mcolors.ListedColormap(cpalette)
+    cmap = mcolors.ListedColormap(cpalette[:n_clusters])
     
     for a, f in enumerate(ftr):
         ax[a].scatter(data[beg:end].index, data[beg:end][f], c=data[beg:end][cl], cmap=cmap, s=5, zorder=3)
