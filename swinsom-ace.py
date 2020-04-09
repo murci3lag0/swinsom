@@ -63,7 +63,7 @@ params = {'Roberts' :
                'batch size' : 32,
                'nepochs' : 30,
                'sigma' : 5.0,
-               'learning_rate' : 1.0,
+               'learning_rate' : 0.9,
                'init_method' : 'rand_points',
                'bottle_neck' : 3,
                'nbr_clusters' : 8},
@@ -323,7 +323,7 @@ if optim:
         sg = trial.suggest_uniform('sg', 1.0, sgmax)
         som = selfomap(x, m, n, int(maxiter/(sg*lr*100)), sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
         # dist = som_distances(som)
-        print(" Mean distance: ", dist.mean())
+        # print(" Mean distance: ", dist.mean())
         # return som.quantization_error(x) + dist.mean() + 0.05*sg
         return som.quantization_error(x)
 

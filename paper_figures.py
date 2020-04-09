@@ -32,7 +32,7 @@ def fig_datacoverage(data, cols, fname=None):
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
 def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
-    cmap = plt.cm.get_cmap(cmap, 5)
+    cmap = plt.cm.get_cmap(cmap, ncls)
     fig, ax = plt.subplots(2,6, figsize=(16,6), sharex='none', sharey='row')
     set_figure()
     alpha = 0.6
@@ -74,7 +74,7 @@ def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
 def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fname=None):
-    cmap = plt.cm.get_cmap(cmap, 5)
+    cmap = plt.cm.get_cmap(cmap, ncls)
     fig, ax = plt.subplots(3,4,figsize=(16,9),sharex='col', sharey='col')
     set_figure()
     alpha = 0.6
