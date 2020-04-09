@@ -50,7 +50,7 @@ if str(sys.argv[1]) not in cases:
     sys.exit("Arguments error.")
     
 case = str(sys.argv[1])
-dynamic = True
+dynamic = False
 params = {'Roberts' :
               {'ybeg' : 2002,
                'yend' : 2004,
@@ -231,8 +231,8 @@ n_clstr = params[case]['nbr_clusters']
 nfeat   = len(feat[case])
 
 if not dynamic:
-    sg = min(sg, int(max(m,n)/2))
-    lr = 0.5
+    sg = min(sgmax, int(max(mmax,nmax)/2))
+    lr = lrmax/2
 
 if acode:
     batch_size = params[case]['batch size']
