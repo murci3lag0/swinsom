@@ -24,10 +24,10 @@ from matplotlib_hex_map import matplotlib_hex_map as map_plot
 ## Seting up the path and range -----------------------------------------------
 # acedir : directory containing the hdf5 ACE data
 # outdir : figure output directory
-# acedir = '/home/amaya/Data/ACE'
-# outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
-acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
-outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
+acedir = '/home/amaya/Data/ACE'
+outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
+# acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
+# outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
 
 np.random.seed(1234)
 torch.manual_seed(5678)
@@ -55,6 +55,7 @@ params = {'Roberts' :
               {'ybeg' : 2002,
                'yend' : 2004,
                'autoencode' : True,
+               'nodes' : [8, 6, 4, 3],
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -62,7 +63,7 @@ params = {'Roberts' :
                'batch size' : 32,
                'nepochs' : 30,
                'sigma' : 5.0,
-               'learning_rate' : 0.25,
+               'learning_rate' : 1.0,
                'init_method' : 'rand_points',
                'bottle_neck' : 3,
                'nbr_clusters' : 8},
@@ -77,7 +78,7 @@ params = {'Roberts' :
                'batch size' : 32,
                'nepochs' : 30,
                'sigma' : 5.0,
-               'learning_rate' : 0.25,
+               'learning_rate' : 1.0,
                'init_method' : 'rand_points',
                'bottle_neck' : 3,
                'nbr_clusters' : 4},
@@ -92,7 +93,7 @@ params = {'Roberts' :
                'batch size' : 32,
                'nepochs' : 30,
                'sigma' : 5.0,
-               'learning_rate' : 0.25,
+               'learning_rate' : 1.0,
                'init_method' : 'rand_points',
                'bottle_neck' : 2,
                'nbr_clusters' : 4},
@@ -100,6 +101,7 @@ params = {'Roberts' :
               {'ybeg' : 1998,
                'yend' : 2011,
                'autoencode' : True,
+               'nodes' : [27, 15, 6, 3],
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -107,7 +109,7 @@ params = {'Roberts' :
                'batch size' : 32,
                'nepochs' : 30,
                'sigma' : 5.0,
-               'learning_rate' : 0.25,
+               'learning_rate' : 1.0,
                'init_method' : 'rand_points',
                'bottle_neck' : 3,
                'nbr_clusters' : 8
@@ -221,8 +223,8 @@ pca     = params[case]['pca']
 mmax    = params[case]['m']
 nmax    = params[case]['n']
 maxiter = params[case]['maxiter']
-sg      = params[case]['sigma']
-lr      = params[case]['learning_rate']
+sgmax   = params[case]['sigma']
+lrmax   = params[case]['learning_rate']
 init    = params[case]['init_method']
 bneck   = params[case]['bottle_neck']
 n_clstr = params[case]['nbr_clusters']
@@ -230,6 +232,7 @@ nfeat   = len(feat[case])
 
 if not dynamic:
     sg = min(sg, int(max(m,n)/2))
+    lr = 0.5
 
 if acode:
     batch_size = params[case]['batch size']
@@ -253,10 +256,11 @@ scaler = MinMaxScaler()
 raw = data[feat[case]].values
 raw = scaler.fit_transform(raw)
 
+pcomp = None
 if acode:
     print('Autoencoder...')
     from autoencoder import autoencoder
-    nodes = [raw.shape[1], 15, 7, bneck]
+    nodes = params[case]['nodes']
     ae = autoencoder(nodes)
     print('Autoencoder fit...')
     L, T = ae.fit(torch.Tensor(raw), batch_size, num_epochs)
@@ -315,12 +319,13 @@ if optim:
     def objective(trial):
         m = trial.suggest_int('m', 5, mmax)
         n = trial.suggest_int('n', 5, nmax)
-        lr = trial.suggest_uniform('lr', 0.01, 1.0)
-        sg = trial.suggest_uniform('sg', 1.0, 6.0)
-        som = selfomap(x, m, n, 1000, sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
-        dist = som_distances(som)
+        lr = trial.suggest_uniform('lr', 0.01, lrmax)
+        sg = trial.suggest_uniform('sg', 1.0, sgmax)
+        som = selfomap(x, m, n, int(maxiter/(sg*lr*100)), sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
+        # dist = som_distances(som)
         print(" Mean distance: ", dist.mean())
-        return som.quantization_error(x) + dist.mean() + 0.05*sg
+        # return som.quantization_error(x) + dist.mean() + 0.05*sg
+        return som.quantization_error(x)
 
     print('SOM HPO...')    
     study = optuna.create_study()
@@ -337,7 +342,7 @@ if calculate_som:
 
     ## Run the model 
     print('SOM training...')
-    som = selfomap(x, m, n, maxiter, sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
+    som = selfomap(x, m, n, int(maxiter/(sg*lr)), sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
     
     ## processing of the SOM
     # dist : matrix of distances between map nodes
@@ -369,14 +374,15 @@ if calculate_som:
     '''
     
     ## Switch on/off plots
-    plot_hitmap = False         # Plots the SOM hit map
-    plot_neighbors = False      # Plots lines connecting neighbors in the maps and feature space
-    plot_featurespace = False   # Plots the feature space
-    plot_components = False     # Plot maps of the three components
-    plot_features = False       # plot maps of the corresponding features
-    plot_datamean = False
-    plot_somclustering = False
-    plot_timeseries = False
+    plots_on = False
+    plot_hitmap = plots_on         # Plots the SOM hit map
+    plot_neighbors = plots_on      # Plots lines connecting neighbors in the maps and feature space
+    plot_featurespace = plots_on   # Plots the feature space
+    plot_components = plots_on     # Plot maps of the three components
+    plot_features = plots_on       # plot maps of the corresponding features
+    plot_datamean = plots_on
+    plot_somclustering = plots_on
+    plot_timeseries = plots_on
     
     ## Select the neighbour to visualize
     if plot_neighbors:
@@ -470,8 +476,8 @@ if calculate_som:
         plt.title(ftr_name)
              
     if plot_features:
-        plt_features('proton_speed')
-        plt_features('O7to6')
+        plt_features('log_proton_speed')
+        plt_features('log_O7to6')
        
     def plt_mapdatamean(K):
         color = np.zeros((m, n))
@@ -566,6 +572,6 @@ pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-som', [0,0,1
 beg = '2003-05-01'
 end = '2003-09-01'
 pfig.fig_timeseries(data, beg, end, n_clstr, fname=fig_path+'/timeseries.png')
-pfig.fig_tsfeatures(data, feat[case], 'class-kmeans', beg, end, n_clstr, fname=fig_path+'/tsfeatures-kmeans.png')
-pfig.fig_tsfeatures(data, feat[case], 'class-gmm', beg, end, n_clstr, fname=fig_path+'/tsfeatures-gmm.png')
-pfig.fig_tsfeatures(data, feat[case], 'class-som', beg, end, n_clstr, fname=fig_path+'/tsfeatures-som.png')
+pfig.fig_tsfeatures(data, feat[case][:8], 'class-kmeans', beg, end, n_clstr, fname=fig_path+'/tsfeatures-kmeans.png')
+pfig.fig_tsfeatures(data, feat[case][:8], 'class-gmm', beg, end, n_clstr, fname=fig_path+'/tsfeatures-gmm.png')
+pfig.fig_tsfeatures(data, feat[case][:8], 'class-som', beg, end, n_clstr, fname=fig_path+'/tsfeatures-som.png')
