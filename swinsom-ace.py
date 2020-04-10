@@ -50,7 +50,7 @@ if str(sys.argv[1]) not in cases:
     sys.exit("Arguments error.")
     
 case = str(sys.argv[1])
-dynamic = False
+
 params = {'Roberts' :
               {'ybeg' : 2002,
                'yend' : 2004,
@@ -66,7 +66,8 @@ params = {'Roberts' :
                'learning_rate' : 0.9,
                'init_method' : 'rand_points',
                'bottle_neck' : 3,
-               'nbr_clusters' : 8},
+               'nbr_clusters' : 8,
+               'dynamic' : True},
           'XuBorovsky' :
               {'ybeg' : 1998,
                'yend' : 2008,
@@ -81,7 +82,8 @@ params = {'Roberts' :
                'learning_rate' : 1.0,
                'init_method' : 'rand_points',
                'bottle_neck' : 3,
-               'nbr_clusters' : 4},
+               'nbr_clusters' : 4,
+               'dynamic' : True},
           'ZhaZuFi' :
               {'ybeg' : 1998,
                'yend' : 2008,
@@ -96,12 +98,13 @@ params = {'Roberts' :
                'learning_rate' : 1.0,
                'init_method' : 'rand_points',
                'bottle_neck' : 2,
-               'nbr_clusters' : 4},
+               'nbr_clusters' : 4,
+               'dynamic' : False},
           'Amaya' :
               {'ybeg' : 1998,
                'yend' : 2011,
                'autoencode' : True,
-               'nodes' : [27, 17, 7, 3],
+               'nodes' : [21, 17, 9, 3],
                'pca' : True,
                'm' : 12,
                'n' : 12,
@@ -112,7 +115,8 @@ params = {'Roberts' :
                'learning_rate' : 1.0,
                'init_method' : 'rand_points',
                'bottle_neck' : 3,
-               'nbr_clusters' : 8
+               'nbr_clusters' : 8,
+               'dynamic' : True
               },
          }
 
@@ -135,6 +139,7 @@ xcols = ['sigmac',
          'Bgsm_z_range',
          'Bmag_acor',
          'Bmag_range',
+         'Br_range',
          'Bmag_mean',
          'Bmag_std',
          'proton_density_range',
@@ -186,32 +191,26 @@ feat = {'Roberts' :
              'log_proton_speed'],
         'Amaya' : 
             ['log_O7to6',
-             'log_proton_speed',
-             'log_proton_density',
-             'log_Sp',
-             'log_Va',
-             'log_Tratio',
-             'sigmac',
-             'sigmar',
-             'Bmag_acor',
-             'Lambda',
-             'Delta',
-             'log_FetoO',
-             'log_avqFe',
-             'log_Bmag',
-             'log_C6to5',
-             'log_proton_temp',
-             'log_Ma',
-             'log_He4toprotons',
-             'log_proton_speed_range',
-             'log_proton_density_range',
-             'log_proton_temp_range',
-             'log_Bgsm_x_range',
-             'log_Bgsm_y_range',
-             'log_Bgsm_z_range',
-             'log_Bmag_range',
-             'log_Bmag_mean',
-             'log_Bmag_std',],
+      		'log_proton_speed',
+      		'log_proton_density',
+      		'log_FetoO',
+      		'log_avqFe',
+      		'sigmac',
+      		'sigmar',
+      		'log_Bmag',
+      		'log_Sp',
+      		'log_Va',
+      		'log_Tratio',
+      		'log_proton_temp',
+      		'log_Ma',
+      		'log_C6to5',
+      		'log_proton_density_range',
+      		'log_proton_temp_range',
+      		'log_Bgsm_x_range',
+      		'log_Bgsm_z_range',
+      		'log_Bmag_range',
+      		'Bmag_acor',
+      		'Delta',]
        }
 
 
@@ -228,6 +227,7 @@ lrmax   = params[case]['learning_rate']
 init    = params[case]['init_method']
 bneck   = params[case]['bottle_neck']
 n_clstr = params[case]['nbr_clusters']
+dynamic = params[case]['dynamic']
 nfeat   = len(feat[case])
 
 if not dynamic:
@@ -340,6 +340,7 @@ if calculate_som:
     ## Run the model 
     print('SOM training...')
     som = selfomap(x, m, n, int(maxiter/(sg*lr)), sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
+    # som = selfomap(x, 12, 12, 50000, sigma=5.0, learning_rate=0.5, init=init, dynamic=dynamic)
     
     ## processing of the SOM
     # dist : matrix of distances between map nodes
@@ -397,7 +398,7 @@ if calculate_som:
         size=hits # np.ones_like(hits)
         
         fig, ax = plt.subplots(1,1)
-        map_plot(ax, dist, color, m, n, size=size, scale=8, cmap='inferno_r', lcolor='black')
+        map_plot(ax, dist, color, m, n, size=size, scale=3, cmap='inferno_r', lcolor='black')
         plt.title('Hit map')
         
         if plot_neighbors:
@@ -475,6 +476,35 @@ if calculate_som:
     if plot_features:
         plt_features('log_proton_speed')
         plt_features('log_O7to6')
+        
+    def plt_anyfeature_mean(ftr_name): 
+        import matplotlib.colors as mcolors
+        color = np.zeros((m, n))
+        size=np.ones_like(hits)
+        for x in range(m):
+            for y in range(n):
+                color[x,y] = data[ftr_name].iloc[wmix[x,y]].mean()
+        vmax = data[ftr_name].max()
+        vmin = data[ftr_name].min()
+        color = np.nan_to_num(color)
+        cbmin = color.min()
+        cbmax = color.max()
+        color = (color - color.min())/(color.max() - color.min())
+        fig, ax = plt.subplots(1,1, figsize=(m/2,n/2))
+        cmap='inferno_r'
+        map_plot(ax, dist, color, m, n, size=size, scale=4, title=ftr_name+' mean', cmap=cmap)
+        norm = mcolors.Normalize(vmin=vmax,vmax=vmin)
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+        sm.set_array([])
+        fig.subplots_adjust(right=0.75, left=0.1)
+        cbar1 = fig.add_axes([0.8, 0.25, 0.05, 0.45])
+        cb = plt.colorbar(sm, cax=cbar1)
+        cb.ax.tick_params(labelsize='x-small')
+        
+    for f in data.columns:
+        if (f.startswith('log_') or f.startswith('class')):
+            plt_anyfeature_mean(f)
+
        
     def plt_mapdatamean(K):
         color = np.zeros((m, n))
@@ -572,3 +602,35 @@ pfig.fig_timeseries(data, beg, end, n_clstr, fname=fig_path+'/timeseries.png')
 pfig.fig_tsfeatures(data, feat[case][:8], 'class-kmeans', beg, end, n_clstr, fname=fig_path+'/tsfeatures-kmeans.png')
 pfig.fig_tsfeatures(data, feat[case][:8], 'class-gmm', beg, end, n_clstr, fname=fig_path+'/tsfeatures-gmm.png')
 pfig.fig_tsfeatures(data, feat[case][:8], 'class-som', beg, end, n_clstr, fname=fig_path+'/tsfeatures-som.png')
+
+for f in feat[case]:
+    pfig.fig_componentmap(data, W, feat, nfeat, case, f, dist, hits, m, n, bneck, wmix, scaler, pca=pca, acode=acode, pcomp=pcomp, ae=ae, lcolor='white', fname=fig_path+'/comp-map-'+f+'.png')
+
+plotcols = ['proton_density',
+            'proton_temp',
+            'He4toprotons',
+            'proton_speed',
+            'nHe2',
+            'vHe2',
+            'vthHe2',
+            'vthC5',
+            'vthO6',
+            'vthFe10',
+            'avqC',
+            'avqO',
+            'Br',
+            'Bt',
+            'Bn',
+            'Lambda',
+            'Delta',
+            'dBrms',
+            'sigma_B']
+for f in plotcols:
+    pfig.fig_anyftmap(data, f, dist, np.ones_like(hits), m, n, wmix, lcolor='white', fname=fig_path+'/ftmap-'+f+'.png')
+
+for colorby in ['log_O7to6','proton_speed','log_Sp','log_Va','log_Tratio']:
+    for swclass in ['Xu_SW_type','Zhao_SW_type',]:
+        smin = int(data[swclass].min())
+        smax = int(data[swclass].max())+1
+        for c in range(smin, smax):
+            pfig.fig_swtypes(data, colorby, swclass, c, m, n, dist, wmix, fname=fig_path+'/SWtype-'+swclass+'-'+str(c)+'-'+colorby+'.png')
