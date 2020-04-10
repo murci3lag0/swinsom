@@ -256,21 +256,22 @@ def fig_classesdatarange(data, ftr, scaler, nclasses, classname, c, fname=None):
         medianprops = dict(linestyle='-', linewidth=1, color='k')
         meanprops = dict(linestyle='--', color='k')
         df = data[data[classname]==cl][ftr]
-        raw = scaler.transform(df.values)
-        k = raw.mean(axis=0)
-        box = ax[cl].boxplot(raw, notch=True, showfliers=False, showmeans=True, meanline=True, patch_artist=True,
-                           boxprops=boxprops,
-                           #capprops=dict(color=c),
-                           #whiskerprops=dict(color=c),
-                           #flierprops=dict(color=c, markeredgecolor=c),
-                           medianprops=medianprops,
-                           meanprops=meanprops,)
-        ax[cl].yaxis.set_major_locator(loc)
-        ax[cl].grid(which='major', axis='y', alpha=0.5)
-        for i, patch in enumerate(box['boxes']):
-            # color = np.append(cpalette[cl], k[i])
-            patch.set_facecolor(cpalette[cl])
-        plt.xticks(range(1,raw.shape[1]+1))
+        if len(df)!=0:
+            raw = scaler.transform(df.values)
+            k = raw.mean(axis=0)
+            box = ax[cl].boxplot(raw, notch=True, showfliers=False, showmeans=True, meanline=True, patch_artist=True,
+                               boxprops=boxprops,
+                               #capprops=dict(color=c),
+                               #whiskerprops=dict(color=c),
+                               #flierprops=dict(color=c, markeredgecolor=c),
+                               medianprops=medianprops,
+                               meanprops=meanprops,)
+            ax[cl].yaxis.set_major_locator(loc)
+            ax[cl].grid(which='major', axis='y', alpha=0.5)
+            for i, patch in enumerate(box['boxes']):
+                # color = np.append(cpalette[cl], k[i])
+                patch.set_facecolor(cpalette[cl])
+            plt.xticks(range(1,raw.shape[1]+1))
     
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)

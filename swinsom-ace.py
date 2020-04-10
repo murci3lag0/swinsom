@@ -59,11 +59,11 @@ params = {'Roberts' :
                'pca' : True,
                'm' : 12,
                'n' : 12,
-               'maxiter' : 50000,
+               'maxiter' : 10000,
                'batch size' : 32,
                'nepochs' : 30,
-               'sigma' : 5.0,
-               'learning_rate' : 0.9,
+               'sigma' : 7.0,
+               'learning_rate' : 1.0,
                'init_method' : 'rand_points',
                'bottle_neck' : 3,
                'nbr_clusters' : 8,
@@ -94,8 +94,8 @@ params = {'Roberts' :
                'maxiter' : 50000,
                'batch size' : 32,
                'nepochs' : 30,
-               'sigma' : 5.0,
-               'learning_rate' : 1.0,
+               'sigma' : 6.0,
+               'learning_rate' : 2.0,
                'init_method' : 'rand_points',
                'bottle_neck' : 2,
                'nbr_clusters' : 4,
@@ -257,6 +257,7 @@ raw = data[feat[case]].values
 raw = scaler.fit_transform(raw)
 
 pcomp = None
+ae = None
 if acode:
     print('Autoencoder...')
     from autoencoder import autoencoder
