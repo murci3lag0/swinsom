@@ -492,3 +492,27 @@ def fig_swtypes(data, ftr, cname, cnumber, m, n, dist, wmix, fname=None):
 
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
+        
+def fig_classmap(C, m, n, dist, hits , n_clstr, fname=None):
+    fig, ax = plt.subplots(1,1, figsize=(m/2,n/2))
+    set_figure()
+    
+    size  = np.ones_like(hits)
+    color = C
+    cmin  = color.min()
+    cmax  = color.max()
+    color = (color - cmin) / (cmax - cmin)
+
+    cmap = mcolors.ListedColormap(cpalette[:n_clstr])
+    map_plot(ax, dist, color, m, n, size=size, scale=3, cmap=cmap, lcolor='black', title='Class Map')
+    
+    norm = mcolors.Normalize(vmin=0,vmax=n_clstr)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    fig.subplots_adjust(right=0.75, left=0.1)
+    cbar1 = fig.add_axes([0.8, 0.25, 0.05, 0.45])
+    cb = plt.colorbar(sm, cax=cbar1)
+    cb.ax.tick_params(labelsize='x-small')
+    
+    if fname is not None:
+        plt.savefig(fname, bbox_inches='tight', transparent=True)
