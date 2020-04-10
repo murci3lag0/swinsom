@@ -386,3 +386,109 @@ def fig_tsfeatures(data, ftr, cl, beg, end, n_clusters, fname=None):
     
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
+
+def fig_anyftmap(data, ftr_name, dist, hits, m, n, wmix, lcolor='white', fname=None): 
+    fig, ax = plt.subplots(1,1, figsize=(m/2,n/2))
+    set_figure()
+    
+    color = np.zeros((m, n))
+    size=hits
+    for x in range(m):
+        for y in range(n):
+            color[x,y] = data[ftr_name].iloc[wmix[x,y]].mean()
+    vmax = data[ftr_name].max()
+    vmin = data[ftr_name].min()
+    color = np.nan_to_num(color)
+    cbmin = color.min()
+    cbmax = color.max()
+    color = (color - color.min())/(color.max() - color.min())
+
+    cmap='magma_r'
+    map_plot(ax, dist, color, m, n, size=size, scale=3, title='Mean('+ftr_name+')', lcolor=lcolor, cmap=cmap)
+    norm = mcolors.Normalize(vmin=vmax,vmax=vmin)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    fig.subplots_adjust(right=0.75, left=0.1)
+    cbar1 = fig.add_axes([0.8, 0.25, 0.05, 0.45])
+    cb = plt.colorbar(sm, cax=cbar1)
+    cb.ax.tick_params(labelsize='x-small')
+    
+    if fname is not None:
+        plt.savefig(fname, bbox_inches='tight', transparent=True)
+        
+def fig_componentmap(data, W, feat, nfeat, case, ftr_name, dist, hits, m, n, bneck, wmix, scaler, pca=False, acode=False, pcomp=None, ae=None, lcolor='white', fname=None): 
+    import torch
+    fig, ax = plt.subplots(1,1, figsize=(m/2,n/2))
+    set_figure()
+    
+    size=np.ones_like(hits)
+    ftr = feat[case].index(ftr_name)
+    WW = W.reshape(m*n, bneck)
+    if pca and not acode:
+        WW = pcomp.inverse_transform(WW)
+    if acode:
+        WW = ae.decode(torch.Tensor(WW)).detach().numpy()
+    WW = scaler.inverse_transform(WW)
+    WW = WW.reshape(m, n, nfeat)
+    
+    color = WW[:,:,ftr]
+    if ftr_name.startswith('log'):
+        color = np.exp(color)
+        ftr_name = ftr_name[4:]
+    
+    vmax = data[ftr_name].max()
+    vmin = data[ftr_name].min()
+    color = np.nan_to_num(color)
+    cbmin = color.min()
+    cbmax = color.max()
+    color = (color - color.min())/(color.max() - color.min())
+
+    cmap='magma_r'
+    map_plot(ax, dist, color, m, n, size=size, scale=3, title=ftr_name, lcolor=lcolor, cmap=cmap)
+    norm = mcolors.Normalize(vmin=vmax,vmax=vmin)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    fig.subplots_adjust(right=0.75, left=0.1)
+    cbar1 = fig.add_axes([0.8, 0.25, 0.05, 0.45])
+    cb = plt.colorbar(sm, cax=cbar1)
+    cb.ax.tick_params(labelsize='x-small')
+    
+    if fname is not None:
+        plt.savefig(fname, bbox_inches='tight', transparent=True)
+        
+def fig_swtypes(data, ftr, cname, cnumber, m, n, dist, wmix, fname=None):
+    fig, ax = plt.subplots(1,1, figsize=(m/2,n/2))
+    set_figure()
+    
+    K = ftr
+    Q = cname
+    V = cnumber
+    color = np.zeros((m, n))
+    size  = np.zeros((m, n))
+    for x in range(m):
+        for y in range(n):
+            color[x,y] = data[K].iloc[wmix[x,y]].mean()
+            vc = data[Q].iloc[wmix[x,y]].value_counts()
+            size [x,y] = vc.loc[V] if V in vc else 0
+    color = np.nan_to_num(color)
+    cbmin = data[ftr].min()
+    cbmax = data[ftr].max()
+    color = (color - cbmin)/(cbmax - cbmin)
+    
+    sbmin = size.min()
+    sbmax = size.max()
+    size  = (size - sbmin)/(sbmax - sbmin) if sbmax>sbmin else np.zeros((m, n))
+
+    cmap='inferno_r'
+    map_plot(ax, dist, color, m, n, size=size, scale=3, cmap=cmap, lcolor='black', title=K+' ['+Q+'='+str(V)+', max hits:'+str(int(sbmax))+']')
+    
+    norm = mcolors.Normalize(vmin=cbmin,vmax=cbmax)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    fig.subplots_adjust(right=0.75, left=0.1)
+    cbar1 = fig.add_axes([0.8, 0.25, 0.05, 0.45])
+    cb = plt.colorbar(sm, cax=cbar1)
+    cb.ax.tick_params(labelsize='x-small')
+
+    if fname is not None:
+        plt.savefig(fname, bbox_inches='tight', transparent=True)
