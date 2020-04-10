@@ -634,3 +634,5 @@ for colorby in ['log_O7to6','proton_speed','log_Sp','log_Va','log_Tratio']:
         smax = int(data[swclass].max())+1
         for c in range(smin, smax):
             pfig.fig_swtypes(data, colorby, swclass, c, m, n, dist, wmix, fname=fig_path+'/SWtype-'+swclass+'-'+str(c)+'-'+colorby+'.png')
+
+pfig.fig_classmap(C1, m, n, dist, hits , n_clstr, fname=fig_path+'/classmap.png')
