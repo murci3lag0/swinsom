@@ -16,7 +16,7 @@
 %\documentclass[utf8]{frontiersFPHY} % for Physics and Applied Mathematics and Statistics articles
 
 %\setcitestyle{square} % for Physics and Applied Mathematics and Statistics articles
-\usepackage{url,hyperref,lineno,microtype,subcaption,booktabs,amssymb,amsmath,multirow}
+\usepackage{url,hyperref,lineno,microtype,subcaption,booktabs,amssymb,amsmath,multirow,array}
 \usepackage[onehalfspacing]{setspace}
 
 \linenumbers
@@ -45,7 +45,7 @@ $^{2}$Jet Propulsion Laboratory, Interstellar and Heliospheric Physics Division,
 \onecolumn
 \firstpage{1}
 
-\title[Unsupervised Clustering of the Solar Wind]{Classification of the Solar Wind Using Unsupervised Clustering} 
+\title[Visualizing and Interpreting Unsupervised Solar Wind Classifications]{Visualizing and Interpreting Unsupervised Solar Wind Classifications} 
 
 \author[\firstAuthorLast ]{\Authors} %This field will be automatically populated
 \address{} %This field will be automatically populated
@@ -56,15 +56,12 @@ $^{2}$Jet Propulsion Laboratory, Interstellar and Heliospheric Physics Division,
 
 
 \maketitle
-me
 
 \begin{abstract}
 
 %%% Leave the Abstract empty if your article does not require one, please see the Summary Table for full details.
 \section{}
 \input{sections/abstract}
-
-This is the \href{https://github.com/murci3lag0}{link to my personal GitHub page}.
 
 \tiny
  \keyFont{ \section{Keywords:} solar wind, ACE, Self-Organizing Maps, clustering, autoencoder, PCA, unsupervised, machine learning} %All article types: you may provide up to 8 keywords; at least 5 are mandatory.
@@ -96,7 +93,7 @@ The authors declare that the research was conducted in the absence of any commer
 
 \section*{Author Contributions}
 
-JA created the software used in this work. RD provided important insights into the use of the machine learning techniques, and performed revisions of the different drafts. MEI gathered information from other experts in the domain and provided insights into the data use. GL supervised the work. All authors contributed to manuscript revision, read and approved the submitted version.
+JA created the software used in this work, built the data sets and wrote the manuscript. RD provided important insights into the use of the machine learning techniques, and performed revisions of the different drafts. MEI gathered information from external experts in the domain and provided insights into the data usage. GL supervised the work. All authors contributed to manuscript revision, read and approved the submitted version.
 
 \section*{Funding}
 
@@ -134,44 +131,30 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 \section*{Tables}
 
 \begin{table}\centering
-	\begin{tabular}{@{}llll@{}}
+	\begin{tabular}{@{}llrll@{}}
 		\toprule
 		\# & Solar wind type name & Condition & Reference \\
 		\midrule
-		1 & Coronal hole wind & $O^{7+}/O^{6+} \leq 0.145$ & \citep{Zhao2009} \\
-		2 & ICMEs & $O^{7+}/O^{6+}\leq 6.008e^{(-0.00578V_{sw})}$ & \\
-		4 & Non-coronal hole wind & $0.145 < O^{7+}/O^{6+} < 6.008e^{(-0.00578V_{sw})} $ & \\
+		1 & Coronal hole wind & $O^{7+}/O^{6+}\leq$&$0.145$ & \citep{Zhao2009} \\
+		2 & ICMEs & $O^{7+}/O^{6+}>$&$6.008e^{(-0.00578V_{sw})}$ & \\
+		4 & Non-coronal hole wind & $0.145<$&$ O^{7+}/O^{6+} < 6.008e^{(-0.00578V_{sw})} $ & \\
 		\midrule
-		0 & Streamer belt origin & Not type 1, 2, or 3 & \citep{Xu2015} \\
-		1 & Coronal hole origin & Not type 2, and & \\
-		  &  & $\log_{10}(S_p) > -0.525 \log_{10}(T_{\text{exp}}/T_p) - 0.676\log_{10}(V_A) + 1.74$ & \\
-		2 & Ejecta & $\log_{10}(V_A) > 0.055\log_{10}(T_{\text{exp}}/T_p) + 0.277 \log_{10}(S_p) + 1.83$ & \\
-		3 & Sector reversal origin & Not type 2, and & \\
-		  & & $\log_{10}(S_p) < -0.125 \log_{10}(T_{\text{exp}}/T_p) - 0.658\log_{10}(V_A) + 1.04$ &  \\
+		0 & Streamer belt origin & Not type 1, 2, or 3 & & \citep{Xu2015b} \\
+		1 & Coronal hole origin & Not type 2, and & & \\
+		  &  & $\log_{10}(S_p)>$&$ -0.525 \log_{10}(T_{\text{exp}}/T_p)$\\
+		  &  & &$- 0.676\log_{10}(V_A)$ \\
+		  &  & &$+ 1.74$ & \\
+		2 & Ejecta & $\log_{10}(V_A)>$ & $ 0.055\log_{10}(T_{\text{exp}}/T_p)$ \\
+		  &  & & $+ 0.277 \log_{10}(S_p)$ \\
+		  &  & & $+ 1.83$ & \\
+		3 & Sector reversal origin & Not type 2, and & & \\
+		  & & $\log_{10}(S_p)<$&$ -0.125 \log_{10}(T_{\text{exp}}/T_p)$ \\
+		  & & & $- 0.658\log_{10}(V_A)$ \\
+		  & & & $+ 1.04$ &  \\
 		\bottomrule
 	\end{tabular}
-	\caption{The four solar wind types, as defined by \citep{Zhao2009} (top) and \citep{Xu2015} (bottom).}
+	\caption{The four solar wind types, as defined by \citep{Zhao2009} (top) and \citep{Xu2015b} (bottom).}
 	\label{tab:swtypes}
-\end{table}
-
-\begin{table}\centering
-	\begin{tabular}{@{}lcccc@{}}
-		\toprule
-		Method & $m$ & $n$ & $\epsilon$ & $\sigma$ or $\eta$ \\
-		\midrule
-		\multirow{4}{*}{SOM} & v1 & v2 \\
-						  	  & v3 & v4 \\
-						  	  & v3 & v4 \\
-						  	  & v3 & v4 \\
-		\midrule
-		\multirow{4}{*}{DSOM} & v1 & v2 \\
-							   & v3 & v4 \\
-							   & v3 & v4 \\	
-							   & v3 & v4 \\
-		\bottomrule
-	\end{tabular}
-	\caption{Hyper-parameters for the SOM/DSOM classification, obtained using Hyper-Parameter Optimization (HPO).}
-	\label{tab:hpo}
 \end{table}
 
 \begin{table}\centering
@@ -192,29 +175,29 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 		11 & Tratio & $\checkmark$ & & $\checkmark$ & \\
 		12 & proton\_temp & $\checkmark$ & & & \\
 		13 & Ma & $\checkmark$ & & & \\
-		14 & He4toprotons & $\checkmark$ & & & \\
-		15 & C6to5 & $\checkmark$ & & & \\
-		16 & proton\_speed\_range & $\checkmark$ & & & \\
-		17 & proton\_density\_range & $\checkmark$ & & & \\
-		18 & proton\_temp\_range & $\checkmark$ & & & \\
-		19 & Bgsm\_x\_range & $\checkmark$ & & & \\
-		20 & Bgsm\_y\_range & $\checkmark$ & & & \\
-		21 & Bgsm\_z\_range & $\checkmark$ & & & \\
-		22 & Bmag\_range & $\checkmark$ & & & \\
-		23 & Bmag\_acor$^{(*)}$ & $\checkmark$ & & & \\
-		24 & Bmag\_mean & $\checkmark$ & & & \\
-		25 & Bmag\_std & $\checkmark$ & & & \\
-		26 & Lambda$^{(*)}$ & $\checkmark$ & & & \\
-		27 & Delta$^{(*)}$ & $\checkmark$ & & & \\
+		14 & C6to5 & $\checkmark$ & & & \\
+		15 & proton\_density\_range & $\checkmark$ & & & \\
+		16 & proton\_temp\_range & $\checkmark$ & & & \\
+		17 & Bx\_range & $\checkmark$ & & & \\
+		18 & Bz\_range & $\checkmark$ & & & \\
+		19 & Bmag\_range & $\checkmark$ & & & \\
+		20 & Bmag\_acor$^{(*)}$ & $\checkmark$ & & & \\
+		21 & Delta$^{(*)}$ & $\checkmark$ & & & \\
 		\midrule
 		 & Initial year & 1998 & 2002 & 2000 & 2000 \\
 		 & Final year & 2011 & 2004 & 2011 & 2011 \\
+		 \midrule
 		 & PCA transformation & $\checkmark$ & $\checkmark$ & $\checkmark$ &  \\
 		 & AE encoding & $\checkmark$ & $\checkmark$ & & \\
-		 & Neurons/ encoding layer & [27, 15, 6, 3] & [8, 6, 4, 3] & & \\
+		 & Neurons / encoding layer & [21, 17, 9, 3] & [8, 5, 3] & & \\
+		 \midrule
+		 & Method &  DSOM & DSOM & DSOM & SOM \\
+		 & Lattice nodes &  12x12 &  12x9 & 12x12 & 12x6 \\
+		 & $\epsilon$ or $\epsilon$ &  0.58 & 0.15 & 0.34 & 0.26 \\
+		 & $\sigma_0$ or $\eta$ & 4.66 & 4.85 & 4.75 & 1.16 \\
 		\bottomrule
 	\end{tabular}
-	\caption{List of features used for each classification case. The logarithm of all quantities was used, except for the features marked with an asterisk (*). Bottom: data range and transformations used.}
+	\caption{List of features used for each classification case. The logarithm of all quantities was used, except for the features marked with an asterisk (*). Bottom: data range, transformations used and hyper-parameters of the SOMs.}
 	\label{tab:features}
 \end{table}
 
@@ -233,21 +216,14 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=.5\textwidth]{Amaya/datacoverage}
-	\end{center}
-	\caption{Histogram of the number of entries in the data set for this work.}\label{fig:datacoverage}
-\end{figure}
-
-\begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=16cm]{Roberts/dimreduc}% This is a *.eps file
+		\includegraphics[width=16cm]{Amaya/dimreduc}% This is a *.eps file
 	\end{center}
 	\caption{Dimension reduction scatter plot (first four columns, panels a-d and g-j) and density plots (two last columns, panels e, f, k, l). Top row: PCA transformation. Bottom row: autoencoder transformation. The y-axis in all the panels represent the second component of the transformed space. The x-axis in the odd (even) columns correspond to the first (third) component.}\label{fig:dimreduc}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=16cm]{Roberts/clustering}% This is a *.eps file
+		\includegraphics[width=16cm]{Amaya/clustering}% This is a *.eps file
 	\end{center}
 	\caption{Scatter plot of the data set points projected on the transformed space. The two left (right) columns correspond to the PCA (autoencoder) projection. The y-axis in all the panels represent the second component of the transformed space. The x-axis in the odd (even) columns correspond to the first (third) component. First row: k-means classification. Second row: Gaussian Mixture Model classification. Third row: Self-Organizing Map classification.}\label{fig:clustering}
 \end{figure}
@@ -256,22 +232,65 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 	\begin{center}
 		\includegraphics[width=16cm]{Amaya/maps}% This is a *.eps file
 	\end{center}
-	\caption{Visualization of the Self-Organizing maps. In columns 2 to 4 the colors evolve from black, to orange to yellow. Top left panel: histogram with the density of data points superposed by the code words (nodes) of the SOM. As an example, a single node is connected to its closest neighbors by red lines. Second panel, top row, Hit map: colred by the sum of the node components, the size of the hexagon corresponds to the number of points associated to the node, and the lines between nodes correspond to their relative distance. Third panel top row: example of the corresponding feature value to each node. Top row last panel: example of the statistics applied to the points associated to each node, in this case mean value of `avqO' in color, with solar wind type hits as hexagon size. Bottom row: the three components of the map nodes, where the first panel is an RGB combination of the following three.}\label{fig:maps}
+	\caption{Visualization of the Self-Organizing maps. In columns 2, 3 and 4 the colors evolve from black, to purple, orange and yellow. Top left panel: histogram with the density of data points superposed by the code words (nodes) of the SOM, projected in the first two components of the latent space. As an example, a single node is connected to its closest neighbors by red lines. Second panel, top row, Hit map: colored by the sum of the node weights, the size of the hexagon corresponds to the number of data points associated to the node, and the lines between nodes correspond to their relative distance. Third panel top row: example of the corresponding feature value to each node. Top row last panel: example of the statistics applied to the points associated to each node, in this case mean value of `avqO' in color, with solar wind type hits as hexagon size. Bottom row: the three components of the map nodes, where the first panel is an RGB combination of the following three.}\label{fig:maps}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=13cm]{Amaya/datarange}% This is a *.eps file
+		\includegraphics[width=14cm]{Amaya/datarange}% This is a *.eps file
 	\end{center}
 	\caption{Composition of all the solar wind points. Violin plot superposed by a box plot of the solar wind features. The box hight represents the Inter Quartile Range (IQR), the central continuous line represents the median and the dashed line the mean. The central notch represents the confidence of the median. The upper (lower) whiskers represent the lesser 25th (greater 75th) percentile of the data. }\label{fig:datarange}
 \end{figure}
 
-\begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=5cm]{Amaya/classesdatarange-kmeans}\hfill
-		\includegraphics[width=5cm]{Amaya/classesdatarange-gmm}\hfill
-		\includegraphics[width=5cm]{Amaya/classesdatarange-som}
-	\end{center}
+\newcolumntype{C}{>{\centering\arraybackslash} m{4cm} }
+\begin{figure}[h!]\centering
+	\begin{tabular}{CCCC}
+		Class map & $\log O^{7+}/O^{6+}$ & $\log V_{sw}$ & $\log n_p$ \\
+		\includegraphics[width=4cm]{Amaya/classmap} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_O7to6} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_speed} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_density}\hfill
+		\\
+		$\log Fe/O$ & $\log \text{av}(Q_{Fe})$ & $\sigma_c$ & $\sigma_r$ \\
+		\includegraphics[width=4cm]{Amaya/comp-map-log_FetoO} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_avqFe} &
+		\includegraphics[width=4cm]{Amaya/comp-map-sigmac} &
+		\includegraphics[width=4cm]{Amaya/comp-map-sigmar}\hfill
+		\\
+		$\log \left\lVert B \right\rVert $ & $\log Sp$ & $\log V_{A}$ & $\log T_{\text{exp}}/T_p$ \\
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Bmag} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Sp} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Va} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Tratio}\hfill
+		\\
+		$\log T_p$ & $\log M_A$ & $\log C^{6+}/C^{5+}$ & $\text{range} \log \left\lVert B \right\rVert $ \\
+		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_temp} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Ma} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_C6to5} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Bmag_range}\hfill
+		\\
+		$\text{range} \log T_p $ & $\text{range} \log n_p$ & $\text{range} \log B_x$ & $\text{range} \log B_z$ \\
+		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_temp_range} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_density_range} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Bgsm_x_range} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Bgsm_z_range}\hfill
+		\\
+		& $\text{autocorr} \left\lVert B \right\rVert$ & $\Delta B$ & \\
+		& \includegraphics[width=4cm]{Amaya/comp-map-Bmag_acor} &
+		\includegraphics[width=4cm]{Amaya/comp-map-Delta} & \hfill
+		\\
+	\end{tabular}
+	\caption{Map of the clustering of the SOM nodes, and map of eleven of the features used in model A.}\label{fig:compmap}
+\end{figure}
+
+\newcolumntype{C}{>{\centering\arraybackslash} m{5.5cm} }
+\begin{figure}[h!]\centering
+	\begin{tabular}{CCC}
+		$k$-means classes & GMM classes & SOM classes \\
+		\includegraphics[width=5.5cm]{Amaya/classesdatarange-kmeans} &
+		\includegraphics[width=5.5cm]{Amaya/classesdatarange-gmm} &
+		\includegraphics[width=5.5cm]{Amaya/classesdatarange-som} \hfill \\
+	\end{tabular}
 	\caption{Solar wind `fingerprint': composition of each class (one color per class), obtained with the k-means classification (left), the GMM classification (center), and the DSOM classification (right).}\label{fig:classesdatarange}
 \end{figure}
 
@@ -291,9 +310,62 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=10cm]{architecture}% This is a *.eps file
+		\includegraphics[width=12cm]{architecture}% This is a *.eps file
 	\end{center}
-	\caption{General architecture used in model A: data set entries are encoded into a latent space with a much smaller number of dimensions. The encoded data is used to train the SOM. Clustering techniques are used to group together nodes of the SOM lattice.}\label{fig:architecture}
+	\caption{General architecture used in this project. Three types of processed data are presented to the SOM: a) the database is transformed using PCA, keeping only the most significant components, b) the data set entries are encoded into a latent space with a smaller number of dimensions, c) the data is directly presented to the SOM. Clustering techniques are used to group together nodes of the SOM lattice.}\label{fig:architecture}
+\end{figure}
+
+\newcolumntype{C}{>{\centering\arraybackslash} m{6cm} }
+\begin{figure}[h!]\centering
+	\begin{tabular}{m{1cm}CC}
+		 & $\log O^{7+}/O^{6+}$ & $V_{sw}$ \\ \\
+		CHW & \includegraphics[width=6cm]{Amaya/SWtype-Zhao_SW_type-1-log_O7to6} &
+		\includegraphics[width=6cm]{Amaya/SWtype-Zhao_SW_type-1-proton_speed}\hfill	\\
+		ICME & \includegraphics[width=6cm]{Amaya/SWtype-Zhao_SW_type-2-log_O7to6} &
+		\includegraphics[width=6cm]{Amaya/SWtype-Zhao_SW_type-2-proton_speed}\hfill	\\
+		NCHW & \includegraphics[width=6cm]{Amaya/SWtype-Zhao_SW_type-4-log_O7to6} &
+		\includegraphics[width=6cm]{Amaya/SWtype-Zhao_SW_type-4-proton_speed}\hfill \\
+	\end{tabular}
+	\caption{Maps for model A of the two features (one per column) used int the Z classification system. The size of the nodes represent the number of hits for each one of the three classes (rows). CHW: coronal hole wind, NCHW: non-coronal hole wind.}\label{fig:SWtypeZ}
+\end{figure}
+
+\newcolumntype{C}{>{\centering\arraybackslash} m{4.5cm} }
+\begin{figure}[h!]\centering
+	\begin{tabular}{m{2.5cm}CCC}
+		& $\log Sp$ & $\log V_{A}$ & $\log T_{\text{exp}}/T_p$ \\ \\
+		Streamer belt origin & \includegraphics[width=4.5cm]{Amaya/SWtype-Xu_SW_type-0-log_Sp} &
+		\includegraphics[width=4.5cm]{Amaya/SWtype-Xu_SW_type-0-log_Va} &
+		\includegraphics[width=4.5cm]{Amaya/SWtype-Xu_SW_type-0-log_Tratio} \hfill	\\
+		
+		Coronal hole origin & \includegraphics[width=4.5cm]{Amaya/SWtype-Xu_SW_type-1-log_Sp} &
+		\includegraphics[width=4.5cm]{Amaya/SWtype-Xu_SW_type-1-log_Va} &
+		\includegraphics[width=4.5cm]{Amaya/SWtype-Xu_SW_type-1-log_Tratio} \hfill	\\
+		
+		Ejecta & \includegraphics[width=4.5cm]{Amaya/SWtype-Xu_SW_type-2-log_Sp} &
+		\includegraphics[width=4.5cm]{Amaya/SWtype-Xu_SW_type-2-log_Va} &
+		\includegraphics[width=4.5cm]{Amaya/SWtype-Xu_SW_type-2-log_Tratio} \hfill	\\
+		
+		Sector reversal origin & \includegraphics[width=4.5cm]{Amaya/SWtype-Xu_SW_type-3-log_Sp} &
+		\includegraphics[width=4.5cm]{Amaya/SWtype-Xu_SW_type-3-log_Va} &
+		\includegraphics[width=4.5cm]{Amaya/SWtype-Xu_SW_type-3-log_Tratio} \hfill	\\
+	\end{tabular}
+	\caption{Maps for model A of the three features (one per column) used int the X classification system. The size of the nodes represent the number of hits for each one of the four classes (rows).}\label{fig:SWtXu}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=16cm]{Roberts/maps}\\% This is a *.eps file
+			\includegraphics[width=18cm]{Roberts/timeseries}
+	\end{center}
+	\caption{Visualization of the Self-Organizing map of model R, and the corresponding time series example. See the captions of Fig.\ref{fig:maps}  and \ref{fig:timeseries} for a detailed description.}\label{fig:modelR}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=16cm]{XuBorovsky/maps}\\% This is a *.eps file
+		\includegraphics[width=16cm]{ZhaZuFi/maps}
+	\end{center}
+	\caption{Visualization of the Self-Organizing map of models X (top two rows) and Z (bottom two rows). See the captions of Fig.\ref{fig:maps} for a detailed description.}\label{fig:modelsXZ}
 \end{figure}
 
 \end{document}
