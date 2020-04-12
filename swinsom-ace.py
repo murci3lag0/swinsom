@@ -29,8 +29,8 @@ outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
 # acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
 # outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
 
-np.random.seed(1234)
-torch.manual_seed(5678)
+np.random.seed(123)
+torch.manual_seed(567)
 
 optim = True
 calculate_som = True
@@ -252,6 +252,8 @@ print('Data set size after adding extras:', len(data))
     ----------------
 '''
 scaler = MinMaxScaler()
+scaler_pca = MinMaxScaler()
+scaler_aec = MinMaxScaler()
 
 raw = data[feat[case]].values
 raw = scaler.fit_transform(raw)
@@ -266,16 +268,19 @@ if acode:
     print('Autoencoder fit...')
     L, T = ae.fit(torch.Tensor(raw), batch_size, num_epochs)
     print('Autoencoder encode...')
-    x = ae.encode(torch.Tensor(raw)).detach().numpy()
+    X = ae.encode(torch.Tensor(raw)).detach().numpy()
+    x = scaler_aec.fit_transform(X)
     if pca:
         print('PCA for comparison...')
         pcomp = PCA(n_components=bneck, whiten=True)
-        xpca = pcomp.fit_transform(raw)
+        Xpca = pcomp.fit_transform(raw)
+        xpca = scaler_pca.fit_transform(Xpca)
 else:
     if pca:
         print('PCA transormation...')
         pcomp = PCA(n_components=bneck, whiten=True)
-        x = pcomp.fit_transform(raw)
+        X = pcomp.fit_transform(raw)
+        x = scaler_pca.fit_transform(X)
     else:
         print('No data reduction...')
         x = raw
@@ -415,13 +420,14 @@ if calculate_som:
             plt.plot([i,i-0.5], [j*0.75,j*0.75+0.75], 'k-')
     
     if plot_featurespace:
+        import matplotlib.colors as mcolors
         plt.figure()
         add_data = np.arange(m*n).reshape((m,n))
         add_name = 'node'
         finaldata = som_addinfo(som, data, x, add_data, add_name)
-        hbin = plt.hexbin(x[:,0], x[:,1], bins='log', gridsize=30, cmap='BuGn')  
+        hbin = plt.hexbin(x[:,0], x[:,1], norm=mcolors.PowerNorm(gamma=0.5), gridsize=30, cmap='cubehelix_r')  
         plt.colorbar(hbin)
-        plt.scatter(W[:,:,0].flatten(), W[:,:,1].flatten(), c=color.reshape((m*n)), cmap='inferno_r', s=50, marker='o', label='nodes')
+        plt.scatter(W[:,:,0].flatten(), W[:,:,1].flatten(), c=color.reshape((m*n)), cmap='inferno_r', s=50, marker='.', label='nodes')
         plt.title('Code words')
         
         if plot_neighbors:
@@ -586,12 +592,12 @@ if calculate_som:
 import paper_figures as pfig
 
 fig_path = outdir+case
-pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
+# pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
 
-if acode and pca:
-    pfig.fig_dimreduc(data, xpca, x, n_clstr, cmap='jet_r', fname=fig_path+'/dimreduc.png')
-    pfig.fig_clustering(data, x, xpca, y_kms, y_gmm, data['class-som'].values, y_kms_pca, y_gmm_pca, data['class-som'].values, n_clstr, cmap='jet', fname=fig_path+'/clustering.png')
-pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, scaler, feat[case], pcomp=pcomp, fname=fig_path+'/maps.png')
+# if acode and pca:
+    # pfig.fig_dimreduc(data, xpca, x, n_clstr, cmap='jet_r', fname=fig_path+'/dimreduc.png')
+    # pfig.fig_clustering(data, x, xpca, y_kms, y_gmm, data['class-som'].values, y_kms_pca, y_gmm_pca, data['class-som'].values, n_clstr, cmap='jet', fname=fig_path+'/clustering.png')
+pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, scaler, scaler_pca, scaler_aec, feat[case], pcomp=pcomp, ae=ae, fname=fig_path+'/maps.png')
 pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')
 pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-kmeans', [1,0,0], fname=fig_path+'/classesdatarange-kmeans.png')
 pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-gmm', [0,1,0], fname=fig_path+'/classesdatarange-gmm.png')
@@ -605,7 +611,7 @@ pfig.fig_tsfeatures(data, feat[case][:8], 'class-gmm', beg, end, n_clstr, fname=
 pfig.fig_tsfeatures(data, feat[case][:8], 'class-som', beg, end, n_clstr, fname=fig_path+'/tsfeatures-som.png')
 
 for f in feat[case]:
-    pfig.fig_componentmap(data, W, feat, nfeat, case, f, dist, hits, m, n, bneck, wmix, scaler, pca=pca, acode=acode, pcomp=pcomp, ae=ae, lcolor='white', fname=fig_path+'/comp-map-'+f+'.png')
+    pfig.fig_componentmap(data, W, feat, nfeat, case, f, dist, hits, m, n, bneck, wmix, scaler, scaler_pca, scaler_ae, pca=pca, acode=acode, pcomp=pcomp, ae=ae, lcolor='white', fname=fig_path+'/comp-map-'+f+'.png')
 
 plotcols = ['proton_density',
             'proton_temp',

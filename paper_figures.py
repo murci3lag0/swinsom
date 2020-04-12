@@ -17,105 +17,307 @@ from som import *
 cpalette = ['#e6194B', '#3cb44b', '#4363d8', '#f58231', '#42d4f4', '#f032e6', '#469990', '#e6beff', '#9A6324', '#800000', '#000075']
 
 def set_figure():
-    plt.rcParams['font.size'] = 10
-    plt.rcParams['axes.titlesize'] = 10
-    plt.rcParams['axes.titlesize'] = 10
-    plt.rc('font', family='serif')
+    plt.rc('font', family='Times New Roman')
+    
+    SMALL_SIZE = 10
+    MEDIUM_SIZE = 12
+    BIGGER_SIZE = 14
+    
+    plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+    plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+    plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+    plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+    plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+    plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+    plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
    
 def fig_datacoverage(data, cols, fname=None):    
     fig, ax = plt.subplots(1, 1, figsize=(4,3))
     set_figure()
+
+    ax = data[cols[0]].groupby(data.index.year).count().plot(kind="bar")
     ax.set_xlabel('Year')
     ax.set_ylabel('Number of entries')
-    ax = data[cols[0]].groupby(data.index.year).count().plot(kind="bar")
+    plt.title('Data coverage')
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
-        
+
+from matplotlib.patches import FancyArrowPatch
+class Arrow3D(FancyArrowPatch):
+    def __init__(self, xs, ys, zs, *args, **kwargs):
+        FancyArrowPatch.__init__(self, (0,0), (0,0), *args, **kwargs)
+        self._verts3d = xs, ys, zs
+
+    def draw(self, renderer):
+        xs3d, ys3d, zs3d = self._verts3d
+        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, renderer.M)
+        self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
+        FancyArrowPatch.draw(self, renderer)
+
+from mpl_toolkits.mplot3d import proj3d
+def plot_axes(ax, text='', size=1.0):
+    a0 = Arrow3D([0,size],[0,0],[0,0], mutation_scale=10, lw=2, arrowstyle="-|>", color="r")
+    a1 = Arrow3D([0,0],[0,size],[0,0], mutation_scale=10, lw=2, arrowstyle="-|>", color="g")
+    a2 = Arrow3D([0,0],[0,0],[0,size], mutation_scale=10, lw=2, arrowstyle="-|>", color="b")
+    ax.add_artist(a0)
+    ax.add_artist(a1)
+    ax.add_artist(a2)
+    ax.set_proj_type('persp')
+    ax.text(0.05, 0.9, text, fontsize=12, transform=ax.transAxes)
+    return ax
+
+def set_3dview(fig, ax, xyi, elev=60, azim=60):
+    ax.remove()
+    ax = fig.add_subplot(xyi[0], xyi[1], xyi[2], projection='3d')
+    ax.view_init(elev,azim)
+    ax.set_xlabel('1st component')
+    ax.set_ylabel('2nd component')
+    ax.set_zlabel('3rd component')
+    # Hide grid lines
+    ax.grid(False)
+    # Hide axes ticks
+    # ax.set_xticks([])
+    # ax.set_yticks([])
+    # ax.set_zticks([])
+    return fig, ax
+
 def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
     cmap = mcolors.ListedColormap(cpalette[:ncls])
-    fig, ax = plt.subplots(2,6, figsize=(16,6), sharex='none', sharey='row')
+    fig, ax = plt.subplots(2,2, figsize=(9,9))
     set_figure()
-    alpha = 0.6
-    size = 0.1
+    alpha = 1
+    size = 15
     
-    ax[0][0].scatter(x1[:,0], x1[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[0][1].scatter(x1[:,2], x1[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[0][2].scatter(x1[:,0], x1[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[0][3].scatter(x1[:,2], x1[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[0][4].hist2d (x1[:,0], x1[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.3))
-    ax[0][5].hist2d (x1[:,2], x1[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.3))
-    ax[1][0].scatter(x2[:,0], x2[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[1][1].scatter(x2[:,2], x2[:,1], c=data['Xu_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[1][2].scatter(x2[:,0], x2[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    sct = ax[1][3].scatter(x2[:,2], x2[:,1], c=data['Zhao_SW_type'], s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[1][4].hist2d (x2[:,0], x2[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.3))
-    hst = ax[1][5].hist2d (x2[:,2], x2[:,1], bins=50, cmap='BuGn', norm=mcolors.PowerNorm(0.3))
-
-    ax[0][0].text(0.05, 0.9, 'a)', fontsize=11, transform=ax[0][0].transAxes)
-    ax[0][1].text(0.05, 0.9, 'b)', fontsize=11, transform=ax[0][1].transAxes)
-    ax[0][2].text(0.05, 0.9, 'c)', fontsize=11, transform=ax[0][2].transAxes)
-    ax[0][3].text(0.05, 0.9, 'd)', fontsize=11, transform=ax[0][3].transAxes)
-    ax[0][4].text(0.05, 0.9, 'e)', fontsize=11, transform=ax[0][4].transAxes)
-    ax[0][5].text(0.05, 0.9, 'f)', fontsize=11, transform=ax[0][5].transAxes)
-    ax[1][0].text(0.05, 0.9, 'g)', fontsize=11, transform=ax[1][0].transAxes)
-    ax[1][1].text(0.05, 0.9, 'h)', fontsize=11, transform=ax[1][1].transAxes)
-    ax[1][2].text(0.05, 0.9, 'i)', fontsize=11, transform=ax[1][2].transAxes)
-    ax[1][3].text(0.05, 0.9, 'j)', fontsize=11, transform=ax[1][3].transAxes)
-    ax[1][4].text(0.05, 0.9, 'k)', fontsize=11, transform=ax[1][4].transAxes)
-    ax[1][5].text(0.05, 0.9, 'l)', fontsize=11, transform=ax[1][5].transAxes)
+    fig, ax[0][0] = set_3dview(fig, ax[0][0], (2,2,1), elev=40, azim=45)
+    ax[0][0].text(0.05, 0.9, 0, 'A', fontsize=12, transform=ax[0][0].transAxes)
+    sct = ax[0][0].scatter(x1[:,0], x1[:,1], x1[:,2],
+                           c=data['Xu_SW_type'],
+                           s=size,
+                           alpha=alpha, 
+                           vmin=0, 
+                           vmax=ncls,
+                           edgecolors='k',
+                           linewidths=0.25,
+                           depthshade=True,
+                           cmap=cmap)
+    ## Y, Z plane
+    h, yedges, zedges = np.histogram2d(x1[:,1], x1[:,2], bins=50)
+    h = h.transpose()
+    normalized_map = plt.cm.cubehelix_r(h/h.max())
+    yy, zz = np.meshgrid(yedges, zedges)
+    xpos = x1[:,0].min() - 0.5*(x1[:,0].max()-x1[:,0].min())
+    xflat = np.full_like(yy, xpos) 
+    ax[0][0].plot_surface(xflat, yy, zz, facecolors=normalized_map, rstride=1, cstride=1, shade=False)
+    ## X, Z plane
+    h, xedges, zedges = np.histogram2d(x1[:,0], x1[:,2], bins=50)
+    h = h.transpose()
+    normalized_map = plt.cm.cubehelix_r(h/h.max())
+    xx, zz = np.meshgrid(xedges, zedges)
+    ypos = x1[:,1].min() - 0.5*(x1[:,1].max()-x1[:,1].min())
+    yflat = np.full_like(xx, ypos) 
+    ax[0][0].plot_surface(xx, yflat, zz, facecolors=normalized_map, rstride=1, cstride=1, shade=False)
+    ## X, Y plane
+    h, xedges, yedges = np.histogram2d(x1[:,0], x1[:,1], bins=50)
+    h = h.transpose()
+    normalized_map = plt.cm.cubehelix_r(h/h.max())
+    xx, yy = np.meshgrid(xedges, yedges)
+    zpos = x1[:,2].min() - 0.5*(x1[:,2].max()-x1[:,2].min())
+    zflat = np.full_like(xx, zpos) 
+    ax[0][0].plot_surface(xx, yy, zflat, facecolors=normalized_map, rstride=1, cstride=1, shade=False)
+    ## Axis
+    ax[0][0].set_title('Xu Classes - PCA')
     
-    fig.subplots_adjust(right=0.9, left=0.1)
-    cbar1 = fig.add_axes([0.04, 0.11, 0.02, 0.77])
-    fig.colorbar(sct, cax=cbar1, ticks=range(ncls+1))
-    cbar1.yaxis.set_ticks_position('left')
-    cbar2 = fig.add_axes([0.92, 0.11, 0.02, 0.77])
-    fig.colorbar(hst[3], cax=cbar2)
-    if fname is not None:
-        plt.savefig(fname, bbox_inches='tight', transparent=True)
-        
-def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fname=None):
-    cmap = mcolors.ListedColormap(cpalette[:ncls])
-    fig, ax = plt.subplots(3,4,figsize=(16,9),sharex='col', sharey='col')
-    set_figure()
-    alpha = 0.6
-    size = 0.1
+    fig, ax[0][1] = set_3dview(fig, ax[0][1], (2,2,3), elev=45, azim=70)
+    ax[0][1].text(0.05, 0.9, 0, 'B', fontsize=12, transform=ax[0][1].transAxes)
+    sct = ax[0][1].scatter(x1[:,0], x1[:,1], x1[:,2],
+                           c=data['Zhao_SW_type'],
+                           s=size,
+                           alpha=alpha, 
+                           vmin=0, 
+                           vmax=ncls,
+                           edgecolors='k',
+                           linewidths=0.25,
+                           depthshade=True,
+                           cmap=cmap)
+    ax[0][1].set_xlim(xpos, x1[:,0].max())
+    ax[0][1].set_ylim(ypos, x1[:,1].max())
+    ax[0][1].set_zlim(zpos, x1[:,2].max())
+    ax[0][1].set_title('Zhao Classes - PCA')
     
-    ax[0][0].scatter(x1[:,0], x1[:,1], c=y1, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[0][1].scatter(x1[:,2], x1[:,1], c=y1, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[1][0].scatter(x1[:,0], x1[:,1], c=y2, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[1][1].scatter(x1[:,2], x1[:,1], c=y2, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[2][0].scatter(x1[:,0], x1[:,1], c=y3, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[2][1].scatter(x1[:,2], x1[:,1], c=y3, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
+    fig, ax[1][0] = set_3dview(fig, ax[1][0], (2,2,2), elev=40, azim=45)
+    ax[1][0].text(0.05, 0.9, 0, 'C', fontsize=12, transform=ax[1][0].transAxes)
+    sct = ax[1][0].scatter(x2[:,0], x2[:,1], x2[:,2],
+                           c=data['Xu_SW_type'],
+                           s=size,
+                           alpha=alpha, 
+                           vmin=0, 
+                           vmax=ncls,
+                           edgecolors='k',
+                           linewidths=0.25,
+                           depthshade=True,
+                           cmap=cmap)
+    ## Y, Z plane
+    h, yedges, zedges = np.histogram2d(x2[:,1], x2[:,2], bins=50)
+    h = h.transpose()
+    normalized_map = plt.cm.cubehelix_r(h/h.max())
+    yy, zz = np.meshgrid(yedges, zedges)
+    xpos = x2[:,0].min() - 0.5*(x2[:,0].max()-x2[:,0].min())
+    xflat = np.full_like(yy, xpos) 
+    ax[1][0].plot_surface(xflat, yy, zz, facecolors=normalized_map, rstride=1, cstride=1, shade=False)
+    ## X, Z plane
+    h, xedges, zedges = np.histogram2d(x2[:,0], x2[:,2], bins=50)
+    h = h.transpose()
+    normalized_map = plt.cm.cubehelix_r(h/h.max())
+    xx, zz = np.meshgrid(xedges, zedges)
+    ypos = x2[:,1].min() - 0.5*(x2[:,1].max()-x2[:,1].min())
+    yflat = np.full_like(xx, ypos) 
+    ax[1][0].plot_surface(xx, yflat, zz, facecolors=normalized_map, rstride=1, cstride=1, shade=False)
+    ## X, Y plane
+    h, xedges, yedges = np.histogram2d(x2[:,0], x2[:,1], bins=50)
+    h = h.transpose()
+    normalized_map = plt.cm.cubehelix_r(h/h.max())
+    xx, yy = np.meshgrid(xedges, yedges)
+    zpos = x2[:,2].min() - 0.5*(x2[:,2].max()-x2[:,2].min())
+    zflat = np.full_like(xx, zpos) 
+    ax[1][0].plot_surface(xx, yy, zflat, facecolors=normalized_map, rstride=1, cstride=1, shade=False)
+    ## Axis
+    ax[1][0].set_title('Xu Classes - AE')
     
-    sct = ax[0][2].scatter(x2[:,0], x2[:,1], c=y4, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[0][3].scatter(x2[:,2], x2[:,1], c=y4, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[1][2].scatter(x2[:,0], x2[:,1], c=y5, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[1][3].scatter(x2[:,2], x2[:,1], c=y5, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[2][2].scatter(x2[:,0], x2[:,1], c=y6, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    ax[2][3].scatter(x2[:,2], x2[:,1], c=y6, s=size, alpha=alpha, vmin=0, vmax=ncls, cmap=cmap)
-    
-    ax[0][0].text(0.05, 0.9, 'a)', fontsize=11, transform=ax[0][0].transAxes)
-    ax[0][1].text(0.05, 0.9, 'b)', fontsize=11, transform=ax[0][1].transAxes)
-    ax[1][0].text(0.05, 0.9, 'c)', fontsize=11, transform=ax[1][0].transAxes)
-    ax[1][1].text(0.05, 0.9, 'd)', fontsize=11, transform=ax[1][1].transAxes)
-    ax[2][0].text(0.05, 0.9, 'e)', fontsize=11, transform=ax[2][0].transAxes)
-    ax[2][1].text(0.05, 0.9, 'f)', fontsize=11, transform=ax[2][1].transAxes)
-    
-    ax[0][2].text(0.05, 0.9, 'g)', fontsize=11, transform=ax[0][2].transAxes)
-    ax[0][3].text(0.05, 0.9, 'h)', fontsize=11, transform=ax[0][3].transAxes)
-    ax[1][2].text(0.05, 0.9, 'i)', fontsize=11, transform=ax[1][2].transAxes)
-    ax[1][3].text(0.05, 0.9, 'j)', fontsize=11, transform=ax[1][3].transAxes)
-    ax[2][2].text(0.05, 0.9, 'k)', fontsize=11, transform=ax[2][2].transAxes)
-    ax[2][3].text(0.05, 0.9, 'l)', fontsize=11, transform=ax[2][3].transAxes)
+    fig, ax[1][1] = set_3dview(fig, ax[1][1], (2,2,4), elev=45, azim=70)
+    ax[1][1].text(0.05, 0.9, 0, 'D', fontsize=12, transform=ax[1][1].transAxes)
+    sct = ax[1][1].scatter(x2[:,0], x2[:,1], x2[:,2],
+                           c=data['Zhao_SW_type'],
+                           s=size,
+                           alpha=alpha, 
+                           vmin=0, 
+                           vmax=ncls,
+                           edgecolors='k',
+                           linewidths=0.25,
+                           depthshade=True,
+                           cmap=cmap)
+    ax[1][1].set_xlim(xpos, x2[:,0].max())
+    ax[1][1].set_ylim(ypos, x2[:,1].max())
+    ax[1][1].set_zlim(zpos, x2[:,2].max())
+    ax[1][1].set_title('Zhao Class - AE')
     
     fig.subplots_adjust(right=0.9)
-    cbar_ax = fig.add_axes([0.92, 0.11, 0.02, 0.77])
-    fig.colorbar(sct, cax=cbar_ax, ticks=range(ncls+1))
+    cbar1 = fig.add_axes([0.92, 0.21, 0.02, 0.57])
+    cb = fig.colorbar(sct, cax=cbar1) #, ticks=range(ncls+1))
+    tick_locs = np.arange(ncls+1) + 0.5
+    cb.set_ticks(tick_locs)
+    cb.set_ticklabels(np.arange(ncls+1))
+
+    if fname is not None:
+        plt.savefig(fname, bbox_inches='tight', transparent=True)
+
+def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fname=None):
+    cmap = mcolors.ListedColormap(cpalette[:ncls])
+    fig, ax = plt.subplots(3,2, figsize=(8,15))
+    set_figure()
+    alpha = 0.8
+    size = 5
+    
+    ##---------------------
+    fig, ax[0][0] = set_3dview(fig, ax[0][0], (3,2,1), elev=60, azim=60)
+    ax[0][0].text(0,0,0, 'A', fontsize=12, transform=ax[0][0].transAxes)
+    sct = ax[0][0].scatter(x1[:,0], x1[:,1], x1[:,2],
+                           c=y1,
+                           s=size,
+                           alpha=alpha, 
+                           vmin=0, 
+                           vmax=ncls,
+                           edgecolors='k',
+                           linewidths=0.1,
+                           depthshade=True,
+                           cmap=cmap)
+    ax[0][0].set_title('PCA - k-means')
+    
+    ##---------------------
+    fig, ax[1][0] = set_3dview(fig, ax[1][0], (3,2,3))
+    ax[1][0].text(0,0,0, 'B', fontsize=12, transform=ax[1][0].transAxes)
+    sct = ax[1][0].scatter(x1[:,0], x1[:,1], x1[:,2],
+                           c=y2,
+                           s=size,
+                           alpha=alpha, 
+                           vmin=0, 
+                           vmax=ncls,
+                           edgecolors='k',
+                           linewidths=0.1,
+                           depthshade=True,
+                           cmap=cmap)
+    ax[1][0].set_title('PCA - GMM')
+    
+    ##---------------------
+    fig, ax[2][0] = set_3dview(fig, ax[2][0], (3,2,5))
+    ax[2][0].text(0,0,0, 'C', fontsize=12, transform=ax[2][0].transAxes)
+    sct = ax[2][0].scatter(x1[:,0], x1[:,1], x1[:,2],
+                           c=y3,
+                           s=size,
+                           alpha=alpha, 
+                           vmin=0, 
+                           vmax=ncls,
+                           edgecolors='k',
+                           linewidths=0.1,
+                           depthshade=True,
+                           cmap=cmap)
+    ax[2][0].set_title('PCA - SOM')
+    
+    ##---------------------
+    fig, ax[0][1] = set_3dview(fig, ax[0][1], (3,2,2), elev=60, azim=60)
+    ax[0][1].text(0,0,0, 'D', fontsize=12, transform=ax[0][1].transAxes)
+    sct = ax[0][1].scatter(x2[:,0], x2[:,1], x2[:,2],
+                           c=y1,
+                           s=size,
+                           alpha=alpha, 
+                           vmin=0, 
+                           vmax=ncls,
+                           edgecolors='k',
+                           linewidths=0.1,
+                           depthshade=True,
+                           cmap=cmap)
+    ax[0][1].set_title('AE - k-means')
+    
+    ##---------------------
+    fig, ax[1][1] = set_3dview(fig, ax[1][1], (3,2,4))
+    ax[1][1].text(0,0,0, 'E', fontsize=12, transform=ax[1][1].transAxes)
+    sct = ax[1][1].scatter(x2[:,0], x2[:,1], x2[:,2],
+                           c=y2,
+                           s=size,
+                           alpha=alpha, 
+                           vmin=0, 
+                           vmax=ncls,
+                           edgecolors='k',
+                           linewidths=0.1,
+                           depthshade=True,
+                           cmap=cmap)
+    ax[1][1].set_title('AE - GMM')
+    
+    ##---------------------
+    fig, ax[2][1] = set_3dview(fig, ax[2][1], (3,2,6))
+    ax[2][1].text(0,0,0, 'F', fontsize=12, transform=ax[2][1].transAxes)
+    sct = ax[2][1].scatter(x2[:,0], x2[:,1], x2[:,2],
+                           c=y3,
+                           s=size,
+                           alpha=alpha, 
+                           vmin=0, 
+                           vmax=ncls,
+                           edgecolors='k',
+                           linewidths=0.1,
+                           depthshade=True,
+                           cmap=cmap)
+    ax[2][1].set_title('AE - SOM')
+    
+    fig.subplots_adjust(right=0.9)
+    cbar1 = fig.add_axes([0.92, 0.21, 0.02, 0.57])
+    cb = fig.colorbar(sct, cax=cbar1) #, ticks=range(ncls+1))
+    tick_locs = np.arange(ncls+1) + 0.5
+    cb.set_ticks(tick_locs)
+    cb.set_ticklabels(np.arange(ncls+1))
     
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
-def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, feat, pcomp=None, fname=None):
+def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, scaler_pca, scaler_ae, feat, pcomp=None, ae=None, fname=None):
     fig, ax = plt.subplots(2 , 4, figsize=(16,7))
     set_figure()
     
@@ -127,7 +329,7 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
 
     add_data = np.arange(m*n).reshape((m,n))
     add_name = 'node'
-    hbin = ax[0][0].hexbin(x[:,0], x[:,1], bins='log', gridsize=30, cmap='BuGn')  
+    hbin = ax[0][0].hexbin(x[:,0], x[:,1], norm=mcolors.PowerNorm(gamma=0.5), gridsize=30, cmap='cubehelix_r')  
     ax[0][0].scatter(W[:,:,0].flatten(), W[:,:,1].flatten(), c=color.reshape((m*n)), cmap='inferno_r', s=10, marker='o', label='nodes')
     
     f = lambda p, q: p-1 if (q%2 == 0) else p
@@ -139,9 +341,8 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
     ax[0][0].plot([W[px,py,0], W[i +0,j-1,0]], [W[px,py,1], W[i +0,j-1,1]], 'r-', lw=2)
     ax[0][0].plot([W[px,py,0], W[px-1,j+0,0]], [W[px,py,1], W[px-1,j+0,1]], 'r-', lw=2)
     ax[0][0].plot([W[px,py,0], W[i +0,j+1,0]], [W[px,py,1], W[i +0,j+1,1]], 'r-', lw=2)
-    
-    ax[0][0].xaxis.set_ticks_position("top")
-    
+    ax[0][0].text(-0.2,0.85, 'A', fontsize=12, transform=ax[0][0].transAxes, clip_on=False)
+        
     #-- hit map in [0,1]
     size=hits # np.ones_like(hits)
     
@@ -160,13 +361,17 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
     ax[0][1].plot([i,i-0.5], [j*0.75,j*0.75-0.75], 'r-', lw=2)
     ax[0][1].plot([i,i-1  ], [j*0.75,j*0.75     ], 'r-', lw=2)
     ax[0][1].plot([i,i-0.5], [j*0.75,j*0.75+0.75], 'r-', lw=2) 
+    ax[0][1].text(-0.1,0.9, 'B', fontsize=12, transform=ax[0][1].transAxes, clip_on=False)
             
     #-- Oxygen ratio in [0,2]
+    import torch
     ftr = feat.index(ftr_name)
     size=np.ones_like(hits)
     WW = W.reshape(m*n, -1)
-    if (pcomp):
-        WW = pcomp.inverse_transform(WW)
+    if pcomp and not ae:
+        WW = pcomp.inverse_transform(scaler_pca.inverse_transform(WW))
+    if ae:
+        WW = ae.decode(torch.Tensor(scaler_ae.inverse_transform(WW))).detach().numpy()
     WW = scaler.inverse_transform(WW)
     WW = WW.reshape(m, n, len(feat))
     
@@ -176,6 +381,7 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
     color = (color - cmin) / (cmax - cmin)
 
     map_plot(ax[0][2], dist, color, m, n, size=size, scale=3, cmap='inferno_r', title=ftr_name)
+    ax[0][2].text(-0.1,0.9, 'C', fontsize=12, transform=ax[0][2].transAxes, clip_on=False)
     
     #-- Xu solar wind type int [0,3]
     K = 'avqO'
@@ -197,6 +403,7 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
     sbmax = size.max()
     size  = (size - sbmin)/(sbmax - sbmin) if sbmax>sbmin else np.zeros((m, n))
     map_plot(ax[0][3], dist, color, m, n, size=size, scale=3, cmap='inferno_r', lcolor='black', title=K+' ['+Q+'='+str(V)+']')
+    ax[0][3].text(-0.1,0.9, 'D', fontsize=12, transform=ax[0][3].transAxes, clip_on=False)
 
     #-- Three components in row [1,0:3]
     maxk = min(3, len(feat))
@@ -227,19 +434,20 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
 def fig_datarange(data, fname=None):
-    fig, ax = plt.subplots(1, 1, figsize=(12,5))
+    fig, ax = plt.subplots(1, 1, figsize=(10,5))
     set_figure()
     plt.violinplot(data, showextrema=False)
-    boxprops = dict(linestyle='-', linewidth=2, color='red', facecolor='red', alpha=0.3)
+    boxprops = dict(linestyle='-', linewidth=1, color='red', facecolor='none', alpha=1)
     medianprops = dict(linestyle='-', linewidth=1, color='k')
     meanprops = dict(linestyle='--', color='k')
-    whiskerprops = dict(linestyle='-', linewidth=2, color='k')
+    whiskerprops = dict(linestyle='-', linewidth=1, color='k')
     plt.boxplot(data, notch=True, showfliers=False, showmeans=True, patch_artist=True, 
                 boxprops=boxprops, meanline=True, medianprops=medianprops, meanprops=meanprops,
                 whiskerprops=whiskerprops, capprops=whiskerprops)
     plt.xticks(range(1,data.shape[1]+1))
     plt.xlabel('Feature number')
     plt.ylabel('Normalized feature value')
+    plt.title('Fingerprint of the full data set')
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
@@ -417,7 +625,7 @@ def fig_anyftmap(data, ftr_name, dist, hits, m, n, wmix, lcolor='white', fname=N
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
-def fig_componentmap(data, W, feat, nfeat, case, ftr_name, dist, hits, m, n, bneck, wmix, scaler, pca=False, acode=False, pcomp=None, ae=None, lcolor='white', fname=None): 
+def fig_componentmap(data, W, feat, nfeat, case, ftr_name, dist, hits, m, n, bneck, wmix, scaler, scaler_pca, scaler_ae, pca=False, acode=False, pcomp=None, ae=None, lcolor='white', fname=None): 
     import torch
     fig, ax = plt.subplots(1,1, figsize=(m/2,n/2))
     set_figure()
@@ -425,10 +633,10 @@ def fig_componentmap(data, W, feat, nfeat, case, ftr_name, dist, hits, m, n, bne
     size=np.ones_like(hits)
     ftr = feat[case].index(ftr_name)
     WW = W.reshape(m*n, bneck)
-    if pca and not acode:
-        WW = pcomp.inverse_transform(WW)
-    if acode:
-        WW = ae.decode(torch.Tensor(WW)).detach().numpy()
+    if pcomp and not ae:
+        WW = pcomp.inverse_transform(scaler_pca.inverse_transform(WW))
+    if ae:
+        WW = ae.decode(torch.Tensor(scaler_ae.inverse_transform(WW))).detach().numpy()
     WW = scaler.inverse_transform(WW)
     WW = WW.reshape(m, n, nfeat)
     
