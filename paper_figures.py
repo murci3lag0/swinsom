@@ -70,9 +70,9 @@ def set_3dview(fig, ax, xyi, elev=60, azim=60):
     ax.remove()
     ax = fig.add_subplot(xyi[0], xyi[1], xyi[2], projection='3d')
     ax.view_init(elev,azim)
-    ax.set_xlabel('1st component')
-    ax.set_ylabel('2nd component')
-    ax.set_zlabel('3rd component')
+    ax.set_xlabel('1st')
+    ax.set_ylabel('2nd')
+    ax.set_zlabel('3rd')
     # Hide grid lines
     ax.grid(False)
     # Hide axes ticks
@@ -85,10 +85,11 @@ def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
     cmap = mcolors.ListedColormap(cpalette[:ncls])
     fig, ax = plt.subplots(2,2, figsize=(9,9))
     set_figure()
-    alpha = 1
-    size = 15
+    alpha = 0.7
+    size = 1
+    lw = 0.0
     
-    fig, ax[0][0] = set_3dview(fig, ax[0][0], (2,2,1), elev=40, azim=45)
+    fig, ax[0][0] = set_3dview(fig, ax[0][0], (2,2,1), elev=30, azim=135)
     ax[0][0].text(0.05, 0.9, 0, 'A', fontsize=12, transform=ax[0][0].transAxes)
     sct = ax[0][0].scatter(x1[:,0], x1[:,1], x1[:,2],
                            c=data['Xu_SW_type'],
@@ -97,7 +98,7 @@ def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
                            vmin=0, 
                            vmax=ncls,
                            edgecolors='k',
-                           linewidths=0.25,
+                           linewidths=lw,
                            depthshade=True,
                            cmap=cmap)
     ## Y, Z plane
@@ -105,7 +106,7 @@ def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
     h = h.transpose()
     normalized_map = plt.cm.cubehelix_r(h/h.max())
     yy, zz = np.meshgrid(yedges, zedges)
-    xpos = x1[:,0].min() - 0.5*(x1[:,0].max()-x1[:,0].min())
+    xpos = x1[:,0].max() + 0.5*(x1[:,0].max()-x1[:,0].min())
     xflat = np.full_like(yy, xpos) 
     ax[0][0].plot_surface(xflat, yy, zz, facecolors=normalized_map, rstride=1, cstride=1, shade=False)
     ## X, Z plane
@@ -127,7 +128,7 @@ def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
     ## Axis
     ax[0][0].set_title('Xu Classes - PCA')
     
-    fig, ax[0][1] = set_3dview(fig, ax[0][1], (2,2,3), elev=45, azim=70)
+    fig, ax[0][1] = set_3dview(fig, ax[0][1], (2,2,3), elev=30, azim=135)
     ax[0][1].text(0.05, 0.9, 0, 'B', fontsize=12, transform=ax[0][1].transAxes)
     sct = ax[0][1].scatter(x1[:,0], x1[:,1], x1[:,2],
                            c=data['Zhao_SW_type'],
@@ -136,15 +137,15 @@ def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
                            vmin=0, 
                            vmax=ncls,
                            edgecolors='k',
-                           linewidths=0.25,
+                           linewidths=lw,
                            depthshade=True,
                            cmap=cmap)
-    ax[0][1].set_xlim(xpos, x1[:,0].max())
+    ax[0][1].set_xlim(x1[:,0].min(), xpos)
     ax[0][1].set_ylim(ypos, x1[:,1].max())
     ax[0][1].set_zlim(zpos, x1[:,2].max())
     ax[0][1].set_title('Zhao Classes - PCA')
     
-    fig, ax[1][0] = set_3dview(fig, ax[1][0], (2,2,2), elev=40, azim=45)
+    fig, ax[1][0] = set_3dview(fig, ax[1][0], (2,2,2), elev=30, azim=135)
     ax[1][0].text(0.05, 0.9, 0, 'C', fontsize=12, transform=ax[1][0].transAxes)
     sct = ax[1][0].scatter(x2[:,0], x2[:,1], x2[:,2],
                            c=data['Xu_SW_type'],
@@ -153,7 +154,7 @@ def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
                            vmin=0, 
                            vmax=ncls,
                            edgecolors='k',
-                           linewidths=0.25,
+                           linewidths=lw,
                            depthshade=True,
                            cmap=cmap)
     ## Y, Z plane
@@ -161,7 +162,7 @@ def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
     h = h.transpose()
     normalized_map = plt.cm.cubehelix_r(h/h.max())
     yy, zz = np.meshgrid(yedges, zedges)
-    xpos = x2[:,0].min() - 0.5*(x2[:,0].max()-x2[:,0].min())
+    xpos = x2[:,0].max() + 0.5*(x2[:,0].max()-x2[:,0].min())
     xflat = np.full_like(yy, xpos) 
     ax[1][0].plot_surface(xflat, yy, zz, facecolors=normalized_map, rstride=1, cstride=1, shade=False)
     ## X, Z plane
@@ -183,7 +184,7 @@ def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
     ## Axis
     ax[1][0].set_title('Xu Classes - AE')
     
-    fig, ax[1][1] = set_3dview(fig, ax[1][1], (2,2,4), elev=45, azim=70)
+    fig, ax[1][1] = set_3dview(fig, ax[1][1], (2,2,4), elev=30, azim=135)
     ax[1][1].text(0.05, 0.9, 0, 'D', fontsize=12, transform=ax[1][1].transAxes)
     sct = ax[1][1].scatter(x2[:,0], x2[:,1], x2[:,2],
                            c=data['Zhao_SW_type'],
@@ -192,16 +193,16 @@ def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
                            vmin=0, 
                            vmax=ncls,
                            edgecolors='k',
-                           linewidths=0.25,
+                           linewidths=lw,
                            depthshade=True,
                            cmap=cmap)
-    ax[1][1].set_xlim(xpos, x2[:,0].max())
+    ax[1][1].set_xlim(x2[:,0].min(), xpos)
     ax[1][1].set_ylim(ypos, x2[:,1].max())
     ax[1][1].set_zlim(zpos, x2[:,2].max())
     ax[1][1].set_title('Zhao Class - AE')
     
     fig.subplots_adjust(right=0.9)
-    cbar1 = fig.add_axes([0.92, 0.21, 0.02, 0.57])
+    cbar1 = fig.add_axes([0.05, 0.21, 0.02, 0.57])
     cb = fig.colorbar(sct, cax=cbar1) #, ticks=range(ncls+1))
     tick_locs = np.arange(ncls+1) + 0.5
     cb.set_ticks(tick_locs)
@@ -212,13 +213,14 @@ def fig_dimreduc(data, x1, x2, ncls, cmap='Set1', fname=None):
 
 def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fname=None):
     cmap = mcolors.ListedColormap(cpalette[:ncls])
-    fig, ax = plt.subplots(3,2, figsize=(8,15))
+    fig, ax = plt.subplots(3,2, figsize=(8,12))
     set_figure()
-    alpha = 0.8
-    size = 5
+    alpha = 0.7
+    size = 1
+    lw = 0.0
     
     ##---------------------
-    fig, ax[0][0] = set_3dview(fig, ax[0][0], (3,2,1), elev=60, azim=60)
+    fig, ax[0][0] = set_3dview(fig, ax[0][0], (3,2,1), elev=30, azim=30)
     ax[0][0].text(0,0,0, 'A', fontsize=12, transform=ax[0][0].transAxes)
     sct = ax[0][0].scatter(x1[:,0], x1[:,1], x1[:,2],
                            c=y1,
@@ -227,13 +229,13 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fnam
                            vmin=0, 
                            vmax=ncls,
                            edgecolors='k',
-                           linewidths=0.1,
+                           linewidths=lw,
                            depthshade=True,
                            cmap=cmap)
     ax[0][0].set_title('PCA - k-means')
     
     ##---------------------
-    fig, ax[1][0] = set_3dview(fig, ax[1][0], (3,2,3))
+    fig, ax[1][0] = set_3dview(fig, ax[1][0], (3,2,3), elev=30, azim=30)
     ax[1][0].text(0,0,0, 'B', fontsize=12, transform=ax[1][0].transAxes)
     sct = ax[1][0].scatter(x1[:,0], x1[:,1], x1[:,2],
                            c=y2,
@@ -242,13 +244,13 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fnam
                            vmin=0, 
                            vmax=ncls,
                            edgecolors='k',
-                           linewidths=0.1,
+                           linewidths=lw,
                            depthshade=True,
                            cmap=cmap)
     ax[1][0].set_title('PCA - GMM')
     
     ##---------------------
-    fig, ax[2][0] = set_3dview(fig, ax[2][0], (3,2,5))
+    fig, ax[2][0] = set_3dview(fig, ax[2][0], (3,2,5), elev=30, azim=30)
     ax[2][0].text(0,0,0, 'C', fontsize=12, transform=ax[2][0].transAxes)
     sct = ax[2][0].scatter(x1[:,0], x1[:,1], x1[:,2],
                            c=y3,
@@ -257,13 +259,13 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fnam
                            vmin=0, 
                            vmax=ncls,
                            edgecolors='k',
-                           linewidths=0.1,
+                           linewidths=lw,
                            depthshade=True,
                            cmap=cmap)
     ax[2][0].set_title('PCA - SOM')
     
     ##---------------------
-    fig, ax[0][1] = set_3dview(fig, ax[0][1], (3,2,2), elev=60, azim=60)
+    fig, ax[0][1] = set_3dview(fig, ax[0][1], (3,2,2), elev=30, azim=30)
     ax[0][1].text(0,0,0, 'D', fontsize=12, transform=ax[0][1].transAxes)
     sct = ax[0][1].scatter(x2[:,0], x2[:,1], x2[:,2],
                            c=y1,
@@ -272,13 +274,13 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fnam
                            vmin=0, 
                            vmax=ncls,
                            edgecolors='k',
-                           linewidths=0.1,
+                           linewidths=lw,
                            depthshade=True,
                            cmap=cmap)
     ax[0][1].set_title('AE - k-means')
     
     ##---------------------
-    fig, ax[1][1] = set_3dview(fig, ax[1][1], (3,2,4))
+    fig, ax[1][1] = set_3dview(fig, ax[1][1], (3,2,4), elev=30, azim=30)
     ax[1][1].text(0,0,0, 'E', fontsize=12, transform=ax[1][1].transAxes)
     sct = ax[1][1].scatter(x2[:,0], x2[:,1], x2[:,2],
                            c=y2,
@@ -287,13 +289,13 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fnam
                            vmin=0, 
                            vmax=ncls,
                            edgecolors='k',
-                           linewidths=0.1,
+                           linewidths=lw,
                            depthshade=True,
                            cmap=cmap)
     ax[1][1].set_title('AE - GMM')
     
     ##---------------------
-    fig, ax[2][1] = set_3dview(fig, ax[2][1], (3,2,6))
+    fig, ax[2][1] = set_3dview(fig, ax[2][1], (3,2,6), elev=30, azim=30)
     ax[2][1].text(0,0,0, 'F', fontsize=12, transform=ax[2][1].transAxes)
     sct = ax[2][1].scatter(x2[:,0], x2[:,1], x2[:,2],
                            c=y3,
@@ -302,7 +304,7 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fnam
                            vmin=0, 
                            vmax=ncls,
                            edgecolors='k',
-                           linewidths=0.1,
+                           linewidths=lw,
                            depthshade=True,
                            cmap=cmap)
     ax[2][1].set_title('AE - SOM')
@@ -318,7 +320,7 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fnam
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
 def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, scaler_pca, scaler_ae, feat, pcomp=None, ae=None, fname=None):
-    fig, ax = plt.subplots(2 , 4, figsize=(16,7))
+    fig, ax = plt.subplots(2 , 4, figsize=(14,7))
     set_figure()
     
     #-- Histogram plot in [0,0]
@@ -490,9 +492,9 @@ def fig_timeseries(data, beg, end, n_clusters, fname=None):
     
     ax[0].set_xlim(pd.to_datetime(beg), pd.to_datetime(end))
     cmap = mcolors.ListedColormap(cpalette[:n_clusters])
-    ax[0].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-kmeans'], cmap=cmap, s=5, zorder=3)
-    ax[1].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-gmm'], cmap=cmap, s=5, zorder=3)
-    ax[2].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-som'], cmap=cmap, s=5, zorder=3)
+    sct1 = ax[0].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-kmeans'], vmin=0, vmax=n_clusters, cmap=cmap, s=5, zorder=3)
+    sct2 = ax[1].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-gmm'], vmin=0, vmax=n_clusters, cmap=cmap, s=5, zorder=3)
+    sct3 = ax[2].scatter(data[beg:end].index, data[beg:end]['proton_speed'], c=data[beg:end]['class-som'], vmin=0, vmax=n_clusters, cmap=cmap, s=5, zorder=3)
         
     shck = pd.read_csv('catalogs/HSCA_Shock_cat.csv', comment="#", parse_dates={'Datetime' : ['Year','Month','Day','UT']}, index_col='Datetime')
     aces = pd.read_csv('catalogs/ACE_Shocks_cat.csv', comment="#", parse_dates={'Datetime' : ['Month','Day','Year','Time']}, index_col='Datetime')
@@ -555,12 +557,19 @@ def fig_timeseries(data, beg, end, n_clusters, fname=None):
     plt.gca().xaxis.set_major_locator(locator)
     plt.gca().xaxis.set_major_formatter(fmt)
     
+    fig.subplots_adjust(right=0.9)
+    cbar1 = fig.add_axes([0.91, 0.51, 0.02, 0.37])
+    cb1 = fig.colorbar(sct1, cax=cbar1) #, ticks=range(ncls+1))
+    tick_locs = np.arange(n_clusters+1) + 0.5
+    cb1.set_ticks(tick_locs)
+    cb1.set_ticklabels(np.arange(n_clusters+1))
+    
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
     
 def fig_tsfeatures(data, ftr, cl, beg, end, n_clusters, fname=None):
     nfeat = len(ftr)
-    fig, ax = plt.subplots(nfeat, 1, figsize=(16,2*(nfeat+1)), sharex='all')
+    fig, ax = plt.subplots(nfeat, 1, figsize=(12,2*(nfeat+1)), sharex='all')
     set_figure()
     
     shck = pd.read_csv('catalogs/HSCA_Shock_cat.csv', comment="#", parse_dates={'Datetime' : ['Year','Month','Day','UT']}, index_col='Datetime')
@@ -571,7 +580,7 @@ def fig_tsfeatures(data, ftr, cl, beg, end, n_clusters, fname=None):
     cmap = mcolors.ListedColormap(cpalette[:n_clusters])
     
     for a, f in enumerate(ftr):
-        ax[a].scatter(data[beg:end].index, data[beg:end][f], c=data[beg:end][cl], cmap=cmap, s=5, zorder=3)
+        sct = ax[a].scatter(data[beg:end].index, data[beg:end][f], marker='.', c=data[beg:end][cl], cmap=cmap, s=5, zorder=3, vmin=0, vmax=n_clusters)
         ax[a].set_ylabel(f)
         for idx in shck[beg:end].index:
             ax[a].axvline(idx, color='blue', alpha=0.3, zorder=1)
@@ -592,6 +601,13 @@ def fig_tsfeatures(data, ftr, cl, beg, end, n_clusters, fname=None):
     fmt = mdates.DateFormatter('%b-%Y')
     plt.gca().xaxis.set_major_locator(locator)
     plt.gca().xaxis.set_major_formatter(fmt)
+    
+    fig.subplots_adjust(right=0.9)
+    cbar1 = fig.add_axes([0.91, 0.51, 0.02, 0.37])
+    cb1 = fig.colorbar(sct, cax=cbar1) #, ticks=range(ncls+1))
+    tick_locs = np.arange(n_clusters+1) + 0.5
+    cb1.set_ticks(tick_locs)
+    cb1.set_ticklabels(np.arange(n_clusters+1))
     
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
@@ -713,15 +729,17 @@ def fig_classmap(C, m, n, dist, hits , n_clstr, fname=None):
     color = (color - cmin) / (cmax - cmin)
 
     cmap = mcolors.ListedColormap(cpalette[:n_clstr])
-    map_plot(ax, dist, color, m, n, size=size, scale=3, cmap=cmap, lcolor='black', title='Class Map')
+    map_plot(ax, dist, color, m, n, size=size, scale=4, cmap=cmap, lcolor='black', title='Class Map')
     
     norm = mcolors.Normalize(vmin=0,vmax=n_clstr)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
-    fig.subplots_adjust(right=0.75, left=0.1)
-    cbar1 = fig.add_axes([0.8, 0.25, 0.05, 0.45])
-    cb = plt.colorbar(sm, cax=cbar1)
-    cb.ax.tick_params(labelsize='x-small')
+    fig.subplots_adjust(right=0.8)
+    cbar1 = fig.add_axes([0.85, 0.3, 0.05, 0.4])
+    cb1 = fig.colorbar(sm, cax=cbar1) #, ticks=range(ncls+1))
+    tick_locs = np.arange(n_clstr+1) + 0.5
+    cb1.set_ticks(tick_locs)
+    cb1.set_ticklabels(np.arange(n_clstr+1))
     
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)

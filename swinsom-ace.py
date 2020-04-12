@@ -589,52 +589,78 @@ if calculate_som:
     ------------------------
 '''
 
+plt.ioff()
 import paper_figures as pfig
 
 fig_path = outdir+case
-# pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
 
-# if acode and pca:
-    # pfig.fig_dimreduc(data, xpca, x, n_clstr, cmap='jet_r', fname=fig_path+'/dimreduc.png')
-    # pfig.fig_clustering(data, x, xpca, y_kms, y_gmm, data['class-som'].values, y_kms_pca, y_gmm_pca, data['class-som'].values, n_clstr, cmap='jet', fname=fig_path+'/clustering.png')
+print('Plotting data coverage...')
+pfig.fig_datacoverage(data, cols, fname=fig_path+'/datacoverage.png')
+
+print('Plotting clouds of points...')
+if acode and pca:
+    pfig.fig_dimreduc(data, xpca, x, n_clstr, cmap='jet_r', fname=fig_path+'/dimreduc.png')
+    pfig.fig_clustering(data, xpca, x, y_kms, y_gmm, data['class-som'].values, y_kms_pca, y_gmm_pca, data['class-som'].values, n_clstr, cmap='jet', fname=fig_path+'/clustering.png')
+
+print('Plotting SOMs...')
 pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, scaler, scaler_pca, scaler_aec, feat[case], pcomp=pcomp, ae=ae, fname=fig_path+'/maps.png')
+
+print('Plotting fingerprints...')
 pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')
+
+print('Plotting class fingerprints...')
 pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-kmeans', [1,0,0], fname=fig_path+'/classesdatarange-kmeans.png')
 pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-gmm', [0,1,0], fname=fig_path+'/classesdatarange-gmm.png')
 pfig.fig_classesdatarange(data, feat[case], scaler, n_clstr, 'class-som', [0,0,1], fname=fig_path+'/classesdatarange-som.png')
 
+print('Plotting time series...')
 beg = '2003-05-01'
 end = '2003-09-01'
 pfig.fig_timeseries(data, beg, end, n_clstr, fname=fig_path+'/timeseries.png')
-pfig.fig_tsfeatures(data, feat[case][:8], 'class-kmeans', beg, end, n_clstr, fname=fig_path+'/tsfeatures-kmeans.png')
-pfig.fig_tsfeatures(data, feat[case][:8], 'class-gmm', beg, end, n_clstr, fname=fig_path+'/tsfeatures-gmm.png')
-pfig.fig_tsfeatures(data, feat[case][:8], 'class-som', beg, end, n_clstr, fname=fig_path+'/tsfeatures-som.png')
 
+print('Plotting features in the time series...')
+pfeat = ['log_O7to6',
+         'C6to5',
+         'proton_speed',
+         'log_Sp',
+         'log_Va',
+         'log_Tratio',
+         'sigmac',
+         'sigmar',
+         'FetoO',
+         'Bmag_range']
+pfig.fig_tsfeatures(data, pfeat, 'class-kmeans', beg, end, n_clstr, fname=fig_path+'/tsfeatures-kmeans.png')
+pfig.fig_tsfeatures(data, pfeat, 'class-gmm', beg, end, n_clstr, fname=fig_path+'/tsfeatures-gmm.png')
+pfig.fig_tsfeatures(data, pfeat, 'class-som', beg, end, n_clstr, fname=fig_path+'/tsfeatures-som.png')
+
+print('Plotting maps of each component used for the SOM training...')
 for f in feat[case]:
-    pfig.fig_componentmap(data, W, feat, nfeat, case, f, dist, hits, m, n, bneck, wmix, scaler, scaler_pca, scaler_ae, pca=pca, acode=acode, pcomp=pcomp, ae=ae, lcolor='white', fname=fig_path+'/comp-map-'+f+'.png')
+    pfig.fig_componentmap(data, W, feat, nfeat, case, f, dist, hits, m, n, bneck, wmix, scaler, scaler_pca, scaler_aec, pca=pca, acode=acode, pcomp=pcomp, ae=ae, lcolor='white', fname=fig_path+'/comp-map-'+f+'.png')
 
-plotcols = ['proton_density',
-            'proton_temp',
-            'He4toprotons',
-            'proton_speed',
-            'nHe2',
-            'vHe2',
-            'vthHe2',
-            'vthC5',
-            'vthO6',
-            'vthFe10',
-            'avqC',
-            'avqO',
-            'Br',
-            'Bt',
-            'Bn',
-            'Lambda',
-            'Delta',
-            'dBrms',
-            'sigma_B']
-for f in plotcols:
-    pfig.fig_anyftmap(data, f, dist, np.ones_like(hits), m, n, wmix, lcolor='white', fname=fig_path+'/ftmap-'+f+'.png')
+print('Plotting any other field not used for the SOM training...')
+# plotcols = ['proton_density',
+#             'proton_temp',
+#             'He4toprotons',
+#             'proton_speed',
+#             'nHe2',
+#             'vHe2',
+#             'vthHe2',
+#             'vthC5',
+#             'vthO6',
+#             'vthFe10',
+#             'avqC',
+#             'avqO',
+#             'Br',
+#             'Bt',
+#             'Bn',
+#             'Lambda',
+#             'Delta',
+#             'dBrms',
+#             'sigma_B']
+# for f in plotcols:
+#     pfig.fig_anyftmap(data, f, dist, np.ones_like(hits), m, n, wmix, lcolor='white', fname=fig_path+'/ftmap-'+f+'.png')
 
+print('Plotting solar wind type hits colored by features...')
 for colorby in ['log_O7to6','proton_speed','log_Sp','log_Va','log_Tratio']:
     for swclass in ['Xu_SW_type','Zhao_SW_type',]:
         smin = int(data[swclass].min())
@@ -642,4 +668,5 @@ for colorby in ['log_O7to6','proton_speed','log_Sp','log_Va','log_Tratio']:
         for c in range(smin, smax):
             pfig.fig_swtypes(data, colorby, swclass, c, m, n, dist, wmix, fname=fig_path+'/SWtype-'+swclass+'-'+str(c)+'-'+colorby+'.png')
 
+print('Plotting the SOM clustering...')
 pfig.fig_classmap(C1, m, n, dist, hits , n_clstr, fname=fig_path+'/classmap.png')
