@@ -9,15 +9,19 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.lines as lines
 import matplotlib.patches as patches
+import matplotlib.colors as mcolors
 import numpy as np
 
-def add_matplotlib_hexagon(ax, xc, yc, width, color=None, alpha=1.0, lcolor='black', cmap=None, cmin=0, cmax=1, size=1.0, r=1.0, scale=1.0):
+cpalette = ['#e6194B', '#3cb44b', '#4363d8', '#f58231', '#42d4f4', '#f032e6', '#469990', '#e6beff', '#9A6324', '#800000', '#000075']
+linscale = 4
+
+def add_matplotlib_hexagon(ax, xc, yc, width, color=None, lcolor='black', alpha=1.0, cmap=None, cmin=0, cmax=1, size=1.0, r=1.0, scale=1.0):
 
     assert(len(width)==6)
 
     if cmap==None:
         cmap = plt.cm.get_cmap('jet')
-
+                
     norm = matplotlib.colors.Normalize(vmin=cmin, vmax=cmax)
     if np.isscalar(color):
         fcolor = cmap(norm(color))
@@ -35,8 +39,9 @@ def add_matplotlib_hexagon(ax, xc, yc, width, color=None, alpha=1.0, lcolor='bla
     y1=yc+np.array([r/2, -r/2, -r,   -r/2,  r/2,  r])
    
     for i in range(6):
+        clr = cpalette[int(lcolor[i])] if type(lcolor)!=str else lcolor
         line = lines.Line2D([x0[i],x1[i]], [y0[i],y1[i]],
-                            lw=5*width[i]**scale, color=lcolor, axes=ax, alpha=width[i])
+                            lw=linscale*width[i]**scale, color=clr, axes=ax, alpha=width[i])
         ax.add_line(line)
     
     assert(size<=1.0 and size>=0)
@@ -61,15 +66,20 @@ def som_hexmesh(x, y, r=0.5):
     xx[::2] -= r
     return xx, yy
 
-def matplotlib_hex_map(ax, d, color, som_m, som_n, size=None, lcolor='white', alpha=None, r=0.5, scale=1.0, cmap=None, title=None, colorbar=False, axecolor='w', cbmin=0.0, cbmax=1.0, savefig=False, filename='fig.png'):
+def matplotlib_hex_map(ax, dist, color, som_m, som_n, usezero=False, size=None, lcolor='white', alpha=None, r=0.5, scale=1.0, cmap=None, title=None, colorbar=False, axecolor='w', cbmin=0.0, cbmax=1.0, savefig=False, filename='fig.png'):
     xx, yy = som_hexmesh(range(som_m), range(som_n), r=0.5)
     matplotlib.rcParams.update({'font.size': 20})
     x0, y0, W, H = ax.get_position().bounds
     # fig, ax = plt.subplots()
-    dmin = d[d.nonzero()].min()
-    dmax = d.max()
-    d[d==0] = dmin
-    d = (d - dmin)/(dmax-dmin)
+    dmin = dist[dist.nonzero()].min()
+    dmax = dist.max()
+    d = np.zeros_like(dist)
+    d[dist==0] = dmin
+    if dmax!=dmin:
+        d = (dist - dmin)/(dmax-dmin)
+    
+    if usezero:
+        d = 2*dist/linscale
     
     if cmap is None:
         cmap = plt.cm.get_cmap('jet')
@@ -80,12 +90,13 @@ def matplotlib_hex_map(ax, d, color, som_m, som_n, size=None, lcolor='white', al
 
     for i in range(som_m):
         for j in range(som_n):
+            lc = lcolor if type(lcolor)==str else lcolor[i,j]
             ax = add_matplotlib_hexagon(ax,
                                              xx[j,i],
                                              yy[j,i],
                                              d[i,j],
                                              color=color[i,j],
-                                             lcolor=lcolor,
+                                             lcolor=lc,
                                              alpha=alpha[i,j],
                                              cmap=cmap,
                                              size=size[i,j],
@@ -117,11 +128,15 @@ def hex_map_test(x, y, color=[[0.7]], cmin=0, cmax=1, size=1.0, r=0.5, axecolor=
     dmax = d.max()
     d[d==0] = dmin
     d = (d - dmin)/(dmax-dmin)
+    
+    lc = [1, 2, 3, 4, 5, 6]
+    
     cmap = plt.cm.get_cmap()
     for i in range(len(x)):
         ax[1][0] = add_matplotlib_hexagon(ax[1][0], y[i], x[i],
                                          d,
                                          color=color[i],
+                                         lcolor=lc,
                                          cmap=cmap,
                                          cmin=cmin,
                                          cmax=cmax,
