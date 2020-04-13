@@ -29,8 +29,8 @@ outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
 # acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
 # outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
 
-np.random.seed(123)
-torch.manual_seed(567)
+np.random.seed(12345)
+torch.manual_seed(56789)
 
 optim = True
 calculate_som = True
@@ -55,13 +55,13 @@ params = {'Roberts' :
               {'ybeg' : 2002,
                'yend' : 2004,
                'autoencode' : True,
-               'nodes' : [8, 5, 3],
+               'nodes' : [8, 13, 7, 3],
                'pca' : True,
                'm' : 12,
                'n' : 12,
                'maxiter' : 10000,
                'batch size' : 32,
-               'nepochs' : 30,
+               'nepochs' : 50,
                'sigma' : 7.0,
                'learning_rate' : 1.0,
                'init_method' : 'rand_points',
@@ -243,7 +243,7 @@ data, nulls = acedata(acedir, cols, ybeg, yend)
 if case=='Roberts':
     data=data['2002-11':'2004-05']
 print('Data set size after reading files:', len(data))
-data = aceaddextra(data, nulls, xcols=xcols, window='6H', center=False)
+data = aceaddextra(data, nulls, xcols=xcols, window='4H', center=False)
 print('Data set size after adding extras:', len(data))
 
 '''
@@ -345,8 +345,10 @@ if calculate_som:
 
     ## Run the model 
     print('SOM training...')
-    som = selfomap(x, m, n, int(maxiter/(sg*lr)), sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
-    # som = selfomap(x, 12, 12, 50000, sigma=5.0, learning_rate=0.5, init=init, dynamic=dynamic)
+    # som = selfomap(x, m, n, int(maxiter/(sg*lr)), sigma=sg, learning_rate=lr, init=init, dynamic=dynamic)
+    m=7
+    n=9
+    som = selfomap(x, m, n, 10000, sigma=5.0, learning_rate=0.5, init=init, dynamic=dynamic)
     
     ## processing of the SOM
     # dist : matrix of distances between map nodes
@@ -370,6 +372,7 @@ if calculate_som:
     C1 = np.array(C1.labels_)
     C1 = C1.reshape((m,n))
     data = som_addinfo(som, data, x, C1, 'class-som')
+    bdry,_ = som_boundaries(C1, m, n)
     
     '''
         ----------------
@@ -387,6 +390,7 @@ if calculate_som:
     plot_datamean = plots_on
     plot_somclustering = plots_on
     plot_timeseries = plots_on
+    plot_classbdy = plots_on
     
     ## Select the neighbour to visualize
     if plot_neighbors:
@@ -540,7 +544,7 @@ if calculate_som:
     
         fig, ax = plt.subplots(1,1)
         cmap = plt.cm.get_cmap('jet', n_clstr)
-        map_plot(ax, dist, color, m, n, size=size, scale=6, cmap=cmap, lcolor='white')
+        map_plot(ax, dist, color, m, n, usezero=False, size=size, scale=6, cmap=cmap, lcolor='black')
         plt.title('Clustering SOM')
         
         color = C2
@@ -581,6 +585,14 @@ if calculate_som:
         # ax2b = ax[2].twinx()
         ax[5].plot(np.log(6.008)-0.00578*data[beg:end]['proton_speed'], 'b-.')
         ax[5].hlines(np.log(0.145), beg, end, color='blue', linestyles='dashed')
+        
+    if plot_classbdy:
+        bdry,_ = som_boundaries(C1, m, n)
+                            
+        fig, ax = plt.subplots(1,1)
+        cmap = plt.cm.get_cmap('jet', n_clstr)
+        from matplotlib_hex_map import matplotlib_hex_map as map_plot 
+        map_plot(ax, bdy, color, m, n, usezero=True,  lcolor='black', size=np.ones((m,n)), scale=1, cmap=cmap)
 
 
 '''
@@ -603,7 +615,7 @@ if acode and pca:
     pfig.fig_clustering(data, xpca, x, y_kms, y_gmm, data['class-som'].values, y_kms_pca, y_gmm_pca, data['class-som'].values, n_clstr, cmap='jet', fname=fig_path+'/clustering.png')
 
 print('Plotting SOMs...')
-pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, W, wmix, scaler, scaler_pca, scaler_aec, feat[case], pcomp=pcomp, ae=ae, fname=fig_path+'/maps.png')
+pfig.fig_maps(m, n, som, x, data, feat[case][0], 3, 3, hits, dist, bdry, W, wmix, scaler, scaler_pca, scaler_aec, feat[case], pcomp=pcomp, ae=ae, fname=fig_path+'/maps.png')
 
 print('Plotting fingerprints...')
 pfig.fig_datarange(raw, fname=fig_path+'/datarange.png')
@@ -635,7 +647,7 @@ pfig.fig_tsfeatures(data, pfeat, 'class-som', beg, end, n_clstr, fname=fig_path+
 
 print('Plotting maps of each component used for the SOM training...')
 for f in feat[case]:
-    pfig.fig_componentmap(data, W, feat, nfeat, case, f, dist, hits, m, n, bneck, wmix, scaler, scaler_pca, scaler_aec, pca=pca, acode=acode, pcomp=pcomp, ae=ae, lcolor='white', fname=fig_path+'/comp-map-'+f+'.png')
+    pfig.fig_componentmap(data, W, feat, nfeat, case, f, dist, bdry, hits, m, n, bneck, wmix, scaler, scaler_pca, scaler_aec, pca=pca, acode=acode, pcomp=pcomp, ae=ae, lcolor='white', fname=fig_path+'/comp-map-'+f+'.png')
 
 print('Plotting any other field not used for the SOM training...')
 # plotcols = ['proton_density',
@@ -666,7 +678,7 @@ for colorby in ['log_O7to6','proton_speed','log_Sp','log_Va','log_Tratio']:
         smin = int(data[swclass].min())
         smax = int(data[swclass].max())+1
         for c in range(smin, smax):
-            pfig.fig_swtypes(data, colorby, swclass, c, m, n, dist, wmix, fname=fig_path+'/SWtype-'+swclass+'-'+str(c)+'-'+colorby+'.png')
+            pfig.fig_swtypes(data, colorby, swclass, c, m, n, dist, bdry, wmix, fname=fig_path+'/SWtype-'+swclass+'-'+str(c)+'-'+colorby+'.png')
 
 print('Plotting the SOM clustering...')
 pfig.fig_classmap(C1, m, n, dist, hits , n_clstr, fname=fig_path+'/classmap.png')

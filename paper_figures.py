@@ -56,9 +56,9 @@ class Arrow3D(FancyArrowPatch):
 
 from mpl_toolkits.mplot3d import proj3d
 def plot_axes(ax, text='', size=1.0):
-    a0 = Arrow3D([0,size],[0,0],[0,0], mutation_scale=10, lw=2, arrowstyle="-|>", color="r")
-    a1 = Arrow3D([0,0],[0,size],[0,0], mutation_scale=10, lw=2, arrowstyle="-|>", color="g")
-    a2 = Arrow3D([0,0],[0,0],[0,size], mutation_scale=10, lw=2, arrowstyle="-|>", color="b")
+    a0 = Arrow3D([0,size],[0,0],[0,0], mutation_scale=4, lw=2, arrowstyle="-|>", color="r")
+    a1 = Arrow3D([0,0],[0,size],[0,0], mutation_scale=4, lw=2, arrowstyle="-|>", color="g")
+    a2 = Arrow3D([0,0],[0,0],[0,size], mutation_scale=4, lw=2, arrowstyle="-|>", color="b")
     ax.add_artist(a0)
     ax.add_artist(a1)
     ax.add_artist(a2)
@@ -319,7 +319,7 @@ def fig_clustering(data, x1, x2, y1, y2, y3, y4, y5, y6, ncls, cmap='Set1', fnam
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
-def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, scaler_pca, scaler_ae, feat, pcomp=None, ae=None, fname=None):
+def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, bdry, W, wmix, scaler, scaler_pca, scaler_ae, feat, pcomp=None, ae=None, fname=None):
     fig, ax = plt.subplots(2 , 4, figsize=(14,7))
     set_figure()
     
@@ -347,8 +347,9 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
         
     #-- hit map in [0,1]
     size=hits # np.ones_like(hits)
+    color=hits
     
-    map_plot(ax[0][1], dist, color, m, n, size=size, scale=3, cmap='inferno_r', lcolor='black', title='Hit map')
+    map_plot(ax[0][1], dist, color, m, n, size=size, scale=4, cmap='inferno_r', lcolor='black', title='Hit map')
     ax[0][1].set_aspect('equal')
     ax[0][1].set_xlim(-1, m-0.5)
     ax[0][1].set_ylim(-0.5, n*0.75-0.25)
@@ -382,7 +383,7 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
     cmax = color.max()
     color = (color - cmin) / (cmax - cmin)
 
-    map_plot(ax[0][2], dist, color, m, n, size=size, scale=3, cmap='inferno_r', title=ftr_name)
+    map_plot(ax[0][2], dist, color, m, n, size=size, scale=1, cmap='inferno_r', title=ftr_name)
     ax[0][2].text(-0.1,0.9, 'C', fontsize=12, transform=ax[0][2].transAxes, clip_on=False)
     
     #-- Xu solar wind type int [0,3]
@@ -404,7 +405,7 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
     sbmin = size.min()
     sbmax = size.max()
     size  = (size - sbmin)/(sbmax - sbmin) if sbmax>sbmin else np.zeros((m, n))
-    map_plot(ax[0][3], dist, color, m, n, size=size, scale=3, cmap='inferno_r', lcolor='black', title=K+' ['+Q+'='+str(V)+']')
+    map_plot(ax[0][3], bdry, color, m, n, usezero=True, size=size, scale=1, cmap='inferno_r', lcolor='black', title=K+' ['+Q+'='+str(V)+']')
     ax[0][3].text(-0.1,0.9, 'D', fontsize=12, transform=ax[0][3].transAxes, clip_on=False)
 
     #-- Three components in row [1,0:3]
@@ -414,7 +415,7 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
     cmin  = color.min()
     cmax  = color.max()
     color = (color - cmin) / (cmax - cmin)
-    map_plot(ax[1][0], dist, color, m, n, size=size, scale=3, cmap='inferno_r', title='Feature map')
+    map_plot(ax[1][0], bdry, color, m, n, usezero=True, lcolor='black', size=size, scale=1, cmap='inferno_r', title='Feature map')
     ax[1][0].set_aspect('equal')
     ax[1][0].set_xlim(-1, m-0.5)
     ax[1][0].set_ylim(-0.5, n*0.75-0.25)
@@ -427,7 +428,7 @@ def fig_maps(m, n, som, x, data, ftr_name, px, py, hits, dist, W, wmix, scaler, 
             cmin  = color.min()
             cmax  = color.max()
             color = (color - cmin) / (cmax - cmin)
-            map_plot(ax[1][i+1], dist, color, m, n, size=size, scale=3, cmap='inferno_r', title='Component '+str(i+1))
+            map_plot(ax[1][i+1], dist, color, m, n, size=size, scale=4, cmap='inferno_r', title='Component '+str(i+1))
             ax[1][i+1].set_aspect('equal')
             ax[1][i+1].set_xlim(-1, m-0.5)
             ax[1][i+1].set_ylim(-0.5, n*0.75-0.25)
@@ -629,7 +630,7 @@ def fig_anyftmap(data, ftr_name, dist, hits, m, n, wmix, lcolor='white', fname=N
     color = (color - color.min())/(color.max() - color.min())
 
     cmap='magma_r'
-    map_plot(ax, dist, color, m, n, size=size, scale=3, title='Mean('+ftr_name+')', lcolor=lcolor, cmap=cmap)
+    map_plot(ax, dist, color, m, n, size=size, scale=4, title='Mean('+ftr_name+')', lcolor=lcolor, cmap=cmap)
     norm = mcolors.Normalize(vmin=vmax,vmax=vmin)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
@@ -641,7 +642,7 @@ def fig_anyftmap(data, ftr_name, dist, hits, m, n, wmix, lcolor='white', fname=N
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
-def fig_componentmap(data, W, feat, nfeat, case, ftr_name, dist, hits, m, n, bneck, wmix, scaler, scaler_pca, scaler_ae, pca=False, acode=False, pcomp=None, ae=None, lcolor='white', fname=None): 
+def fig_componentmap(data, W, feat, nfeat, case, ftr_name, dist, bdry, hits, m, n, bneck, wmix, scaler, scaler_pca, scaler_ae, pca=False, acode=False, pcomp=None, ae=None, lcolor='white', fname=None): 
     import torch
     fig, ax = plt.subplots(1,1, figsize=(m/2,n/2))
     set_figure()
@@ -669,7 +670,7 @@ def fig_componentmap(data, W, feat, nfeat, case, ftr_name, dist, hits, m, n, bne
     color = (color - color.min())/(color.max() - color.min())
 
     cmap='magma_r'
-    map_plot(ax, dist, color, m, n, size=size, scale=3, title=ftr_name, lcolor=lcolor, cmap=cmap)
+    map_plot(ax, bdry, color, m, n, usezero=True, size=size, scale=1, title=ftr_name, lcolor='black', cmap=cmap)
     norm = mcolors.Normalize(vmin=vmax,vmax=vmin)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
@@ -681,7 +682,7 @@ def fig_componentmap(data, W, feat, nfeat, case, ftr_name, dist, hits, m, n, bne
     if fname is not None:
         plt.savefig(fname, bbox_inches='tight', transparent=True)
         
-def fig_swtypes(data, ftr, cname, cnumber, m, n, dist, wmix, fname=None):
+def fig_swtypes(data, ftr, cname, cnumber, m, n, dist, bdry, wmix, fname=None):
     fig, ax = plt.subplots(1,1, figsize=(m/2,n/2))
     set_figure()
     
@@ -705,7 +706,7 @@ def fig_swtypes(data, ftr, cname, cnumber, m, n, dist, wmix, fname=None):
     size  = (size - sbmin)/(sbmax - sbmin) if sbmax>sbmin else np.zeros((m, n))
 
     cmap='inferno_r'
-    map_plot(ax, dist, color, m, n, size=size, scale=3, cmap=cmap, lcolor='black', title=K+' ['+Q+'='+str(V)+', max hits:'+str(int(sbmax))+']')
+    map_plot(ax, bdry, color, m, n, usezero=True, size=size, scale=1, cmap=cmap, lcolor='black', title=K+' ['+Q+'='+str(V)+', max hits:'+str(int(sbmax))+']')
     
     norm = mcolors.Normalize(vmin=cbmin,vmax=cbmax)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)

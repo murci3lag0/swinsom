@@ -55,10 +55,10 @@ class altersom(MiniSom):
         if (init=='pca'):
             print('SOM initialization using PCA...')
             self.pca_weights_init(data)
-        if (init=='rand_points'):
+        elif (init=='rand_points'):
             print('SOM initialization using random data points...')
             self.random_weights_init(data)
-        if (init=='2d'):
+        elif (init=='2d'):
             self.equidistant_2d_init(data)
         else:
             print('SOM initialization using random values in the feature space...')
@@ -133,6 +133,26 @@ def som_distances(som):
                     um[x,y,k] = norm(w_1-w_2)
         
     return um
+
+def som_boundaries(scls, m, n):
+    bdy = np.zeros((m,n,6))
+    lcolor = np.ones((m,n,6))
+    even = lambda x: x%2 == 0
+    ii = [[1, 1, 1, 0, -1, 0],[0, 1, 0, -1, -1, -1]]
+    jj = [[1, 0, -1, -1, 0, 1],[1, 0, -1, -1, 0, 1]]
+    for x in range(m):
+        for y in range(n):
+            p1 = scls[x,y]
+            e = 1 if (even(y)) else 0
+            for k,(i,j) in enumerate(zip(ii[e],jj[e])):
+                if (x+i>=0 and x+i<m and y+j>=0 and y+j<n):
+                    lcolor[x,y,k] = p1
+                    p2 = scls[x+i, y+j]
+                    if p2!=p1:
+                        bdy[x,y,k] = 1
+                    else:
+                        bdy[x,y,k] = 0
+    return bdy, lcolor
 
 def som_hits(som, data, m, n, scale=True, log=False):
     hits = np.zeros((m, n))
