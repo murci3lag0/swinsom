@@ -23,20 +23,18 @@ import joblib
 from acedata import *
 from matplotlib_hex_map import matplotlib_hex_map as map_plot 
 
+np.random.seed(12345)
+torch.manual_seed(56789)
+
 ## Seting up the path and range -----------------------------------------------
 # acedir : directory containing the hdf5 ACE data
 # outdir : figure output directory
 acedir = '/home/amaya/Data/ACE'
 outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
-# acedir = '/home/amaya/Workdir/MachineLearning/Data/ACE'
-# outdir = '/home/amaya/Workdir/MachineLearning/swinsom-git/papers/2020-Frontiers/figures/'
 
-np.random.seed(12345)
-torch.manual_seed(56789)
-
-optim = True
+optim = False
 calculate_som = True
-clustering = True
+clustering = False
 generate_paper_figures = True
 
 ## Code options ---------------------------------------------------------------
@@ -559,10 +557,11 @@ if calculate_som:
         cbar1 = fig.add_axes([0.8, 0.25, 0.05, 0.45])
         cb = plt.colorbar(sm, cax=cbar1)
         cb.ax.tick_params(labelsize='x-small')
-        
-    for f in data.columns:
-        if (f.startswith('log_') or f.startswith('class')):
-            plt_anyfeature_mean(f)
+    
+    if plot_datamean:
+        for f in data.columns:
+            if (f.startswith('log_') or f.startswith('class')):
+                plt_anyfeature_mean(f)
 
        
     def plt_mapdatamean(K):
@@ -635,12 +634,10 @@ if calculate_som:
         ax[5].hlines(np.log(0.145), beg, end, color='blue', linestyles='dashed')
         
     if plot_classbdy:
-        bdry,_ = som_boundaries(C1, m, n)
-                            
         fig, ax = plt.subplots(1,1)
         cmap = plt.cm.get_cmap('jet', n_clstr)
         from matplotlib_hex_map import matplotlib_hex_map as map_plot 
-        map_plot(ax, bdy, color, m, n, usezero=True,  lcolor='black', size=np.ones((m,n)), scale=1, cmap=cmap)
+        map_plot(ax, bdry, color, m, n, usezero=True,  lcolor='black', size=np.ones((m,n)), scale=1, cmap=cmap)
 
 
 '''
