@@ -45,7 +45,7 @@ $^{2}$Jet Propulsion Laboratory, Interstellar and Heliospheric Physics Division,
 \onecolumn
 \firstpage{1}
 
-\title[Visualizing and Interpreting Unsupervised Solar Wind Classifications]{Visualizing and Interpreting Unsupervised Solar Wind Classifications} 
+\title[Visualizing and Interpreting Solar Wind Classifications]{Visualizing and Interpreting Unsupervised Solar Wind Classifications} 
 
 \author[\firstAuthorLast ]{\Authors} %This field will be automatically populated
 \address{} %This field will be automatically populated
@@ -103,21 +103,24 @@ RD has received funding from the European Union’s Horizon 2020 research and in
 
 \section*{Acknowledgments}
 
+The authors would like to acknowledge the helpful advice and suggestions by Olga Panasenco (UCLA), Raffaella D'Amicis (INAF-IAPS), and Aaron Roberts (NASA-GSFC).
+
 \section*{Supplemental Data}
-Codes can be found in the \href{http://github.com/murci3lag0}{github.com/murci3lag0}.
+
+All the software and the data used in this work can be found in the following git repository: \href{http://github.com/murci3lag0}{github.com/murci3lag0}.
+
+All original source code is distributed under MIT license.
 
 \section*{Data Availability Statement}
 \label{sec:repos}
 
-Publicly available datasets were analyzed in this study. This data can be found here: \href{http://github.com/murci3lag0}{github.com/murci3lag0}.
+All processed data, including edited catalogs and enhanced data sets are available in our git repository: \href{http://github.com/murci3lag0}{github.com/murci3lag0}.
 
-The original contributions presented in the study are publicly available. This data can be found here: \href{http://github.com/murci3lag0}{github.com/murci3lag0}.
+All original data is distributed under Creative Commons license: CC BY 4.0.
 
-ACE datasets downloaded from \href{ftp://mussel.srl.caltech.edu/pub/ace/level2/multi}{ftp://mussel.srl.caltech.edu/pub/ace/level2/multi}.
+The original ACE data sets were downloaded from \href{ftp://mussel.srl.caltech.edu/pub/ace/level2/multi}{ftp://mussel.srl.caltech.edu/pub/ace/level2/multi}.
 
-ACE multi-instrument data set description: \href{http://www.srl.caltech.edu/cgi-bin/dib/rundibviewmultil2/ACE/ASC/DATA/level2/multi}{http://www.srl.caltech.edu/cgi-bin/dib/rundibviewmultil2/ACE/ASC/DATA/level2/multi}
-
-Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso/datafiles}
+A detailed description of all ACE multi-instrument data set entires can be found here: \href{http://www.srl.caltech.edu/cgi-bin/dib/rundibviewmultil2/ACE/ASC/DATA/level2/multi}{http://www.srl.caltech.edu/cgi-bin/dib/rundibviewmultil2/ACE/ASC/DATA/level2/multi}
 
 % Please see the availability of data guidelines for more information, at https://www.frontiersin.org/about/author-guidelines#AvailabilityofData
 
@@ -213,7 +216,7 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 	\begin{center}
 		\includegraphics[width=12cm]{Amaya/dimreduc}% This is a *.eps file
 	\end{center}
-	\caption{Dimension reduction scatter plot in 3D. (A): data set projected on the three coordinates of the reduced PCA space. The density of points is projected in 2D histograms on the lateral planes. Colors correspond to the Xu classification. (B): same plot as (A), but without the density histograms. Colors correspond to the Zhao classification. (C): data set projected on the three coordinates of the latent AE space space. The density of points is projected in 2D histograms on the lateral planes. Colors correspond to the Xu classification. (D): same as (C), but without the density histograms. Colors correspond to the Zhao classification. }\label{fig:dimreduc}
+	\caption{Dimension reduction scatter plot in 3D. (A): data set projected on the three coordinates of the reduced PCA space. The density of points is projected in 2D histograms on the lateral planes. Colors correspond to the Xu classification. (B): same plot as (A), but without the density histograms. Colors correspond to the Zhao classification. (C): data set projected on the three coordinates of the latent AE space. The density of points is projected in 2D histograms on the lateral planes. Colors correspond to the Xu classification. (D): same as (C), but without the density histograms. Colors correspond to the Zhao classification. }\label{fig:dimreduc}
 \end{figure}
 
 \begin{figure}[h!]
