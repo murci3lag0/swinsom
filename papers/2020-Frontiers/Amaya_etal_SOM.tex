@@ -45,7 +45,7 @@ $^{2}$Jet Propulsion Laboratory, Interstellar and Heliospheric Physics Division,
 \onecolumn
 \firstpage{1}
 
-\title[Visualizing and Interpreting Unsupervised Solar Wind Classifications]{Visualizing and Interpreting Unsupervised Solar Wind Classifications} 
+\title[Visualizing and Interpreting Solar Wind Classifications]{Visualizing and Interpreting Unsupervised Solar Wind Classifications} 
 
 \author[\firstAuthorLast ]{\Authors} %This field will be automatically populated
 \address{} %This field will be automatically populated
@@ -68,7 +68,7 @@ $^{2}$Jet Propulsion Laboratory, Interstellar and Heliospheric Physics Division,
 \end{abstract}
 
 \section{Introduction}
-%\input{sections/introduction}
+\input{sections/introduction}
 
 \section{Materials and Methods}
 
@@ -103,21 +103,24 @@ RD has received funding from the European Union’s Horizon 2020 research and in
 
 \section*{Acknowledgments}
 
+The authors would like to acknowledge the helpful advice and suggestions by Olga Panasenco (UCLA), Raffaella D'Amicis (INAF-IAPS), and Aaron Roberts (NASA-GSFC).
+
 \section*{Supplemental Data}
-Codes can be found in the \href{http://github.com/murci3lag0}{github.com/murci3lag0}.
+
+All the software and the data used in this work can be found in the following git repository: \href{http://github.com/murci3lag0}{github.com/murci3lag0}.
+
+All original source code is distributed under MIT license.
 
 \section*{Data Availability Statement}
 \label{sec:repos}
 
-Publicly available datasets were analyzed in this study. This data can be found here: \href{http://github.com/murci3lag0}{github.com/murci3lag0}.
+All processed data, including edited catalogs and enhanced data sets are available in our git repository: \href{http://github.com/murci3lag0}{github.com/murci3lag0}.
 
-The original contributions presented in the study are publicly available. This data can be found here: \href{http://github.com/murci3lag0}{github.com/murci3lag0}.
+All original data is distributed under Creative Commons license: CC BY 4.0.
 
-ACE datasets downloaded from \href{ftp://mussel.srl.caltech.edu/pub/ace/level2/multi}{ftp://mussel.srl.caltech.edu/pub/ace/level2/multi}.
+The original ACE data sets were downloaded from \href{ftp://mussel.srl.caltech.edu/pub/ace/level2/multi}{ftp://mussel.srl.caltech.edu/pub/ace/level2/multi}.
 
-ACE multi-instrument data set description: \href{http://www.srl.caltech.edu/cgi-bin/dib/rundibviewmultil2/ACE/ASC/DATA/level2/multi}{http://www.srl.caltech.edu/cgi-bin/dib/rundibviewmultil2/ACE/ASC/DATA/level2/multi}
-
-Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso/datafiles}
+A detailed description of all ACE multi-instrument data set entires can be found here: \href{http://www.srl.caltech.edu/cgi-bin/dib/rundibviewmultil2/ACE/ASC/DATA/level2/multi}{http://www.srl.caltech.edu/cgi-bin/dib/rundibviewmultil2/ACE/ASC/DATA/level2/multi}
 
 % Please see the availability of data guidelines for more information, at https://www.frontiersin.org/about/author-guidelines#AvailabilityofData
 
@@ -158,46 +161,41 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 \end{table}
 
 \begin{table}\centering
-	\begin{tabular}{@{}rlcccc@{}}
+	\begin{tabular}{@{}rlcc@{}}
 		\toprule
-		ID & Name  & A & R & X & Z \\
+		ID & Name  & Amaya-21 & Roberts-8 \\
 		\midrule
-		1 & O7to6 & $\checkmark$ & $\checkmark$ & & $\checkmark$ \\
-		2 & proton\_speed & $\checkmark$ & $\checkmark$ & & $\checkmark$ \\
-		3 & proton\_density & $\checkmark$ & $\checkmark$ & & \\
-		4 & FetoO & $\checkmark$ & $\checkmark$ & & \\
-		5 & avqFe & $\checkmark$ & $\checkmark$ & & \\
-		6 & sigmac$^{(*)}$ & $\checkmark$ & $\checkmark$ & & \\
-		7 & sigmar$^{(*)}$ & $\checkmark$ & $\checkmark$ & & \\
-		8 & Bmag & $\checkmark$ & $\checkmark$ & & \\
-		9 & Sp & $\checkmark$ & & $\checkmark$ & \\
-		10 & Va & $\checkmark$ & &$\checkmark$ & \\
-		11 & Tratio & $\checkmark$ & & $\checkmark$ & \\
-		12 & proton\_temp & $\checkmark$ & & & \\
-		13 & Ma & $\checkmark$ & & & \\
-		14 & C6to5 & $\checkmark$ & & & \\
-		15 & proton\_density\_range & $\checkmark$ & & & \\
-		16 & proton\_temp\_range & $\checkmark$ & & & \\
-		17 & Bx\_range & $\checkmark$ & & & \\
-		18 & Bz\_range & $\checkmark$ & & & \\
-		19 & Bmag\_range & $\checkmark$ & & & \\
-		20 & Bmag\_acor$^{(*)}$ & $\checkmark$ & & & \\
-		21 & Delta$^{(*)}$ & $\checkmark$ & & & \\
+		1 & O7to6 & $\checkmark$ & $\checkmark$ \\
+		2 & proton\_speed & $\checkmark$ & $\checkmark$ \\
+		3 & proton\_density & $\checkmark$ & $\checkmark$ \\
+		4 & FetoO & $\checkmark$ & $\checkmark$ \\
+		5 & avqFe & $\checkmark$ & $\checkmark$ \\
+		6 & sigmac$^{(*)}$ & $\checkmark$ & $\checkmark$ \\
+		7 & sigmar$^{(*)}$ & $\checkmark$ & $\checkmark$ \\
+		8 & Bmag & $\checkmark$ & $\checkmark$ \\
+		9 & Sp & $\checkmark$ & \\
+		10 & Va & $\checkmark$ & \\
+		11 & Tratio & $\checkmark$ & \\
+		12 & proton\_temp & $\checkmark$ & \\
+		13 & Ma & $\checkmark$ & \\
+		14 & C6to5 & $\checkmark$ & \\
+		15 & proton\_density\_range & $\checkmark$ & \\
+		16 & proton\_temp\_range & $\checkmark$ & \\
+		17 & Bx\_range & $\checkmark$ & \\
+		18 & Bz\_range & $\checkmark$ & \\
+		19 & Bmag\_range & $\checkmark$ & \\
+		20 & Bmag\_acor$^{(*)}$ & $\checkmark$ & \\
+		21 & Delta$^{(*)}$ & $\checkmark$ & \\
 		\midrule
-		 & Initial year & 1998 & 2002 & 2000 & 2000 \\
-		 & Final year & 2011 & 2004 & 2011 & 2011 \\
-		 \midrule
-		 & PCA transformation & $\checkmark$ & $\checkmark$ & $\checkmark$ &  \\
-		 & AE encoding & $\checkmark$ & $\checkmark$ & & \\
-		 & Neurons / encoding layer & [21, 17, 9, 3] & [8, 5, 3] & & \\
-		 \midrule
-		 & Method &  DSOM & DSOM & DSOM & SOM \\
-		 & Lattice nodes &  12x12 &  12x9 & 12x12 & 12x6 \\
-		 & $\epsilon$ or $\epsilon$ &  0.58 & 0.15 & 0.34 & 0.26 \\
-		 & $\sigma_0$ or $\eta$ & 4.66 & 4.85 & 4.75 & 1.16 \\
+		 & Initial year & 1998 & 2002 \\
+		 & Final year & 2011 & 2004 \\
+		 & Neurons / encoding layer & [21, 17, 9, 3] & [8, 13, 7, 3] \\
+		 & Lattice nodes &  12x12 &  12x12 \\
+		 & $\epsilon$ &  0.26 & 0.28 \\
+		 & $\eta$ & 4.56 & 5.22 \\
 		\bottomrule
 	\end{tabular}
-	\caption{List of features used for each classification case. The logarithm of all quantities was used, except for the features marked with an asterisk (*). Bottom: data range, transformations used and hyper-parameters of the SOMs.}
+	\caption{List of features used for each classification case. The logarithm of all quantities was used, except for the features marked with an asterisk (*). Bottom: data range and hyper-parameters of the SOMs.}
 	\label{tab:features}
 \end{table}
 
@@ -216,30 +214,30 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=16cm]{Amaya/dimreduc}% This is a *.eps file
+		\includegraphics[width=12cm]{Amaya/dimreduc}% This is a *.eps file
 	\end{center}
-	\caption{Dimension reduction scatter plot (first four columns, panels a-d and g-j) and density plots (two last columns, panels e, f, k, l). Top row: PCA transformation. Bottom row: autoencoder transformation. The y-axis in all the panels represent the second component of the transformed space. The x-axis in the odd (even) columns correspond to the first (third) component.}\label{fig:dimreduc}
+	\caption{Dimension reduction scatter plot in 3D. (A): data set projected on the three coordinates of the reduced PCA space. The density of points is projected in 2D histograms on the lateral planes. Colors correspond to the Xu classification. (B): same plot as (A), but without the density histograms. Colors correspond to the Zhao classification. (C): data set projected on the three coordinates of the latent AE space. The density of points is projected in 2D histograms on the lateral planes. Colors correspond to the Xu classification. (D): same as (C), but without the density histograms. Colors correspond to the Zhao classification. }\label{fig:dimreduc}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=16cm]{Amaya/clustering}% This is a *.eps file
+		\includegraphics[width=10cm]{Amaya/clustering}% This is a *.eps file
 	\end{center}
-	\caption{Scatter plot of the data set points projected on the transformed space. The two left (right) columns correspond to the PCA (autoencoder) projection. The y-axis in all the panels represent the second component of the transformed space. The x-axis in the odd (even) columns correspond to the first (third) component. First row: k-means classification. Second row: Gaussian Mixture Model classification. Third row: Self-Organizing Map classification.}\label{fig:clustering}
+	\caption{3D Scatter plot of all data points projected on the transformed spaces. The left (right) column correspond to the PCA (autoencoder) projection. First row: k-means classification. Second row: Gaussian Mixture Model classification. Third row: Self-Organizing Maps classification. Colors correspond to the respective transformation and classification.}\label{fig:clustering}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=16cm]{Amaya/maps}% This is a *.eps file
 	\end{center}
-	\caption{Visualization of the Self-Organizing maps. In columns 2, 3 and 4 the colors evolve from black, to purple, orange and yellow. Top left panel: histogram with the density of data points superposed by the code words (nodes) of the SOM, projected in the first two components of the latent space. As an example, a single node is connected to its closest neighbors by red lines. Second panel, top row, Hit map: colored by the sum of the node weights, the size of the hexagon corresponds to the number of data points associated to the node, and the lines between nodes correspond to their relative distance. Third panel top row: example of the corresponding feature value to each node. Top row last panel: example of the statistics applied to the points associated to each node, in this case mean value of `avqO' in color, with solar wind type hits as hexagon size. Bottom row: the three components of the map nodes, where the first panel is an RGB combination of the following three.}\label{fig:maps}
+	\caption{Visualization of the Self-Organizing maps. In columns 2, 3 and 4 the colors evolve from black (lowest value, 0), to purple, orange and yellow (highest value, 1), all quantities are normalized between 0 and 1. (A): histogram with the density of data points superposed by the code words of the SOM, projected in the first two components of the latent space. As an example, a single node is connected to its closest neighbors by red lines. (B) Hit map: the size and color of the hexagon corresponds to the number of data points associated to the node, and the lines between nodes correspond to their relative distance. (C): Value of one of the input features of the model, the oxygen ion charge state ratio, for each one of the nodes. (D): example of the statistics applied to the points associated to each node, in this case mean value of `avqO' in color, with solar wind type hits as hexagon size. Panels in the bottom row: the three components of the map nodes, where the first panel is a Red Green Blue (RGB) combination of the other three.}\label{fig:maps}
 \end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
 		\includegraphics[width=14cm]{Amaya/datarange}% This is a *.eps file
 	\end{center}
-	\caption{Composition of all the solar wind points. Violin plot superposed by a box plot of the solar wind features. The box hight represents the Inter Quartile Range (IQR), the central continuous line represents the median and the dashed line the mean. The central notch represents the confidence of the median. The upper (lower) whiskers represent the lesser 25th (greater 75th) percentile of the data. }\label{fig:datarange}
+	\caption{Composition of all the solar wind points. Violin plot superposed by a box plot of the solar wind features. The box height represents the Inter Quartile Range (IQR), the central continuous line represents the median and the dashed line the mean. The central notch represents the confidence of the median. The upper (lower) whiskers represent the lesser 25th (greater 75th) percentile of the data. }\label{fig:datarange}
 \end{figure}
 
 \newcolumntype{C}{>{\centering\arraybackslash} m{4cm} }
@@ -280,7 +278,7 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 		\includegraphics[width=4cm]{Amaya/comp-map-Delta} & \hfill
 		\\
 	\end{tabular}
-	\caption{Map of the clustering of the SOM nodes, and map of eleven of the features used in model A.}\label{fig:compmap}
+	\caption{Map of the clustering of the SOM nodes, and map of the features used in model Amaya-21.}\label{fig:compmap}
 \end{figure}
 
 \newcolumntype{C}{>{\centering\arraybackslash} m{5.5cm} }
@@ -303,9 +301,9 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=18cm]{Amaya/tsfeatures-som}% This is a *.eps file
+		\includegraphics[height=22cm]{Amaya/tsfeatures-som}% This is a *.eps file
 	\end{center}
-	\caption{Solar wind features in the same window of time as Fig.\ref{fig:timeseries}. Al points are colored by the class number obtained by the DSOM algorithm. Vertical blue zones correspond to Richardson and Cane ICME catalog entries, and vertical dashed lines to entries in the UNH and CfA catalogs. The vertical gray zones correspond periods of 27 days.}\label{fig:tsfeatures-som}.
+	\caption{Solar wind features in the same window of time as Fig.\ref{fig:timeseries}. All points are colored by the class number obtained by the DSOM algorithm. Vertical blue zones correspond to Richardson and Cane ICME catalog entries, and vertical dashed lines to entries in the UNH and CfA catalogs. The vertical gray zones correspond periods of 27 days.}\label{fig:tsfeatures-som}.
 \end{figure}
 
 \begin{figure}[h!]
@@ -326,7 +324,7 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 		NCHW & \includegraphics[width=6cm]{Amaya/SWtype-Zhao_SW_type-4-log_O7to6} &
 		\includegraphics[width=6cm]{Amaya/SWtype-Zhao_SW_type-4-proton_speed}\hfill \\
 	\end{tabular}
-	\caption{Maps for model A of the two features (one per column) used int the Z classification system. The size of the nodes represent the number of hits for each one of the three classes (rows). CHW: coronal hole wind, NCHW: non-coronal hole wind.}\label{fig:SWtypeZ}
+	\caption{Maps for model Amaya-21 of the two features (one per column) used int the Zhao classification system. The size of the nodes represent the number of hits for each one of the three classes (rows). CHW: coronal hole wind, NCHW: non-coronal hole wind.}\label{fig:SWtypeZ}
 \end{figure}
 
 \newcolumntype{C}{>{\centering\arraybackslash} m{4.5cm} }
@@ -349,7 +347,7 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 		\includegraphics[width=4.5cm]{Amaya/SWtype-Xu_SW_type-3-log_Va} &
 		\includegraphics[width=4.5cm]{Amaya/SWtype-Xu_SW_type-3-log_Tratio} \hfill	\\
 	\end{tabular}
-	\caption{Maps for model A of the three features (one per column) used int the X classification system. The size of the nodes represent the number of hits for each one of the four classes (rows).}\label{fig:SWtXu}
+	\caption{Maps for model Amaya-21 of the three features (one per column) used int the Xu classification system. The size of the nodes represent the number of hits for each one of the four classes (rows).}\label{fig:SWtXu}
 \end{figure}
 
 \begin{figure}[h!]
@@ -357,15 +355,22 @@ Sunspots from \href{http://www.sidc.be/silso/datafiles}{http://www.sidc.be/silso
 		\includegraphics[width=16cm]{Roberts/maps}\\% This is a *.eps file
 			\includegraphics[width=18cm]{Roberts/timeseries}
 	\end{center}
-	\caption{Visualization of the Self-Organizing map of model R, and the corresponding time series example. See the captions of Fig.\ref{fig:maps}  and \ref{fig:timeseries} for a detailed description.}\label{fig:modelR}
+	\caption{Visualization of the Self-Organizing map of model Roberts-8, and the corresponding time series example. See the captions of Fig.\ref{fig:maps}  and \ref{fig:timeseries} for a detailed description.}\label{fig:modelR}
 \end{figure}
 
-\begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=16cm]{XuBorovsky/maps}\\% This is a *.eps file
-		\includegraphics[width=16cm]{ZhaZuFi/maps}
-	\end{center}
-	\caption{Visualization of the Self-Organizing map of models X (top two rows) and Z (bottom two rows). See the captions of Fig.\ref{fig:maps} for a detailed description.}\label{fig:modelsXZ}
-\end{figure}
+%\begin{figure}[h!]
+%	\begin{center}
+%		\includegraphics[width=16cm]{XuBorovsky/maps}\\% This is a *.eps file
+%		\includegraphics[width=16cm]{ZhaZuFi/maps}
+%	\end{center}
+%	\caption{Visualization of the Self-Organizing map of models Xu-3 (top two rows) and Zhao-2 (bottom two rows). See the captions of Fig.\ref{fig:maps} for a detailed description.}\label{fig:modelsXZ}
+%\end{figure}
+
+%\begin{figure}[h!]
+%	\begin{center}
+%		\includegraphics[width=16cm]{fig_modelsXZ}\\% This is a *.eps file
+%	\end{center}
+%	\caption{Visualization of the Self-Organizing map of models X (top two rows) and Z (bottom two rows). See the captions of Fig.\ref{fig:maps} for a detailed description.}\label{fig:modelsXZ}
+%\end{figure}
 
 \end{document}
