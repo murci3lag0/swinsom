@@ -73,12 +73,14 @@ $^{2}$Jet Propulsion Laboratory, Interstellar and Heliospheric Physics Division,
 \section{Materials and Methods}
 
 \subsection{Data and Processing}
+\label{sec:dataprocessing}
 \input{sections/data}
 
 \subsection{Dimension Reduction and Clustering}
 \input{sections/methods}
 
 \section{Results and comparisons}
+\label{sec:results}
 \input{sections/results}
 
 \section{Discussion}
@@ -93,7 +95,7 @@ The authors declare that the research was conducted in the absence of any commer
 
 \section*{Author Contributions}
 
-JA created the software used in this work, built the data sets and wrote the manuscript. RD provided important insights into the use of the machine learning techniques, and performed revisions of the different drafts. MEI gathered information from external experts in the domain and provided insights into the data usage. GL supervised the work. All authors contributed to manuscript revision, read and approved the submitted version.
+JA created the software used in this work, built the data sets and wrote the manuscript. RD provided important insights into the use of the machine learning techniques, and performed revisions of the different drafts. MEI gathered information from external collaborators, provided insights into the data usage, and proofread different drafts. GL supervised the work. All authors contributed to manuscript revision, read and approved the submitted version.
 
 \section*{Funding}
 
@@ -190,9 +192,9 @@ A detailed description of all ACE multi-instrument data set entires can be found
 		 & Initial year & 1998 & 2002 \\
 		 & Final year & 2011 & 2004 \\
 		 & Neurons / encoding layer & [21, 17, 9, 3] & [8, 13, 7, 3] \\
-		 & Lattice nodes &  12x12 &  12x12 \\
-		 & $\epsilon$ &  0.26 & 0.28 \\
-		 & $\eta$ & 4.56 & 5.22 \\
+		 & Lattice nodes &  8x8 &  7x7 \\
+		 & $\epsilon$ &  0.39 & 0.73 \\
+		 & $\eta$ & 4.07 & 4.14 \\
 		\bottomrule
 	\end{tabular}
 	\caption{List of features used for each classification case. The logarithm of all quantities was used, except for the features marked with an asterisk (*). Bottom: data range and hyper-parameters of the SOMs.}
@@ -235,6 +237,13 @@ A detailed description of all ACE multi-instrument data set entires can be found
 
 \begin{figure}[h!]
 	\begin{center}
+		\includegraphics[width=12cm]{architecture}% This is a *.eps file
+	\end{center}
+	\caption{General architecture used in this project. Three types of processed data are presented to the SOM: a) the database is transformed using PCA, keeping only the most significant components, b) the data set entries are encoded into a latent space with a smaller number of dimensions, c) the data is directly presented to the SOM. Clustering techniques are used to group together nodes of the SOM lattice.}\label{fig:architecture}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
 		\includegraphics[width=14cm]{Amaya/datarange}% This is a *.eps file
 	\end{center}
 	\caption{Composition of all the solar wind points. Violin plot superposed by a box plot of the solar wind features. The box height represents the Inter Quartile Range (IQR), the central continuous line represents the median and the dashed line the mean. The central notch represents the confidence of the median. The upper (lower) whiskers represent the lesser 25th (greater 75th) percentile of the data. }\label{fig:datarange}
@@ -243,37 +252,37 @@ A detailed description of all ACE multi-instrument data set entires can be found
 \newcolumntype{C}{>{\centering\arraybackslash} m{4cm} }
 \begin{figure}[h!]\centering
 	\begin{tabular}{CCCC}
-		Class map & $\log O^{7+}/O^{6+}$ & $\log V_{sw}$ & $\log n_p$ \\
+		Class map & $O^{7+}/O^{6+}$ & $V_{sw}$ & $n_p$ \\
 		\includegraphics[width=4cm]{Amaya/classmap} &
 		\includegraphics[width=4cm]{Amaya/comp-map-log_O7to6} &
 		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_speed} &
 		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_density}\hfill
 		\\
-		$\log Fe/O$ & $\log \text{av}(Q_{Fe})$ & $\sigma_c$ & $\sigma_r$ \\
+		$Fe/O$ & $\text{av}(Q_{Fe})$ & $\sigma_c$ & $\sigma_r$ \\
 		\includegraphics[width=4cm]{Amaya/comp-map-log_FetoO} &
 		\includegraphics[width=4cm]{Amaya/comp-map-log_avqFe} &
 		\includegraphics[width=4cm]{Amaya/comp-map-sigmac} &
 		\includegraphics[width=4cm]{Amaya/comp-map-sigmar}\hfill
 		\\
-		$\log \left\lVert B \right\rVert $ & $\log Sp$ & $\log V_{A}$ & $\log T_{\text{exp}}/T_p$ \\
+		$\left\lVert B \right\rVert $ & $Sp$ & $V_{A}$ & $T_{\text{exp}}/T_p$ \\
 		\includegraphics[width=4cm]{Amaya/comp-map-log_Bmag} &
 		\includegraphics[width=4cm]{Amaya/comp-map-log_Sp} &
 		\includegraphics[width=4cm]{Amaya/comp-map-log_Va} &
 		\includegraphics[width=4cm]{Amaya/comp-map-log_Tratio}\hfill
 		\\
-		$\log T_p$ & $\log M_A$ & $\log C^{6+}/C^{5+}$ & $\text{range} \log \left\lVert B \right\rVert $ \\
+		$T_p$ & $M_A$ & $C^{6+}/C^{5+}$ & $\text{range} \left\lVert B \right\rVert $ \\
 		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_temp} &
 		\includegraphics[width=4cm]{Amaya/comp-map-log_Ma} &
 		\includegraphics[width=4cm]{Amaya/comp-map-log_C6to5} &
 		\includegraphics[width=4cm]{Amaya/comp-map-log_Bmag_range}\hfill
 		\\
-		$\text{range} \log T_p $ & $\text{range} \log n_p$ & $\text{range} \log B_x$ & $\text{range} \log B_z$ \\
+		$\text{range} T_p $ & $\text{range} n_p$ & $\text{range} B_x$ & $\text{range} B_z$ \\
 		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_temp_range} &
 		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_density_range} &
 		\includegraphics[width=4cm]{Amaya/comp-map-log_Bgsm_x_range} &
 		\includegraphics[width=4cm]{Amaya/comp-map-log_Bgsm_z_range}\hfill
 		\\
-		& $\text{autocorr} \left\lVert B \right\rVert$ & $\Delta B$ & \\
+		& $\text{autocorr} \left\lVert B \right\rVert$ & $\theta_{B,RTN}$ & \\
 		& \includegraphics[width=4cm]{Amaya/comp-map-Bmag_acor} &
 		\includegraphics[width=4cm]{Amaya/comp-map-Delta} & \hfill
 		\\
@@ -304,13 +313,6 @@ A detailed description of all ACE multi-instrument data set entires can be found
 		\includegraphics[height=22cm]{Amaya/tsfeatures-som}% This is a *.eps file
 	\end{center}
 	\caption{Solar wind features in the same window of time as Fig.\ref{fig:timeseries}. All points are colored by the class number obtained by the DSOM algorithm. Vertical blue zones correspond to Richardson and Cane ICME catalog entries, and vertical dashed lines to entries in the UNH and CfA catalogs. The vertical gray zones correspond periods of 27 days.}\label{fig:tsfeatures-som}.
-\end{figure}
-
-\begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=12cm]{architecture}% This is a *.eps file
-	\end{center}
-	\caption{General architecture used in this project. Three types of processed data are presented to the SOM: a) the database is transformed using PCA, keeping only the most significant components, b) the data set entries are encoded into a latent space with a smaller number of dimensions, c) the data is directly presented to the SOM. Clustering techniques are used to group together nodes of the SOM lattice.}\label{fig:architecture}
 \end{figure}
 
 \newcolumntype{C}{>{\centering\arraybackslash} m{6cm} }
@@ -356,6 +358,36 @@ A detailed description of all ACE multi-instrument data set entires can be found
 			\includegraphics[width=18cm]{Roberts/timeseries}
 	\end{center}
 	\caption{Visualization of the Self-Organizing map of model Roberts-8, and the corresponding time series example. See the captions of Fig.\ref{fig:maps}  and \ref{fig:timeseries} for a detailed description.}\label{fig:modelR}
+\end{figure}
+
+\newcolumntype{C}{>{\centering\arraybackslash} m{4cm} }
+\begin{figure}[h!]\centering
+	\begin{tabular}{m{2.5cm}CCC}
+		 & & $\log O^{7+}/O^{6+}$ & $V_{sw}$ \\
+		CHW & & \includegraphics[width=4cm]{Roberts/SWtype-Zhao_SW_type-1-log_O7to6} &
+		\includegraphics[width=4cm]{Roberts/SWtype-Zhao_SW_type-1-proton_speed}\hfill	\\
+		ICME & & \includegraphics[width=4cm]{Roberts/SWtype-Zhao_SW_type-2-log_O7to6} &
+		\includegraphics[width=4cm]{Roberts/SWtype-Zhao_SW_type-2-proton_speed}\hfill	\\
+		NCHW & & \includegraphics[width=4cm]{Roberts/SWtype-Zhao_SW_type-4-log_O7to6} &
+		\includegraphics[width=4cm]{Roberts/SWtype-Zhao_SW_type-4-proton_speed}\hfill \\
+		& $\log Sp$ & $\log V_{A}$ & $\log T_{\text{exp}}/T_p$ \\
+		Streamer belt origin & \includegraphics[width=4cm]{Roberts/SWtype-Xu_SW_type-0-log_Sp} &
+		\includegraphics[width=4cm]{Roberts/SWtype-Xu_SW_type-0-log_Va} &
+		\includegraphics[width=4cm]{Roberts/SWtype-Xu_SW_type-0-log_Tratio} \hfill	\\
+		
+		Coronal hole origin & \includegraphics[width=4cm]{Roberts/SWtype-Xu_SW_type-1-log_Sp} &
+		\includegraphics[width=4cm]{Roberts/SWtype-Xu_SW_type-1-log_Va} &
+		\includegraphics[width=4cm]{Roberts/SWtype-Xu_SW_type-1-log_Tratio} \hfill	\\
+		
+		Ejecta & \includegraphics[width=4cm]{Roberts/SWtype-Xu_SW_type-2-log_Sp} &
+		\includegraphics[width=4cm]{Roberts/SWtype-Xu_SW_type-2-log_Va} &
+		\includegraphics[width=4cm]{Roberts/SWtype-Xu_SW_type-2-log_Tratio} \hfill	\\
+		
+		Sector reversal origin & \includegraphics[width=4cm]{Roberts/SWtype-Xu_SW_type-3-log_Sp} &
+		\includegraphics[width=4cm]{Roberts/SWtype-Xu_SW_type-3-log_Va} &
+		\includegraphics[width=4cm]{Roberts/SWtype-Xu_SW_type-3-log_Tratio} \hfill	\\
+	\end{tabular}
+	\caption{Maps for the Xu and Zhao classes in the Roberts-8 model. Node sizes indicate hits, colors indicate values of the corresponding solar wind property.}\label{fig:SWtXuRoberts}
 \end{figure}
 
 %\begin{figure}[h!]
