@@ -1,0 +1,14 @@
+\documentclass[border=0pt,varwidth=18cm,convert={outext=.jpg,density=300}]{standalone}%
+\usepackage{amsmath,graphicx,array,xcolor}%
+\graphicspath{{../figures/}}
+\begin{document}\pagecolor{white}%
+\newcolumntype{C}{>{\centering\arraybackslash} m{5.5cm} }
+\begin{figure}[h!]\centering
+	\begin{tabular}{CCC}
+		$k$-means classes & GMM classes & SOM classes \\
+		\includegraphics[width=5.5cm]{Amaya/classesdatarange-kmeans} &
+		\includegraphics[width=5.5cm]{Amaya/classesdatarange-gmm} &
+		\includegraphics[width=5.5cm]{Amaya/classesdatarange-som} \hfill \\
+	\end{tabular}
+\end{figure}
+\end{document}%

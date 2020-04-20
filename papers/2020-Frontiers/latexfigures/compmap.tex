@@ -1,0 +1,43 @@
+\documentclass[border=0pt,varwidth=18cm,convert={outext=.jpg,density=300}]{standalone}%
+\usepackage{amsmath,graphicx,array,xcolor}%
+\graphicspath{{../figures/}}
+\begin{document}\pagecolor{white}%
+\newcolumntype{C}{>{\centering\arraybackslash} m{4cm} }
+\begin{figure}[h!]\centering
+	\begin{tabular}{CCCC}
+		Class map & $O^{7+}/O^{6+}$ & $V_{sw}$ & $n_p$ \\
+		\includegraphics[width=4cm]{Amaya/classmap} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_O7to6} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_speed} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_density}\\
+		$Fe/O$ & $\text{av}(Q_{Fe})$ & $\sigma_c$ & $\sigma_r$ \\
+		\includegraphics[width=4cm]{Amaya/comp-map-log_FetoO} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_avqFe} &
+		\includegraphics[width=4cm]{Amaya/comp-map-sigmac} &
+		\includegraphics[width=4cm]{Amaya/comp-map-sigmar}\hfill
+		\\
+		$\left\lVert B \right\rVert $ & $Sp$ & $V_{A}$ & $T_{\text{exp}}/T_p$ \\
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Bmag} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Sp} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Va} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Tratio}\hfill
+		\\
+		$T_p$ & $M_A$ & $C^{6+}/C^{5+}$ & $\text{range} \left\lVert B \right\rVert $ \\
+		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_temp} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Ma} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_C6to5} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Bmag_range}\hfill
+		\\
+		$\text{range} T_p $ & $\text{range} n_p$ & $\text{range} B_x$ & $\text{range} B_z$ \\
+		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_temp_range} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_proton_density_range} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Bgsm_x_range} &
+		\includegraphics[width=4cm]{Amaya/comp-map-log_Bgsm_z_range}\hfill
+		\\
+		& $\text{autocorr} \left\lVert B \right\rVert$ & $\theta_{B,RTN}$ & \\
+		& \includegraphics[width=4cm]{Amaya/comp-map-Bmag_acor} &
+		\includegraphics[width=4cm]{Amaya/comp-map-Delta} & \hfill
+		\\
+	\end{tabular}
+\end{figure}
+\end{document}%
