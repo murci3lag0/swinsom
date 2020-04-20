@@ -5,6 +5,8 @@
 
 Solar Wind classification using Self-Organizing Maps.
 
+![Example of SOM clustering of ACE data](papers/2020-Frontiers/submission/modelR.jpg)
+
 # Installation
 
 The software does not currently contain the tools to automatically install dependencies. Please check the [requirements.txt](https://github.com/murci3lag0/swinsom/blob/master/requirements.txt) file for information about the packages and versions used to produce the publication results.
