@@ -9,7 +9,13 @@ Solar Wind classification using Self-Organizing Maps.
 
 # Installation
 
-The software does not currently contain the tools to automatically install dependencies. Please check the [requirements.txt](https://github.com/murci3lag0/swinsom/blob/master/requirements.txt) file for information about the packages and versions used to produce the publication results.
+Please check the [requirements.txt](https://github.com/murci3lag0/swinsom/blob/master/requirements.txt) file for information about the packages and versions used to produce the publication results.
+
+To install requirements use:
+
+```console
+pip install -r requirements.txt
+```
 
 # Use
 
@@ -20,6 +26,8 @@ python swinsom-ace.py <case> <mode>
 ```
 
 where `<case>` can be any of `Amaya`, `Roberts`, `XuBorovsky` or `ZhaZuFi`, and `<mode>` can be `new` or `load`.
+
+The `new` option will launch the full data pre-processing, encoding, training and figure reproduction. The option `load` will load the data stored in the pickle files. Please check the optional flags inside the `swinsom-ace.py` file to change the run options. The ACE files are available via FTP in [this link at the ACE Science Center](ftp://mussel.srl.caltech.edu/pub/ace/level2/multi/). The data has been tranformed from .hdf (HDF4) format to .h5 (HDF5) format, using [hdfview](https://www.hdfgroup.org/downloads/hdfview/).
 
 # Publications
 
