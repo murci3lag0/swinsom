@@ -35,7 +35,7 @@ outdir = '/home/amaya/Sources/swinsom-git/papers/2020-Frontiers/figures/'
 optim = False
 calculate_som = True
 clustering = False
-generate_paper_figures = True
+generate_paper_figures = False
 
 ## Code options ---------------------------------------------------------------
 # acode   : use autoencoding to generate the training data

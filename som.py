@@ -30,7 +30,7 @@ class altersom(MiniSom):
         if (self.neighborhood!=self._gaussian):
             raise ValueError('Distance function can only be gaussian')
             
-        self.neighborhood = self._hexaneigfunc
+        #self.neighborhood = self._hexaneigfunc
     
     def fully_random_weights_init(self, data):
         dmin = data.min(axis=0)
@@ -64,15 +64,15 @@ class altersom(MiniSom):
             print('SOM initialization using random values in the feature space...')
             self.fully_random_weights_init(data)    
             
-    def _hexaneigfunc(self, c, sigma):
-        xx, yy = np.meshgrid(self._neigx, self._neigy)
-        xx = xx.astype(float)
-        yy = yy.astype(float)
-        xx[::2] -= 0.5
-        d = 2*np.pi*sigma*sigma
-        ax = np.exp(-np.power(xx-c[0], 2)/d)
-        ay = np.exp(-np.power(yy-c[1], 2)/d)
-        return (ax*ay).T
+    #def _hexaneigfunc(self, c, sigma):
+    #    xx, yy = np.meshgrid(self._neigx, self._neigy)
+    #    xx = xx.astype(float)
+    #    yy = yy.astype(float)
+    #    xx[::2] -= 0.5
+    #    d = 2*np.pi*sigma*sigma
+    #    ax = np.exp(-np.power(xx-c[0], 2)/d)
+    #    ay = np.exp(-np.power(yy-c[1], 2)/d)
+    #    return (ax*ay).T
     
     def _dynupdate(self, x, win, t, max_iteration):
         D = ((x - self._weights)**2).sum(axis=-1)
@@ -109,7 +109,8 @@ def selfomap(data, nrow, ncol, niter,
                    neighborhood_function=neighborhood_function, 
                    sigma = sigma, 
                    learning_rate=learning_rate, 
-                   random_seed=random_seed) 
+                   random_seed=random_seed,
+                   topology='hexagonal') 
     
     som.initweights(init, data)
 
