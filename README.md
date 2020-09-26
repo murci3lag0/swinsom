@@ -5,6 +5,8 @@
 
 Solar Wind classification using Self-Organizing Maps.
 
+*This repository is under revision and does not contain the latest version of the code. The new version will be uploaded in the next days, please visit this page again soon, or contact the corresponding author for more details.*
+
 ![Example of SOM clustering of ACE data](papers/2020-Frontiers/submission/modelR.jpg)
 
 # Installation
